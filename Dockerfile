@@ -1,21 +1,18 @@
 FROM gcc
 
-WORKDIR /app
+ENV FPDIR /FIX-protocol
+
+WORKDIR /FIX-protocol/
 
 RUN  apt-get update; apt-get install -y cmake;
 
-ADD CMakeLists.txt /app/CMakeLists.txt
+ADD CMakeLists.txt CMakeLists.txt
 
-ADD test/ /app/test
+ADD common/ common/
 
-ADD include/Common/ /app/include/Common
-ADD src/Common/ /app/src/Common
+ADD server/ server/
 
-ADD include/Server/ /app/include/Server
-ADD src/Server/ /app/src/Server
+RUN cmake -DServerBuild=TRUE CMakeLists.txt
+RUN make
 
-RUN cmake .
-RUN make MarketCommon
-RUN make MarketServer
-
-ENTRYPOINT ["/app/MarketServer"]
+ENTRYPOINT ["/MarketServer"]

@@ -8,93 +8,27 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 
 add_compile_options(-Wall -Wextra -g3)
 
-# Common library
+option(CommonBuild "Build the Common library" FALSE)
+option(ServerBuil "Build the Server library" FALSE)
+option(ClientBuild "Build the Client library" FALSE)
 
-file(GLOB_RECURSE SRC_COMMON
-    include/Common/**.hpp
-    include/Common/**.inl
-    src/Common/**.cpp
-)
+if (ServerBuild)
+    include(server/server.cmake)
 
-add_library(MarketCommon SHARED
-    ${SRC_COMMON}
-)
+    if (CommonBuild)
+        set(CommonBuild TRUE)
+    endif()
+endif()
 
-target_include_directories(MarketCommon PRIVATE include)
+if (ClientBuild)
+    include(common/common.cmake)
+    include(client/client.cmake)
 
-add_compile_definitions(MAX_EVENT_EPOLL=30)            # Maximum of event handle by epoll at once
-add_compile_definitions(MAX_SOCKET=30)                 # Maximum of socket handle by epoll/socket at once
-add_compile_definitions(N_THREAD_TP=1)                 # Default number of thread in a thread pool
-add_compile_definitions(LOG_DFT_FILE="./default.log")  # Default log file
-add_compile_definitions(MAX_RECV_SIZE=2048)            # Maximum of data received bu a socket
-add_compile_definitions(MARKET_NAME="GOLD","EURO","USD")    # Server name (used for TargetCompId from client)
+    if (CommonBuild)
+        set(CommonBuild TRUE)
+    endif()
+endif()
 
-# Server
-
-file(GLOB_RECURSE SRC_SERVER
-    include/Server/**.hpp
-    include/Server/**.inl
-    src/Server/**.cpp
-)
-
-add_executable(MarketServer
-    ${SRC_SERVER}
-)
-
-target_link_libraries(MarketServer PRIVATE MarketCommon)
-
-target_include_directories(MarketServer PRIVATE include)
-
-target_compile_definitions(MarketServer PRIVATE TS_SIZE_OB=1)                       # Thread Pool size from Order Book
-target_compile_definitions(MarketServer PRIVATE TS_SIZE_ON=1)                       # Thread Pool size from Output network
-target_compile_definitions(MarketServer PRIVATE NET_RECV_SIZE=4096)                 # Package max read size
-target_compile_definitions(MarketServer PRIVATE PROVIDER_NAME="MyMarket")           # Server name (used for TargetCompId from client)
-target_compile_definitions(MarketServer PRIVATE MARKET_NAME="GOLD","EURO","USD")    # Name of availalbe market
-
-# Client
-
-file(GLOB_RECURSE SRC_CLIENT
-    include/Client/**.hpp
-    include/Client/**.inl
-    src/Client/**.cpp
-)
-
-add_executable(MarketClient
-    ${SRC_CLIENT}
-)
-
-target_link_libraries(MarketClient PRIVATE MarketCommon)
-
-target_include_directories(MarketClient PRIVATE include)
-
-target_compile_definitions(MarketClient PRIVATE PROVIDER_NAME="MyMarket")
-target_compile_definitions(MarketClient PRIVATE MARKET_NAME="GOLD","EURO","USD")
-
-# Setup GTest
-# include(FetchContent)
-
-# set(GTEST_VERSION 1.14.0)
-# FetchContent_Declare(
-#   googletest
-#   URL https://github.com/google/googletest/archive/refs/tags/v${GTEST_VERSION}.tar.gz
-#   PREFIX ${CMAKE_BINARY_DIR}/gtest
-#   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/gtest
-# )
-# FetchContent_MakeAvailable(googletest)
-
-# enable_testing()
-
-# file(GLOB_RECURSE SRC_TESTS
-#     test/**.cpp
-# )
-
-# add_executable(MarketTest
-#     ${SRC_TESTS}
-# )
-# target_include_directories(MarketTest PRIVATE include)
-# target_include_directories(MarketTest PRIVATE test)
-# target_link_libraries(MarketTest MarketCommon GTest::gtest_main)
-# target_compile_options(MarketTest PRIVATE -Wno-protected -Wno-private)
-
-# include(GoogleTest)
-# gtest_discover_tests(MarketTest)
+if (CommonBuild)
+    include(common/common.cmake)
+endif()
