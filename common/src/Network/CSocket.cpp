@@ -32,7 +32,6 @@ namespace net::c
 
     size_t Socket::send(int _fd, const uint8_t *_data, size_t _size)
     {
-
         return ::send(_fd, _data, _size, 0);
     }
 
