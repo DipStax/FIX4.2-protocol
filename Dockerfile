@@ -12,7 +12,8 @@ ADD common/ common/
 
 ADD server/ server/
 
-RUN cmake -DServerBuild=TRUE CMakeLists.txt
-RUN make
+ADD script/ script/
 
-ENTRYPOINT ["/MarketServer"]
+RUN python3 script/build.py
+
+ENTRYPOINT ["./build/server"]

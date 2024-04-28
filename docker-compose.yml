@@ -1,7 +1,7 @@
 services:
   market-server:
     build: .
-    container_name: MarketServer
+    container_name: FIX-server
     ports:
       - 8080:8080
       - 8081:8081/udp
