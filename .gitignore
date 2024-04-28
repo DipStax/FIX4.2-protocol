@@ -40,3 +40,6 @@ build
 
 # Documentation
 docs
+
+# python
+**/__pycache__

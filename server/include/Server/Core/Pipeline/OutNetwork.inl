@@ -5,23 +5,23 @@
 
 namespace pip
 {
-    template<IsSocket T, class _T, IsTSQueue __T, class ___T>
-    requires SocketClient<___T, T> && IsProcessor<_T, typename __T::type &, std::vector<___T> &>
-    OutNetwork<T, _T, __T, ___T>::OutNetwork(std::vector<___T> &_clients, __T &_input)
+    template<class Func>
+    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    OutNetwork<Func>::OutNetwork(std::vector<ClientSocket> &_clients, InOutNetwork &_input)
         : m_input(_input), m_clients(_clients)
     {
     }
 
-    template<IsSocket T, class _T, IsTSQueue __T, class ___T>
-    requires SocketClient<___T, T> && IsProcessor<_T, typename __T::type &, std::vector<___T> &>
-    OutNetwork<T, _T, __T, ___T>::~OutNetwork()
+    template<class Func>
+    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    OutNetwork<Func>::~OutNetwork()
     {
         (void)(this->template stop());
     }
 
-    template<IsSocket T, class _T, IsTSQueue __T, class ___T>
-    requires SocketClient<___T, T> && IsProcessor<_T, typename __T::type &, std::vector<___T> &>
-    bool OutNetwork<T, _T, __T, ___T>::start()
+    template<class Func>
+    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    bool OutNetwork<Func>::start()
     {
         if (!this->m_running)
             this->template tstart(this);
@@ -29,19 +29,19 @@ namespace pip
         return this->m_running;
     }
 
-    template<IsSocket T, class _T, IsTSQueue __T, class ___T>
-    requires SocketClient<___T, T> && IsProcessor<_T, typename __T::type &, std::vector<___T> &>
-    void OutNetwork<T, _T, __T, ___T>::loop()
+    template<class Func>
+    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    void OutNetwork<Func>::loop()
     {
         Logger::SetThreadName(THIS_THREAD_ID, "Network Output");
-        typename __T::type input;
+        OutNetworkInput input;
 
         while (this->m_running) {
             if (!this->m_input.empty()) {
                 input = std::move(this->m_input.pop_front());
 
                 m_tp.enqueue([this, _input = std::move(input)] () mutable {
-                    _T::run(_input, m_clients);
+                    Func::run(_input, m_clients);
                 });
             }
         }

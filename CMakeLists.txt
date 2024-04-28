@@ -9,24 +9,17 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 add_compile_options(-Wall -Wextra -g3)
 
 option(CommonBuild "Build the Common library" FALSE)
-option(ServerBuil "Build the Server library" FALSE)
+option(ServerBuild "Build the Server library" FALSE)
 option(ClientBuild "Build the Client library" FALSE)
 
 if (ServerBuild)
+    include(common/common.cmake)
     include(server/server.cmake)
-
-    if (CommonBuild)
-        set(CommonBuild TRUE)
-    endif()
 endif()
 
 if (ClientBuild)
     include(common/common.cmake)
     include(client/client.cmake)
-
-    if (CommonBuild)
-        set(CommonBuild TRUE)
-    endif()
 endif()
 
 if (CommonBuild)

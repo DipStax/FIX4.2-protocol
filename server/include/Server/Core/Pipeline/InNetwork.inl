@@ -6,9 +6,9 @@
 
 namespace pip
 {
-    template<IsSocket T, class _T, class __T>
-    requires SocketClient<__T, T> && IsProcessor<_T, ClientSocket &, InAction &, InOutNetwork &>
-    InNetwork<T, _T, __T>::InNetwork(std::vector<__T> &_clients, InAction &_output, InOutNetwork &_error, uint32_t _port)
+    template<class Func>
+    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
+    InNetwork<Func>::InNetwork(std::vector<ClientSocket> &_clients, InAction &_output, InOutNetwork &_error, uint32_t _port)
         : m_clients(_clients), m_output(_output), m_error(_error), m_acceptor(), m_selector()
     {
         (void)m_acceptor.listen(_port);
@@ -17,16 +17,16 @@ namespace pip
         Logger::Log("[InNetwork] listening to port: ", _port);
     }
 
-    template<IsSocket T, class _T, class __T>
-    requires SocketClient<__T, T> && IsProcessor<_T, ClientSocket &, InAction &, InOutNetwork &>
-    InNetwork<T, _T, __T>::~InNetwork()
+    template<class Func>
+    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
+    InNetwork<Func>::~InNetwork()
     {
         (void)this->template stop();
     }
 
-    template<IsSocket T, class _T, class __T>
-    requires SocketClient<__T, T> && IsProcessor<_T, ClientSocket &, InAction &, InOutNetwork &>
-    bool InNetwork<T, _T, __T>::start()
+    template<class Func>
+    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
+    bool InNetwork<Func>::start()
     {
         if (!this->m_running)
             this->template tstart(this);
@@ -34,9 +34,9 @@ namespace pip
         return this->m_running;
     }
 
-    template<IsSocket T, class _T, class __T>
-    requires SocketClient<__T, T> && IsProcessor<_T, ClientSocket &, InAction &, InOutNetwork &>
-    void InNetwork<T, _T, __T>::loop()
+    template<class Func>
+    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
+    void InNetwork<Func>::loop()
     {
         Logger::SetThreadName(THIS_THREAD_ID, "Network Input");
 
@@ -65,7 +65,7 @@ namespace pip
                     // build reject
                     m_error.append(ClientSocket(_client), std::move(reject));
                     continue;
-                } else if (_T::run(*client, m_output, m_error)) {
+                } else if (Func::run(*client, m_output, m_error)) {
                     Logger::Log("[InNetwork] Disconnecting client: "); // todo log
                     m_selector.erase(client->getSocket());
                     m_clients.erase(client);
