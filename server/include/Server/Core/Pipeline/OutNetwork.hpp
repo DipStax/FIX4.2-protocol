@@ -9,25 +9,24 @@
     #define TS_SIZE_ON 1
 #endif
 
-
 namespace pip
 {
     /// @brief Pipeline to send reply to a client over TCP network.
-    template<IsSocket T, class _T, IsTSQueue __T, class ___T = std::shared_ptr<T>>
-    requires SocketClient<___T, T> && IsProcessor<_T, typename __T::type &, std::vector<ClientSocket> &>
-    class OutNetwork : public Pipeline<OutNetwork<T, _T, __T, ___T>>
+    template<class Func>
+    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    class OutNetwork : public Pipeline<OutNetwork<Func>>
     {
         public:
             /// @brief Socket format used
-            using Client = net::Acceptor<T>::Client;
+            using Client = net::Acceptor<net::tcp::Socket>::Client;
 
             /// @brief Core pipeline type.
-            using PipeType = Pipeline<OutNetwork<T, _T, __T>>;
+            using PipeType = Pipeline<OutNetwork<Func>>;
 
             /// @brief Construct the pipeline.
             /// @param _input Input data queue.
             /// @param _clients List of the connected client.
-            OutNetwork(std::vector<___T> &_clients, __T &_input);
+            OutNetwork(std::vector<ClientSocket> &_clients, InOutNetwork &_input);
             /// @brief Stop and then destroy the pipeline.
             ~OutNetwork();
 
@@ -39,8 +38,8 @@ namespace pip
             void loop();
 
         private:
-            __T &m_input;                       ///< Intput data queue.
-            std::vector<___T> &m_clients;       ///< List of connected clients.
+            InOutNetwork &m_input;                       ///< Intput data queue.
+            std::vector<ClientSocket> &m_clients;       ///< List of connected clients.
 
             ThreadPool<TS_SIZE_ON> m_tp;        ///< Thread pool used to send data to the target client in async.
     };

@@ -35,12 +35,12 @@ class Core
         InOutNetwork m_q_repdata;
         InOutNetwork m_q_tcp;
 
-        pip::InNetwork<net::tcp::Socket, net::tcp::in::Basic, ClientSocket> m_innet;
+        pip::InNetwork<net::tcp::in::Basic> m_innet;
         pip::Action m_action;
         pip::DataRefresh m_data;
 
-        pip::OutNetwork<net::tcp::Socket, net::tcp::out::Response, InOutNetwork, ClientSocket> m_outnet;
-        pip::OutNetwork<net::tcp::Socket, net::tcp::out::SubResponse, InOutNetwork, ClientSocket> m_outdata;
+        pip::OutNetwork<net::tcp::out::Response> m_outnet;
+        pip::OutNetwork<net::tcp::out::SubResponse> m_outdata;
 
         pip::UDPOutNetwork m_udp;
 };
