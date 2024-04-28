@@ -16,4 +16,4 @@ ADD script/ script/
 
 RUN python3 script/build.py
 
-ENTRYPOINT ["./build/server"]
+ENTRYPOINT ["./build/Server"]
