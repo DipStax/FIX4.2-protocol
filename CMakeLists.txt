@@ -11,6 +11,7 @@ add_compile_options(-Wall -Wextra -g3)
 option(CommonBuild "Build the Common library" FALSE)
 option(ServerBuild "Build the Server library" FALSE)
 option(ClientBuild "Build the Client library" FALSE)
+option(StreamLiner "Build the Streamline framework" FALSE)
 
 if (ServerBuild)
     include(common/common.cmake)
@@ -24,4 +25,8 @@ endif()
 
 if (CommonBuild)
     include(common/common.cmake)
+endif()
+
+if (StreamLiner)
+    include(streamliner/streamliner.cmake)
 endif()

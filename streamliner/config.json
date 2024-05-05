@@ -1,0 +1,19 @@
+{
+    "test_string": "string",
+    "test_double": 3.14,
+    "test_int": 2048,
+    "test_bool": true,
+    "test_dict": {
+        "test_dict_elem1": "string",
+        "test_dict_elem2": false
+    },
+    "test_array": [ 0, 1 ],
+    "test_arr_dict": [
+        {
+            "test_arr_dict_elem1": 3.14
+        },
+        {
+            "test_arr_dict_elem2": 2048
+        }
+    ]
+}
