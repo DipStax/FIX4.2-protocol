@@ -7,6 +7,10 @@
 #include <variant>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 namespace sl::config {
 
     enum Type {
@@ -41,25 +45,27 @@ namespace sl::config {
             Node(const String &_str);
             ~Node() = default;
 
-            static Node MakeArray(const std::initializer_list<Node> &_val);
-            static Node MakeArray(const std::vector<Node> &_val);
-            static Node MakeDict(const std::initializer_list<std::pair<std::string, Node>> &_val);
-            static Node MakeDict(const std::unordered_map<std::string, Node> &_val);
+            [[nodiscard]] std::shared_ptr<Node> operator[](const std::string &_key) const;
+            [[nodiscard]] std::shared_ptr<Node> operator[](size_t _idx) const;
 
-            Node &operator[](const char *_key) const;
-            Node &operator[](const std::string &_key) const;
-            Node &operator[](size_t _idx) const;
+            [[nodiscard]] bool asBool() const;
+            [[nodiscard]] const Dict &asDict() const;
+            [[nodiscard]] const String &asString() const;
+            [[nodiscard]] const Array &asArray() const;
+            [[nodiscard]] int asInt() const;
+            [[nodiscard]] double asDouble() const;
 
-            bool asBool() const;
-            const Dict &asDict() const;
-            const String &asString() const;
-            const Array &asArray() const;
-            int asInt() const;
-            double asDouble() const;
+            [[nodiscard]] bool Is(Type _type) const;
+            [[nodiscard]] bool IsNull() const;
+            [[nodiscard]] bool IsUndefined() const;
 
-            bool IsNull() const;
-            bool IsUndefined() const;
+            [[nodiscard]] operator bool() const;
 
-            operator bool() const;
+            [[nodiscard]] static std::shared_ptr<Node> MakeArray(const std::initializer_list<Node> &_val);
+            [[nodiscard]] static std::shared_ptr<Node> MakeArray(const std::vector<Node> &_val);
+            [[nodiscard]] static std::shared_ptr<Node> MakeDict(const std::initializer_list<std::pair<std::string, Node>> &_val);
+            [[nodiscard]] static std::shared_ptr<Node> MakeDict(const std::unordered_map<std::string, Node> &_val);
+
+            void merge(const std::shared_ptr<Node> _node);
     };
 }
