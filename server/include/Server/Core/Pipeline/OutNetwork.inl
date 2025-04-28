@@ -14,29 +14,11 @@ namespace pip
 
     template<class Func>
     requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
-    OutNetwork<Func>::~OutNetwork()
+    void OutNetwork<Func>::runtime(std::stop_token _st)
     {
-        (void)(this->template stop());
-    }
-
-    template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
-    bool OutNetwork<Func>::start()
-    {
-        if (!this->m_running)
-            this->template tstart(this);
-        Logger::Log("[OutNetwork] Running: ", this->m_running);
-        return this->m_running;
-    }
-
-    template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
-    void OutNetwork<Func>::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Network Output");
         OutNetworkInput input;
 
-        while (this->m_running) {
+        while (!_st.stop_requested()) {
             if (!this->m_input.empty()) {
                 input = std::move(this->m_input.pop_front());
 

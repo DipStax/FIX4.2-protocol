@@ -1,10 +1,9 @@
 #pragma once
 
 #include "Common/Network/Selector.hpp"
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
 #include "Server/Core/meta.hpp"
-#include "Server/Network/Processor.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 #ifndef NET_RECV_SIZE
     #define NET_RECV_SIZE 4096
@@ -18,14 +17,11 @@ namespace pip
     /// @tparam __T is the format socket are stored in the vector referenced.
     template<class Func>
     requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
-    class InNetwork : public Pipeline<InNetwork<Func>>
+    class InNetwork : public IProcessUnit
     {
         public:
             /// @brief Socket format used
             using Client = net::Acceptor<net::tcp::Socket>::Client;
-
-            /// @brief Core pipeline type
-            using PipeType = Pipeline<InNetwork<Func>>;
 
             /// @brief Setup the network input and start listening on _port
             /// @param _clients List of clients connected in to this network
@@ -34,14 +30,10 @@ namespace pip
             /// @param _port Port on which the network will listen to, for connection and receive message.
             InNetwork(std::vector<ClientSocket> &_clients, InAction &_output, InOutNetwork &_error, uint32_t _port);
             /// @brief Disconnect from listening, stop the pipeline and the destroy it.
-            ~InNetwork();
+            virtual ~InNetwork() = default;
 
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
-
-            /// @brief Core function of the pipeline determining it's behavior
-            void loop();
+        protected:
+            void runtime(std::stop_token _st);
 
         private:
             std::vector<ClientSocket> &m_clients;            ///< Client list

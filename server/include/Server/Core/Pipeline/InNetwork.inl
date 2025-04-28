@@ -19,31 +19,12 @@ namespace pip
 
     template<class Func>
     requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
-    InNetwork<Func>::~InNetwork()
+    void InNetwork<Func>::runtime(std::stop_token _st)
     {
-        (void)this->template stop();
-    }
-
-    template<class Func>
-    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
-    bool InNetwork<Func>::start()
-    {
-        if (!this->m_running)
-            this->template tstart(this);
-        Logger::Log("[InNetwork] Running: ", this->m_running);
-        return this->m_running;
-    }
-
-    template<class Func>
-    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
-    void InNetwork<Func>::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Network Input");
-
         Client accept = nullptr;
         std::vector<Client> clients;
 
-        while (this->m_running) {
+        while (!_st.stop_requested()) {
             accept = m_acceptor.accept();
             if (accept) {
                 m_clients.emplace_back(accept);

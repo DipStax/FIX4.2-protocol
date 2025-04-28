@@ -13,12 +13,12 @@ option(ServerBuild "Build the Server library" FALSE)
 option(ClientBuild "Build the Client library" FALSE)
 
 if (ServerBuild)
-    include(common/common.cmake)
+    set(CommonBuild TRUE)
     include(server/server.cmake)
 endif()
 
 if (ClientBuild)
-    include(common/common.cmake)
+    set(CommonBuild TRUE)
     include(client/client.cmake)
 endif()
 

@@ -1,12 +1,13 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Action.hpp"
+#include "Server/Core/Pipeline/Router.hpp"
 #include "Server/Core/Pipeline/DataRefresh.hpp"
 #include "Server/Core/Pipeline/InNetwork.hpp"
 #include "Server/Core/Pipeline/OutNetwork.hpp"
 #include "Server/Core/Pipeline/UDPOutNetwork.hpp"
 #include "Server/Core/MarketContainer.hpp"
 #include "Server/Network/Processor.hpp"
+#include "Server/Core/Pipeline/ProcessUnit.hpp"
 
 class Core
 {
@@ -26,7 +27,7 @@ class Core
         bool m_running = false;
 
         std::vector<ClientSocket> m_clients;
-        std::map<std::string, MarketContainer> m_markets;
+        std::map<std::string, ProcessUnit<MarketContainer>> m_markets;
 
         InUDP m_q_udp;
         InAction m_q_action;
@@ -35,12 +36,12 @@ class Core
         InOutNetwork m_q_repdata;
         InOutNetwork m_q_tcp;
 
-        pip::InNetwork<net::tcp::in::Basic> m_innet;
-        pip::Action m_action;
-        pip::DataRefresh m_data;
+        ProcessUnit<pip::InNetwork<net::tcp::in::Basic>> m_innet;
+        ProcessUnit<pip::Router> m_router;
+        ProcessUnit<pip::DataRefresh> m_data;
 
-        pip::OutNetwork<net::tcp::out::Response> m_outnet;
-        pip::OutNetwork<net::tcp::out::SubResponse> m_outdata;
+        ProcessUnit<pip::OutNetwork<net::tcp::out::Response>> m_outnet;
+        ProcessUnit<pip::OutNetwork<net::tcp::out::SubResponse>> m_outdata;
 
-        pip::UDPOutNetwork m_udp;
+        ProcessUnit<pip::UDPOutNetwork> m_udp;
 };

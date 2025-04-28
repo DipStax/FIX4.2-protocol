@@ -2,30 +2,17 @@
 
 namespace pip
 {
-    DataRefresh::DataRefresh(std::map<std::string, MarketContainer> &_markets, InMarketData &_input, InOutNetwork &_output)
+    DataRefresh::DataRefresh(std::map<std::string, ProcessUnit<MarketContainer>> &_markets, InMarketData &_input, InOutNetwork &_output)
         : m_markets(_markets), m_input(_input), m_output(_output)
     {
     }
 
-    DataRefresh::~DataRefresh()
-    {
-        (void)stop();
-    }
-
-    bool DataRefresh::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[DataRefresh] (DataRefresh) Running: ", m_running);
-        return m_running;
-    }
-
-    void DataRefresh::loop()
+    void DataRefresh::runtime(std::stop_token _st)
     {
         Logger::SetThreadName(THIS_THREAD_ID, "DataRefresh");
         MarketDataInput input;
 
-        while (m_running) {
+        while (!_st.stop_requested()) {
             if (!m_input.empty()) {
                 input = m_input.pop_front();
                 process(input);

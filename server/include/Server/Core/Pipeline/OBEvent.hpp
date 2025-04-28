@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Common/Thread/Pool.hpp"
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
 #include "Server/Core/OrderBook.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 #ifndef TS_SIZE_OE
     #define TS_SIZE_OE 1
@@ -12,21 +12,14 @@
 
 namespace pip
 {
-    class OBEvent : public Pipeline<OBEvent>
+    class OBEvent : public IProcessUnit
     {
         public:
-            /// @brief Core pipeline type
-            using PipeType = Pipeline<OBEvent>;
-
             OBEvent(const std::string &_name, OrderBook::EventQueue &_input, InUDP &_udp, InOutNetwork &_tcp);
-            ~OBEvent();
+            virtual ~OBEvent() = default;
 
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
-
-            /// @brief Core function of the pipeline determining it's behavior
-            void loop();
+        protected:
+            void runtime(std::stop_token _st);
 
         protected:
             bool createTcp(const OrderBook::Event &_input);

@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 #ifndef UDP_TICK
     #define UDP_TICK 1
@@ -19,23 +19,16 @@
 
 namespace pip
 {
-    class UDPOutNetwork : public Pipeline<UDPOutNetwork>
+    class UDPOutNetwork : public IProcessUnit
     {
         public:
-            /// @brief Core pipeline type.
-            using PipeType = Pipeline<UDPOutNetwork>;
-
             /// @brief Construct the pipeline.
             /// @param _input Input data queue.
             UDPOutNetwork(InUDP &_input, uint32_t _port);
-            ~UDPOutNetwork();
+            virtual ~UDPOutNetwork() = default;
 
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
-
-            /// @brief Core function of the pipeline determining it's behavior
-            void loop();
+        protected:
+            void runtime(std::stop_token _st);
 
         protected:
             /// @brief Clean the message vector if a message as expire.

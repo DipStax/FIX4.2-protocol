@@ -9,25 +9,11 @@ namespace pip
     {
     }
 
-    Notification::~Notification()
+    void Notification::runtime(std::stop_token _st)
     {
-        (void)stop();
-    }
-
-    bool Notification::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[Notification] Running: ", m_running);
-        return m_running;
-    }
-
-    void Notification::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Notification Generator - " + m_name);
         auto update = std::chrono::system_clock::now();
 
-        while (m_running) {
+        while (!_st.stop_requested()) {
             auto now = std::chrono::system_clock::now();
             auto update_diff = std::chrono::duration_cast<std::chrono::seconds>(now - update);
 
