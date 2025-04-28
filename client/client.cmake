@@ -2,9 +2,9 @@
 
 
 file(GLOB_RECURSE SRC_CLIENT
-    include/Client/**.hpp
-    include/Client/**.inl
-    src/Client/**.cpp
+    client/include/**.hpp
+    client/include/**.inl
+    client/src/**.cpp
 )
 
 add_executable(MarketClient

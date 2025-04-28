@@ -13,26 +13,14 @@ namespace pip
     {
     }
 
-    Action::~Action()
+    void Action::runtime(std::stop_token _st)
     {
-        (void)stop();
-    }
-
-    bool Action::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[Action] Running: ", m_running);
-        return m_running;
-    }
-
-    void Action::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Action convertion");
+        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+        throw std::runtime_error("error test");
         std::pair<bool, fix::Reject> reject;
         ActionInput input;
 
-        while (m_running)
+        while (!_st.stop_requested())
         {
             if (!m_input.empty())
             {

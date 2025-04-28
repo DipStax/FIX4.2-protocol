@@ -7,6 +7,7 @@
 #include "Server/Core/Pipeline/UDPOutNetwork.hpp"
 #include "Server/Core/MarketContainer.hpp"
 #include "Server/Network/Processor.hpp"
+#include "Server/Core/Pipeline/ProcessUnit.hpp"
 
 class Core
 {
@@ -35,12 +36,12 @@ class Core
         InOutNetwork m_q_repdata;
         InOutNetwork m_q_tcp;
 
-        pip::InNetwork<net::tcp::in::Basic> m_innet;
-        pip::Action m_action;
+        // pip::InNetwork<net::tcp::in::Basic> m_innet;
+        ProcessUnit<pip::Action> m_action;
         pip::DataRefresh m_data;
 
-        pip::OutNetwork<net::tcp::out::Response> m_outnet;
-        pip::OutNetwork<net::tcp::out::SubResponse> m_outdata;
+        // pip::OutNetwork<net::tcp::out::Response> m_outnet;
+        // pip::OutNetwork<net::tcp::out::SubResponse> m_outdata;
 
-        pip::UDPOutNetwork m_udp;
+        // pip::UDPOutNetwork m_udp;
 };

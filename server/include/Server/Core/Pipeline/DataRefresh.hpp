@@ -7,7 +7,7 @@
 
 namespace pip
 {
-    class DataRefresh : public Pipeline<DataRefresh>
+    class DataRefresh
     {
         public:
             /// @brief Core pipeline type
