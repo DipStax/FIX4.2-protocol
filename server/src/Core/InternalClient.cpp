@@ -1,11 +1,11 @@
-#include "Server/Core/ClientSocket.hpp"
+#include "Server/Core/InternalClient.hpp"
 
-ClientSocket::ClientSocket(std::shared_ptr<net::tcp::Socket> _socket)
+InternalClient::InternalClient(std::shared_ptr<net::tcp::Socket> _socket)
     : m_socket(_socket)
 {
 }
 
-ClientSocket::ClientSocket(const ClientSocket &_client)
+InternalClient::InternalClient(const InternalClient &_client)
     : Logged(_client.Logged), Disconnect(_client.Disconnect),
         User(_client.User), SeqNumber(_client.SeqNumber),
         ClientSeqNumber(_client.ClientSeqNumber),
@@ -14,7 +14,7 @@ ClientSocket::ClientSocket(const ClientSocket &_client)
 {
 }
 
-ClientSocket::ClientSocket(const ClientSocket &&_client) noexcept
+InternalClient::InternalClient(const InternalClient &&_client) noexcept
     : Logged(std::move(_client.Logged)), Disconnect(std::move(_client.Disconnect)),
         User(std::move(_client.User)), SeqNumber(std::move(_client.SeqNumber)),
         ClientSeqNumber(std::move(_client.ClientSeqNumber)),
@@ -23,23 +23,23 @@ ClientSocket::ClientSocket(const ClientSocket &&_client) noexcept
 {
 }
 
-std::shared_ptr<net::tcp::Socket> ClientSocket::getSocket() const
+std::shared_ptr<net::tcp::Socket> InternalClient::getSocket() const
 {
     return m_socket;
 }
 
-void ClientSocket::newRequest()
+void InternalClient::newRequest()
 {
     m_request.emplace(SeqNumber, std::chrono::system_clock::now());
     ClientSeqNumber++;
 }
 
-bool ClientSocket::hasRequest(size_t _seqNumber) const
+bool InternalClient::hasRequest(size_t _seqNumber) const
 {
     return m_request.contains(_seqNumber);
 }
 
-std::chrono::system_clock::time_point ClientSocket::getRequest(size_t _seqNumber)
+std::chrono::system_clock::time_point InternalClient::getRequest(size_t _seqNumber)
 {
     auto it = m_request.find(_seqNumber);
 
@@ -50,23 +50,17 @@ std::chrono::system_clock::time_point ClientSocket::getRequest(size_t _seqNumber
     return ret;
 }
 
-bool ClientSocket::refreshSubscribe(const ClientSocket &&_client)
-{
-    m_subscribe = std::move(_client.m_subscribe);
-    return true;
-}
-
-ClientSocket::Subs &ClientSocket::subscribe(const std::string &_symbol)
+InternalClient::Subs &InternalClient::subscribe(const std::string &_symbol)
 {
     return m_subscribe[_symbol];
 }
 
-void ClientSocket::unsubscribe(const std::string &_symbol)
+void InternalClient::unsubscribe(const std::string &_symbol)
 {
     m_subscribe.erase(_symbol);
 }
 
-ClientSocket &ClientSocket::operator=(ClientSocket &&_client) noexcept
+InternalClient &InternalClient::operator=(InternalClient &&_client) noexcept
 {
     if (this != &_client) {
         Logged = std::move(_client.Logged);
@@ -79,19 +73,19 @@ ClientSocket &ClientSocket::operator=(ClientSocket &&_client) noexcept
     return *this;
 }
 
-bool ClientSocket::operator==(const ClientSocket &_client) const
+bool InternalClient::operator==(const InternalClient &_client) const
 {
     return m_socket == _client.m_socket && Logged == _client.Logged && User == _client.User;
 }
 
-ClientSocket::operator bool() const
+InternalClient::operator bool() const
 {
     return m_socket->is_open();
 }
 
-std::ostream &operator<<(std::ostream &_os, const ClientSocket &_client)
+std::ostream &operator<<(std::ostream &_os, const InternalClient &_client)
 {
-    _os << "ClientSocket: { User: " << _client.User << ", Logged: " << _client.Logged << ", Disconnect: " << _client.Disconnect;
+    _os << "InternalClient: { User: " << _client.User << ", Logged: " << _client.Logged << ", Disconnect: " << _client.Disconnect;
     _os << ", SeqNumber: " << _client.SeqNumber << ", ClientSeqNumber: " << _client.ClientSeqNumber << " }";
     return _os;
 }

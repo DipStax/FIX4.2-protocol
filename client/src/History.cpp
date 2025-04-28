@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "Client/History.hpp"
 
 void History::reset()

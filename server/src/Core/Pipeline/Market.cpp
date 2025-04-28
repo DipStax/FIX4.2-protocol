@@ -27,7 +27,7 @@ namespace pip
 
     void Market::process(MarketInput &_data)
     {
-        Logger::Log("[Market] Processing new action: ", _data.Client.User); // todo log
+        Logger::Log("[Market] Processing new action: ", _data.Client->User); // todo log
 
         switch (_data.OrderData.action) {
             case OrderBook::Data::Action::Add:

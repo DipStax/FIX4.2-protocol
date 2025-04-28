@@ -30,11 +30,10 @@ namespace pip
     bool OBEvent::createTcp(const OrderBook::Event &_input)
     {
         fix::ExecutionReport report;
-        ClientSocket client{};
+        ClientStore::Client client = ClientStore::Instance().findClient(_input.userId);
 
-        client.User = _input.userId;
-        client.Logged = true;
-        client.Disconnect = false;
+        if (client == nullptr)
+            return false;
         report.set14_cumQty(std::to_string(_input.orgQty - _input.quantity));
         report.set17_execID();
         report.set20_execTransType("0");

@@ -4,8 +4,8 @@
 
 namespace pip
 {
-    Notification::Notification(const std::string &_name, OrderBook &_ob, std::vector<ClientSocket> &_clients)
-        : m_name(_name), m_ob(_ob), m_clients(_clients)
+    Notification::Notification(const std::string &_name, OrderBook &_ob)
+        : m_name(_name), m_ob(_ob)
     {
     }
 
@@ -19,24 +19,24 @@ namespace pip
 
             if (update_diff.count() >= NOTIF_UPDATE_TO) {
                 Logger::Log("[Refresh] incremenetal - start");
-                for (auto &_client : m_clients) {
-                    const ClientSocket::Subs &subs = _client.subscribe(m_name);
+                ClientStore::Instance().Apply([*this] (ClientStore::Client _client) {
+                    const InternalClient::Subs &subs = _client->subscribe(m_name);
                     fix::MarketDataIncrementalRefresh notif;
-                    Logger::Log("[Refresh] Incremental For client: ", _client.User, ", size of the query: ", subs.size());
 
+                    Logger::Log("[Refresh] Incremental For client: ", _client->User, ", size of the query: ", subs.size());
                     if (!subs.empty()) {
                         for (const auto &_sub : subs)
                             notif += m_ob.update(_sub);
-                        notif.header.set34_msgSeqNum(std::to_string((_client.SeqNumber)++));
+                        notif.header.set34_msgSeqNum(std::to_string((_client->SeqNumber)++));
                         notif.header.set49_SenderCompId(PROVIDER_NAME);
-                        notif.header.set56_TargetCompId(_client.User);
-                        Logger::Log("[Refresh] Subscribtion of user: ", _client.User, ", generated");
-                        if (_client.getSocket()->is_open()) {
-                            Logger::Log("[Refresh] Subscribtion notification for: ", _client.User, ", send");
-                            _client.getSocket()->send(notif.to_string());
+                        notif.header.set56_TargetCompId(_client->User);
+                        Logger::Log("[Refresh] Subscribtion of user: ", _client->User, ", generated");
+                        if (_client->getSocket()->is_open()) {
+                            Logger::Log("[Refresh] Subscribtion notification for: ", _client->User, ", send");
+                            _client->getSocket()->send(notif.to_string());
                         }
                     }
-                }
+                });
                 m_ob.cache_flush();
                 Logger::Log("[Refresh] Incremenetal - done");
                 update = now;

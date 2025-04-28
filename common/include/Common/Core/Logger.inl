@@ -11,7 +11,7 @@ void Logger::Log(Ts &&..._args)
     if (m_thread_name.contains(id))
         name += m_thread_name[id];
     else
-        name += "No thread name";
+        name += "NA";
     name += "] ";
     LogImpl(m_file, name, std::forward<Ts>(_args)...);
     LogImpl(std::cout, name, std::forward<Ts>(_args)...);

@@ -17,7 +17,7 @@ namespace pip
     class Notification : public IProcessUnit
     {
         public:
-            Notification(const std::string &_name, OrderBook &_ob, std::vector<ClientSocket> &_clients);
+            Notification(const std::string &_name, OrderBook &_ob);
             virtual ~Notification() = default;
 
         protected:
@@ -27,7 +27,5 @@ namespace pip
             const std::string m_name;
 
             OrderBook &m_ob;
-
-            std::vector<ClientSocket> &m_clients;
     };
 }

@@ -1,16 +1,16 @@
 #include "Server/Core/Pipeline/Naming.hpp"
 
-ActionInput::ActionInput(const ActionInput &&_data) noexcept
+RouterInput::RouterInput(const RouterInput &&_data) noexcept
     : Client(std::move(_data.Client)), Message(std::move(_data.Message))
 {
 }
 
-ActionInput::ActionInput(const ClientSocket &_client, const fix::Serializer::AnonMessage &&_msg)
+RouterInput::RouterInput(ClientStore::Client _client, const fix::Serializer::AnonMessage &&_msg)
     : Client(_client), Message(std::move(_msg))
 {
 }
 
-ActionInput &ActionInput::operator=(ActionInput &&_data) noexcept
+RouterInput &RouterInput::operator=(RouterInput &&_data) noexcept
 {
     if (this != &_data) {
         Client = std::move(_data.Client);
@@ -29,7 +29,7 @@ MarketInput::MarketInput(const MarketInput &_data)
 {
 }
 
-MarketInput::MarketInput(const ClientSocket &&_client) noexcept
+MarketInput::MarketInput(ClientStore::Client _client) noexcept
     : Client(std::move(_client))
 {
 }
@@ -53,12 +53,12 @@ OutNetworkInput::OutNetworkInput(const OutNetworkInput &_data)
 {
 }
 
-OutNetworkInput::OutNetworkInput(const ClientSocket &&_client, const fix::Message &&_msg) noexcept
+OutNetworkInput::OutNetworkInput(ClientStore::Client _client, const fix::Message &&_msg) noexcept
     : Client(std::move(_client)), Message(std::move(_msg))
 {
 }
 
-OutNetworkInput::OutNetworkInput(const ClientSocket &_client, const fix::Message &_msg)
+OutNetworkInput::OutNetworkInput(ClientStore::Client _client, const fix::Message &_msg)
     : Client(_client), Message(_msg)
 {
 }
@@ -77,8 +77,8 @@ MarketDataInput::MarketDataInput(const MarketDataInput &&_data) noexcept
 {
 }
 
-MarketDataInput::MarketDataInput(const MarketDataInputData &&_data, const ClientSocket &&_client) noexcept
-    : MarketDataInputData(std::move(_data)), Client(std::move(_client))
+MarketDataInput::MarketDataInput(ClientStore::Client _client, const MarketDataInputData &&_data) noexcept
+    : MarketDataInputData(std::move(_data)), Client(_client)
 {
 }
 

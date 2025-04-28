@@ -13,7 +13,7 @@ namespace net::tcp
         class Basic
         {
             public:
-                static bool run(ClientSocket &_client, InAction &_serial, InOutNetwork &_error);
+                static bool run(ClientStore::Client _client, InputRouter &_serial, InOutNetwork &_error);
         };
     }
 
@@ -22,25 +22,19 @@ namespace net::tcp
 
         namespace priv
         {
-            using ClientInfo = std::tuple<std::vector<ClientSocket>::iterator, std::string>;
-
-            ClientInfo getClientInfo(OutNetworkInput &_input, std::vector<ClientSocket> &_clients);
-            ClientInfo getClientInfo(const std::string &_userId, std::vector<ClientSocket> &_clients);
-            ClientInfo getClientInfo(std::shared_ptr<net::tcp::Socket> _socket, std::vector<ClientSocket> &_clients);
-
-            void LogTiming(std::vector<ClientSocket>::iterator _it);
+            void LogTiming(ClientStore::Client _client);
         }
 
         class Response
         {
             public:
-                static bool run(OutNetworkInput &_input, std::vector<ClientSocket> &_clients);
+                static bool run(OutNetworkInput &_input);
         };
 
         class SubResponse
         {
             public:
-                static bool run(OutNetworkInput &_input, std::vector<ClientSocket> &_clients);
+                static bool run(OutNetworkInput &_input);
         };
     }
 }

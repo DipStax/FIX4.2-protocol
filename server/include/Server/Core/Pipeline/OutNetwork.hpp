@@ -12,7 +12,7 @@ namespace pip
 {
     /// @brief Pipeline to send reply to a client over TCP network.
     template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &, std::vector<ClientSocket> &>
+    requires IsProcessor<Func, OutNetworkInput &>
     class OutNetwork : public IProcessUnit
     {
         public:
@@ -22,7 +22,7 @@ namespace pip
             /// @brief Construct the pipeline.
             /// @param _input Input data queue.
             /// @param _clients List of the connected client.
-            OutNetwork(std::vector<ClientSocket> &_clients, InOutNetwork &_input);
+            OutNetwork(InOutNetwork &_input);
             /// @brief Stop and then destroy the pipeline.
             virtual ~OutNetwork() = default;
 
@@ -31,7 +31,6 @@ namespace pip
 
         private:
             InOutNetwork &m_input;                       ///< Intput data queue.
-            std::vector<ClientSocket> &m_clients;       ///< List of connected clients.
 
             ThreadPool<TS_SIZE_ON> m_tp;        ///< Thread pool used to send data to the target client in async.
     };

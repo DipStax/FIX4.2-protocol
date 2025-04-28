@@ -14,7 +14,7 @@ namespace pip
             /// @param _input Input data queue of the pipeline.
             /// @param _output Output data queue of the pipeline.
             /// @param _raw Raw message queue send to the pip::OutNetwork pipeline.
-            Router(InAction &_input, InMarketData &_data, InOutNetwork &_raw);
+            Router(InputRouter &_input, InMarketData &_data, InOutNetwork &_raw);
             virtual ~Router() = default;
 
             void registerMarket(const std::string &_name, InMarket &_input);
@@ -24,19 +24,19 @@ namespace pip
             void runtime(std::stop_token _st);
 
         protected:
-            bool treatLogon(ActionInput &_input);
-            bool treatLogout(ActionInput &_input);
-            bool treatNewOrderSingle(ActionInput &_input);
-            bool treatOrderCancelRequest(ActionInput &_input);
-            bool treatOrderCancelReplaceRequest(ActionInput &_input);
-            bool treatUnknown(ActionInput &_input);
-            bool treatHeartbeat(ActionInput &_input);
-            bool treatMarketDataRequest(ActionInput &_input);
+            bool treatLogon(RouterInput &_input);
+            bool treatLogout(RouterInput &_input);
+            bool treatNewOrderSingle(RouterInput &_input);
+            bool treatOrderCancelRequest(RouterInput &_input);
+            bool treatOrderCancelReplaceRequest(RouterInput &_input);
+            bool treatUnknown(RouterInput &_input);
+            bool treatHeartbeat(RouterInput &_input);
+            bool treatMarketDataRequest(RouterInput &_input);
 
         private:
             MarketEntry m_market_input;      ///< Map of every market ouput data queue.
 
-            InAction &m_input;       ///< Intput data queue.
+            InputRouter &m_input;       ///< Intput data queue.
             InMarketData &m_q_data;      ///< Map of every market ouput data queue.
             InOutNetwork &m_q_raw;           ///< Raw message queue.
     };
