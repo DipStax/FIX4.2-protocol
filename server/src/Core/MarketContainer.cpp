@@ -3,36 +3,23 @@
 
 MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp, std::vector<ClientSocket> &_clients)
     : m_name(_name), m_ob(m_name, m_q_event),
-        m_market(m_name, m_ob, m_q_action, _tcp),
-        m_obevent(m_name, m_q_event, _udp, _tcp),
-        m_notify(m_name, m_ob, _clients)
+        m_market("Market-" + m_name, m_ob, m_q_action, _tcp),
+        m_obevent("OBEvent-" + m_name, m_name, m_q_event, _udp, _tcp),
+        m_notify("Notif-" + m_name, m_name, m_ob, _clients)
 {
 }
 
-MarketContainer::~MarketContainer()
+void MarketContainer::runtime(std::stop_token _st)
 {
-    (void)stop();
-}
-
-bool MarketContainer::start()
-{
-    if (m_market.start()) {
-        if (m_obevent.start()) {
-            if (m_notify.start()) {
-                return true;
-            }
-            (void)m_obevent.stop();
-        }
-        (void)m_market.stop();
+    while (!_st.stop_requested()) {
+        m_market.status();
+        m_obevent.status();
+        m_notify.status();
     }
-    return false;
+    m_market.stop();
+    m_obevent.stop();
+    m_notify.stop();
 }
-
-MarketContainer::ThreadStatus MarketContainer::stop()
-{
-    return ThreadStatus(m_market.stop(), m_obevent.stop(), m_notify.stop());
-}
-
 
 fix::MarketDataSnapshotFullRefresh MarketContainer::refresh(const OrderBook::Subscription &_sub)
 {
@@ -49,12 +36,7 @@ void MarketContainer::cache_flush()
     m_ob.cache_flush();
 }
 
-bool MarketContainer::status(float _to)
-{
-    return m_market.status(_to) && m_obevent.status(_to);
-}
-
-const std::string &MarketContainer::getName() const
+const std::string &MarketContainer::getMarketName() const
 {
     return m_name;
 }

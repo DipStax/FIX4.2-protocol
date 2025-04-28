@@ -67,12 +67,14 @@ fix::MarketDataIncrementalRefresh OrderBook::update(const OrderBook::Subscriptio
     Logger::Log("[OrderBook] {FullRefresh} Cached old bid size: ", m_cache_bid_upd.size());
     m_is_cached_udp = true;
 
-    std::lock_guard<std::mutex> guard(m_mutex);
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
 
-    cache_on<AskBook, cache_AskBook>(m_ask, m_cache_ask);
-    Logger::Log("[OrderBook] {FullRefresh} Cached new ask size: ", m_cache_ask.size());
-    cache_on<BidBook, cache_BidBook>(m_bid, m_cache_bid);
-    Logger::Log("[OrderBook] {FullRefresh} Cached new bid size: ", m_cache_bid.size());
+        cache_on<AskBook, cache_AskBook>(m_ask, m_cache_ask);
+        Logger::Log("[OrderBook] {FullRefresh} Cached new ask size: ", m_cache_ask.size());
+        cache_on<BidBook, cache_BidBook>(m_bid, m_cache_bid);
+        Logger::Log("[OrderBook] {FullRefresh} Cached new bid size: ", m_cache_bid.size());
+    }
     m_is_cached = true;
     return update(_sub);
 }

@@ -3,20 +3,23 @@
 #include "Common/Core/Logger.hpp"
 #include "Common/Core/Utils.hpp"
 #include "Common/Message/Message.hpp"
-#include "Server/Core/Pipeline/Action.hpp"
+#include "Server/Core/Pipeline/Router.hpp"
 #include "Server/Core/meta.hpp"
 
 namespace pip
 {
-    Action::Action(MarketEntry &_markets, InAction &_input, InMarketData &_data, InOutNetwork &_raw)
-        : m_markets(_markets), m_input(_input), m_q_data(_data), m_q_raw(_raw)
+    Router::Router(InAction &_input, InMarketData &_data, InOutNetwork &_raw)
+        : m_input(_input), m_q_data(_data), m_q_raw(_raw)
     {
     }
 
-    void Action::runtime(std::stop_token _st)
+    void Router::registerMarket(const std::string &_name, InMarket &_input)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-        throw std::runtime_error("error test");
+        m_market_input.emplace(_name, _input);
+    }
+
+    void Router::runtime(std::stop_token _st)
+    {
         std::pair<bool, fix::Reject> reject;
         ActionInput input;
 
@@ -32,7 +35,7 @@ namespace pip
                     m_q_raw.append(std::move(input.Client), std::move(reject.second));
                     continue;
                 }
-                Logger::Log("[Action] Received message from: ", input.Client.User, " with type: ", input.Message.at(fix::Tag::MsgType));
+                Logger::Log("Received message from: ", input.Client.User, " with type: ", input.Message.at(fix::Tag::MsgType));
                 switch (input.Message.at("35")[0])
                 {
                     case fix::Logon::cMsgType: (void)treatLogon(input);
@@ -56,14 +59,14 @@ namespace pip
         }
     }
 
-    bool Action::treatLogon(ActionInput &_input)
+    bool Router::treatLogon(ActionInput &_input)
     {
         fix::Logon logon;
         std::pair<bool, fix::Reject> verif = fix::Logon::Verify(_input.Message);
 
-        Logger::Log("[Action] (Logon) Treating message from: ", _input.Client.User);
+        Logger::Log("(Logon) Treating message from: ", _input.Client.User);
         if (verif.first) {
-            Logger::Log("[Action] (Logon) Request verification failed: "); // todo log
+            Logger::Log("(Logon) Request verification failed: "); // todo log
             verif.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             m_q_raw.append(std::move(_input.Client), std::move(verif.second));
             return false;
@@ -73,19 +76,19 @@ namespace pip
         _input.Client.SeqNumber = utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum));
         logon.set98_EncryptMethod("0");
         logon.set108_HeartBtInt(_input.Message.at(fix::Tag::HearBtInt));
-        Logger::Log("[Action] (Logon) Request from ", _input.Client.User, " sucessfuly handle");
+        Logger::Log("(Logon) Request from ", _input.Client.User, " sucessfuly handle");
         m_q_raw.append(std::move(_input.Client), std::move(logon));
         return true;
     }
 
-    bool Action::treatLogout(ActionInput &_input)
+    bool Router::treatLogout(ActionInput &_input)
     {
         fix::Logout logout;
         std::pair<bool, fix::Reject> reject = fix::Logout::Verify(_input.Message);
-        Logger::Log("[Action] (Logout) Treating message from: ", _input.Client.User);
+        Logger::Log("(Logout) Treating message from: ", _input.Client.User);
 
         if (_input.Client.Logged == false) {
-            Logger::Log("[Action] (Logout) Request verification failed: "); // todo log
+            Logger::Log("(Logout) Request verification failed: "); // todo log
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             reject.second.set58_text("Client not connected");
             m_q_raw.append(std::move(_input.Client), std::move(reject.second));
@@ -95,19 +98,19 @@ namespace pip
         _input.Client.User = _input.Message.at(fix::Tag::SenderCompId);
         _input.Client.Disconnect = true;
         logout.header.set56_TargetCompId(_input.Client.User);
-        Logger::Log("[Action] (Logout) Request from: ", _input.Client.User, ", sucessfuly handle");
+        Logger::Log("(Logout) Request from: ", _input.Client.User, ", sucessfuly handle");
         m_q_raw.append(std::move(_input.Client), std::move(logout));
         return true;
     }
 
-    bool Action::treatNewOrderSingle(ActionInput &_input)
+    bool Router::treatNewOrderSingle(ActionInput &_input)
     {
         MarketInput data(std::move(_input.Client));
         std::pair<bool, fix::Reject> reject = fix::NewOrderSingle::Verify(_input.Message);
-        Logger::Log("[Action] (New Order Single) Treating message from: ", _input.Client.User);
+        Logger::Log("(New Order Single) Treating message from: ", _input.Client.User);
 
         if (reject.first) {
-            Logger::Log("[Action] (New Order Single) Request verification failed: "); // todo log
+            Logger::Log("(New Order Single) Request verification failed: "); // todo log
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             m_q_raw.append(std::move(_input.Client), std::move(reject.second));
             return false;
@@ -118,12 +121,12 @@ namespace pip
         data.OrderData.order.userId = _input.Client.User;
         data.OrderData.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
         data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
-        Logger::Log("[Action] (New Order Single) Waiting for action from data: ", data.OrderData.order.userId); // todo log
-        m_markets.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        Logger::Log("(New Order Single) Waiting for action from data: ", data.OrderData.order.userId); // todo log
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
-    bool Action::treatOrderCancelRequest(ActionInput &_input)
+    bool Router::treatOrderCancelRequest(ActionInput &_input)
     {
         MarketInput data(std::move(_input.Client));
         std::pair<bool, fix::Reject> reject = fix::OrderCancelRequest::Verify(_input.Message);
@@ -137,18 +140,18 @@ namespace pip
         data.OrderData.order.orderId = _input.Message.at(fix::Tag::OrigClOrdID);
         data.OrderData.order.userId = _input.Client.User;
         data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
-        m_markets.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
-    bool Action::treatOrderCancelReplaceRequest(ActionInput &_input)
+    bool Router::treatOrderCancelReplaceRequest(ActionInput &_input)
     {
         MarketInput data(std::move(_input.Client));
         std::pair<bool, fix::Reject> reject = fix::OrderCancelReplaceRequest::Verify(_input.Message);
-        Logger::Log("[Action] (Order Cancel Replace) Treating message from: ", _input.Client.User);
+        Logger::Log("(Order Cancel Replace) Treating message from: ", _input.Client.User);
 
         if (reject.first) {
-            Logger::Log("[Action] (Order Cancel Replace) Request verification failed: "); // todo log
+            Logger::Log("(Order Cancel Replace) Request verification failed: "); // todo log
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             m_q_raw.append(std::move(_input.Client), std::move(reject.second));
             return false;
@@ -161,16 +164,16 @@ namespace pip
         data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
         data.OrderData.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
         data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
-        Logger::Log("[Action] (Order Cancel Replace) Waiting for action from data: "); // todo log
-        m_markets.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        Logger::Log("(Order Cancel Replace) Waiting for action from data: "); // todo log
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
-    bool Action::treatUnknown(ActionInput &_input)
+    bool Router::treatUnknown(ActionInput &_input)
     {
         fix::Reject reject;
 
-        Logger::Log("[Action] (New Order Single) Rejecting request from client: ", _input.Client.User, ", with request type: ", _input.Message.at(fix::Tag::MsgType));
+        Logger::Log("(New Order Single) Rejecting request from client: ", _input.Client.User, ", with request type: ", _input.Message.at(fix::Tag::MsgType));
         reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
         reject.set371_refTagId(fix::Tag::MsgType);
         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
@@ -179,24 +182,24 @@ namespace pip
         return true;
     }
 
-    bool Action::treatHeartbeat(ActionInput &_input)
+    bool Router::treatHeartbeat(ActionInput &_input)
     {
         fix::HeartBeat heartbeat;
         std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
 
         // need to modify user info
         if (reject.first) {
-            Logger::Log("[Action] (HeartBeat) Request verification failed: "); // todo log
+            Logger::Log("(HeartBeat) Request verification failed: "); // todo log
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             m_q_raw.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
-        Logger::Log("[Action] (HeartBeat) Validate from client: ", _input.Client.User);
+        Logger::Log("(HeartBeat) Validate from client: ", _input.Client.User);
         m_q_raw.append(std::move(_input.Client), std::move(heartbeat));
         return true;
     }
 
-    bool Action::treatMarketDataRequest(ActionInput &_input)
+    bool Router::treatMarketDataRequest(ActionInput &_input)
     {
         MarketDataInput sub;
         std::vector<std::string> types = utils::split<','>(_input.Message.at(fix::Tag::MDEntryType));
@@ -218,7 +221,7 @@ namespace pip
         }
         for (const auto &_sym : symbols)
             sub.Symbols.push_back(std::move(_sym));
-        Logger::Log("[Action] (MarketDataRequest) Validate from client: ", _input.Client.User);
+        Logger::Log("(MarketDataRequest) Validate from client: ", _input.Client.User);
         m_q_data.push(std::move(sub));
         return true;
     }

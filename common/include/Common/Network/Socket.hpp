@@ -74,7 +74,7 @@ namespace net
                 /// @param _size Size of the data to send.
                 /// @return False if the broadcast failed, otherwise true.
                 [[nodiscard]] bool broadcast(const uint8_t *_data, size_t _size);
-                
+
                 [[nodiscard]] bool bind();
 
             private:

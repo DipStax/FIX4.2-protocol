@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Common/Thread/Pool.hpp"
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 #ifndef TS_SIZE_OB
     #define TS_SIZE_OB 1
@@ -11,23 +11,18 @@
 namespace pip
 {
     /// @brief Pipeline managing the OrderBook.
-    class Market : public Pipeline<Market>
+    class Market : public IProcessUnit
     {
         public:
             /// @brief Construct the pipeline.
             /// @param _ob OrderBook reference.
             /// @param _input Input data queue.
             /// @param _output Output data queue.
-            Market(const std::string &_name, OrderBook &_ob, InMarket &_input, InOutNetwork &_output);
-            /// @brief Stop the pipeline and the destroy it.
-            ~Market();
+            Market(OrderBook &_ob, InMarket &_input, InOutNetwork &_output);
+            virtual ~Market() = default;
 
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
-
-            /// @brief Core function of the pipeline determining it's behavior.
-            void loop();
+        protected:
+            void runtime(std::stop_token _st);
 
         private:
             /// @brief Apply the action received by the pip::Action pipeline on the OrderBook.

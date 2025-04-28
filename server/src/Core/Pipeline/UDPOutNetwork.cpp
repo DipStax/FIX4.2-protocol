@@ -13,24 +13,9 @@ namespace pip
             Logger::Log("[UDPOutNetwork] Failed to setup broadcast, crashing after first action");
     }
 
-    UDPOutNetwork::~UDPOutNetwork()
+    void UDPOutNetwork::runtime(std::stop_token _st)
     {
-        (void)stop();
-    }
-
-    bool UDPOutNetwork::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[UDPOutNetwork] Running: ", m_running);
-        return m_running;
-    }
-
-    void UDPOutNetwork::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "UDP Network Output");
-
-        while (m_running) {
+        while (!_st.stop_requested()) {
             auto now = std::chrono::steady_clock::now();
 
             for (size_t it = 0; it < UDP_MAX_MSG && !m_input.empty(); it++) {

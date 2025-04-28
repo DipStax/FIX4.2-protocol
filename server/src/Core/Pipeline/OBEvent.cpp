@@ -11,26 +11,11 @@ namespace pip
     {
     }
 
-    OBEvent::~OBEvent()
+    void OBEvent::runtime(std::stop_token _st)
     {
-        (void)stop();
-    }
-
-    bool OBEvent::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[OBEvent] Running: ", m_running);
-        return m_running;
-    }
-
-    void OBEvent::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Order Book Event - " + m_name);
-
         OrderBook::Event input;
 
-        while (m_running) {
+        while (!_st.stop_requested()) {
             if (!m_input.empty()) {
                 input = m_input.pop_front();
                 Logger::Log("[OBEvent] New event from the OderBook");

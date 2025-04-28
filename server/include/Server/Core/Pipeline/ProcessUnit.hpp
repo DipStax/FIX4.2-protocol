@@ -12,7 +12,7 @@ enum PUStatus
 };
 
 template<class T>
-class ProcessUnit : private T
+class ProcessUnit : public T
 {
     public:
         template<class ...Ts>

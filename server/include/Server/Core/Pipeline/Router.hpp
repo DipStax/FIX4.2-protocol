@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 namespace pip
 {
     /// @brief Pipeline running action depending on received message.
-    class Action
+    class Router : public IProcessUnit
     {
         public:
             /// @brief Core pipeline type.
@@ -14,13 +14,10 @@ namespace pip
             /// @param _input Input data queue of the pipeline.
             /// @param _output Output data queue of the pipeline.
             /// @param _raw Raw message queue send to the pip::OutNetwork pipeline.
-            Action(MarketEntry &_markets, InAction &_input, InMarketData &_data, InOutNetwork &_raw);
-            /// @brief Stop and then destroy the pipeline.
-            virtual ~Action() = default;
+            Router(InAction &_input, InMarketData &_data, InOutNetwork &_raw);
+            virtual ~Router() = default;
 
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
+            void registerMarket(const std::string &_name, InMarket &_input);
 
         protected:
             /// @brief Core function of the pipeline determining it's behavior
@@ -37,7 +34,7 @@ namespace pip
             bool treatMarketDataRequest(ActionInput &_input);
 
         private:
-            MarketEntry &m_markets;      ///< Map of every market ouput data queue.
+            MarketEntry m_market_input;      ///< Map of every market ouput data queue.
 
             InAction &m_input;       ///< Intput data queue.
             InMarketData &m_q_data;      ///< Map of every market ouput data queue.

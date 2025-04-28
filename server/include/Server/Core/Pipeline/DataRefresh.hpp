@@ -1,32 +1,26 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Core.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
 #include "Server/Core/ClientSocket.hpp"
 #include "Server/Core/MarketContainer.hpp"
+#include "Server/Core/Pipeline/IProcessUnit.hpp"
+#include "Server/Core/Pipeline/ProcessUnit.hpp"
 
 namespace pip
 {
-    class DataRefresh
+    class DataRefresh : public IProcessUnit
     {
         public:
-            /// @brief Core pipeline type
-            using PipeType = Pipeline<DataRefresh>;
+            DataRefresh(std::map<std::string, ProcessUnit<MarketContainer>> &_markets, InMarketData &_input, InOutNetwork &_output);
+            virtual ~DataRefresh() = default;
 
-            DataRefresh(std::map<std::string, MarketContainer> &_markets, InMarketData &_input, InOutNetwork &_output);
-            ~DataRefresh();
-
-            /// @brief Run the pipeline
-            /// @return Return true if the pipeline as correctly started else false.
-            [[nodiscard]] bool start();
-
-            /// @brief Core function of the pipeline determining it's behavior
-            void loop();
+        protected:
+            void runtime(std::stop_token _st);
 
         private:
             void process(MarketDataInput &_input);
 
-            std::map<std::string, MarketContainer> &m_markets;
+            std::map<std::string, ProcessUnit<MarketContainer>> &m_markets;
 
             InMarketData &m_input;
             InOutNetwork &m_output;

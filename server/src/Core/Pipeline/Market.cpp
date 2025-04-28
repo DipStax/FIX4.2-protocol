@@ -8,30 +8,16 @@
 
 namespace pip
 {
-    Market::Market(const std::string &_name, OrderBook &_ob, InMarket &_input, InOutNetwork &_output)
-        : m_name(_name), m_input(_input), m_output(_output), m_ob(_ob)
+    Market::Market(OrderBook &_ob, InMarket &_input, InOutNetwork &_output)
+        : m_input(_input), m_output(_output), m_ob(_ob)
     {
     }
 
-    Market::~Market()
+    void Market::runtime(std::stop_token _st)
     {
-        (void)stop();
-    }
-
-    bool Market::start()
-    {
-        if (!m_running)
-            tstart(this);
-        Logger::Log("[Market] (", m_name ,") Running: ", m_running);
-        return m_running;
-    }
-
-    void Market::loop()
-    {
-        Logger::SetThreadName(THIS_THREAD_ID, "Market - " + m_name);
         MarketInput input;
 
-        while (m_running) {
+        while (!_st.stop_requested()) {
             if (!m_input.empty()) {
                 input = m_input.pop_front();
                 process(input);
