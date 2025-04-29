@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/ClientSocket.hpp"
 #include "Server/Core/MarketContainer.hpp"
 #include "Server/Core/Pipeline/IProcessUnit.hpp"
 #include "Server/Core/Pipeline/ProcessUnit.hpp"

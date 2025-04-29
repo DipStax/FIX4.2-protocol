@@ -48,7 +48,7 @@ namespace pip
             sub.depth = _input.Depth;
             sub.Id = _input.Id;
             for (const auto &_sym : _input.Symbols) {
-                std::vector<OrderBook::Subscription> &subs = _input.Client.subscribe(_sym);
+                std::vector<OrderBook::Subscription> &subs = _input.Client->subscribe(_sym);
                 fix::MarketDataSnapshotFullRefresh message;
 
                 for (OrderType _type : _input.Types) {
@@ -65,7 +65,7 @@ namespace pip
         } else {
             Logger::Log("[DataRefresh] SubType is unsubscribe");
             for (const auto &_sym : _input.Symbols) {
-                std::vector<OrderBook::Subscription> &subs = _input.Client.subscribe(_sym);
+                std::vector<OrderBook::Subscription> &subs = _input.Client->subscribe(_sym);
 
                 for (OrderType _type : _input.Types)
                     for (std::vector<OrderBook::Subscription>::iterator it = subs.begin(); it != subs.end();)

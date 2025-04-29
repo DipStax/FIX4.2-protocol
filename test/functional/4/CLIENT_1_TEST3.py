@@ -5,7 +5,7 @@ HOST = "localhost"
 
 LOGON_MSG = f"8=FIX.4.2{chr(1)}9=71{chr(1)}35=A{chr(1)}49=CLIENT_1{chr(1)}56=MyMarket{chr(1)}34=1{chr(1)}52=20240124-00:21:54.265{chr(1)}108=30{chr(1)}98=0{chr(1)}10=109{chr(1)}"
 NEW_ORDER_SINGLE_MSG = f"8=FIX.4.2{chr(1)}9=133{chr(1)}35=D{chr(1)}49=CLIENT_1{chr(1)}56=MyMarket{chr(1)}34=2{chr(1)}52=20240126-23:28:25.215{chr(1)}11=123123{chr(1)}21=3{chr(1)}38=500{chr(1)}40=2{chr(1)}44=12.22{chr(1)}54=4{chr(1)}55=GOLD{chr(1)}60=20210202-12:12:12.123{chr(1)}10=063{chr(1)}"
-LOGOUT_MSG = f"8=FIX.4.2{chr(1)}9=59{chr(1)}35=5{chr(1)}49=CLIENT_1{chr(1)}56=MyMarket{chr(1)}34=3{chr(1)}52=20240124-00:21:54.265{chr(1)}10=080{chr(1)}"
+LOGOUT_MSG = f"8=FIX.4.2{chr(1)}9=59{chr(1)}35=5{chr(1)}49=CLIENT_1{chr(1)}56=MyMarket{chr(1)}34=4{chr(1)}52=20240124-00:21:54.265{chr(1)}10=083{chr(1)}"
 
 def decode_message(msg: str) -> dict:
     """Decode a FIX message into a dictionary."""

@@ -10,10 +10,8 @@
 class MarketContainer : public IProcessUnit
 {
     public:
-        MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp, std::vector<ClientSocket> &_clients);
+        MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
         virtual ~MarketContainer() = default;
-
-        using ThreadStatus = std::tuple<std::future_status, std::future_status, std::future_status>;
 
         [[nodiscard]] fix::MarketDataSnapshotFullRefresh refresh(const OrderBook::Subscription &_sub);
         [[nodiscard]] fix::MarketDataIncrementalRefresh update(const OrderBook::Subscription &_sub);

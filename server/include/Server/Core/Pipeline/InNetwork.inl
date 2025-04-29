@@ -3,13 +3,12 @@
 #include "Server/Core/Pipeline/InNetwork.hpp"
 #include "Common/Core/Logger.hpp"
 #include "Common/Message/Message.hpp"
-
 namespace pip
 {
     template<class Func>
-    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
-    InNetwork<Func>::InNetwork(std::vector<ClientSocket> &_clients, InAction &_output, InOutNetwork &_error, uint32_t _port)
-        : m_clients(_clients), m_output(_output), m_error(_error), m_acceptor(), m_selector()
+    requires IsProcessor<Func, ClientStore::Client, InputRouter &, InOutNetwork &>
+    InNetwork<Func>::InNetwork(InputRouter &_output, InOutNetwork &_error, uint32_t _port)
+        : m_output(_output), m_error(_error), m_acceptor(), m_selector()
     {
         (void)m_acceptor.listen(_port);
         (void)m_acceptor.blocking(false);
@@ -18,38 +17,33 @@ namespace pip
     }
 
     template<class Func>
-    requires IsProcessor<Func, ClientSocket &, InAction &, InOutNetwork &>
+    requires IsProcessor<Func, ClientStore::Client, InputRouter &, InOutNetwork &>
     void InNetwork<Func>::runtime(std::stop_token _st)
     {
-        Client accept = nullptr;
-        std::vector<Client> clients;
+        ClientStore::ClientSocket accept = nullptr;
+        std::vector<ClientStore::ClientSocket> clients;
 
         while (!_st.stop_requested()) {
             accept = m_acceptor.accept();
             if (accept) {
-                m_clients.emplace_back(accept);
+                ClientStore::Instance().newClientSocket(accept);
                 m_selector.client(accept);
                 Logger::Log("[InNetwork] Accepted new client: "); // todo log
             }
             clients = m_selector.pull();
             if (clients.size())
                 Logger::Log("[InNetwork] Received event from: ", clients.size(), " clients");
-            for (Client &_client : clients) {
-                auto client = std::find_if(m_clients.begin(), m_clients.end(), [_client] (const ClientSocket _lclient) {
-                    return _client == _lclient.getSocket();
-                });
-                if (client == m_clients.end()) {
-                    fix::Reject reject;
+            for (ClientStore::ClientSocket &_client : clients) {
+                ClientStore::Client client = ClientStore::Instance().findClient(_client);
 
+                if (client == nullptr) {
+                    m_selector.erase(_client);
                     (void)_client->close();
-                    Logger::Log("[InNetwork] Unable to find the client's information: "); // todo log
-                    // build reject
-                    m_error.append(ClientSocket(_client), std::move(reject));
-                    continue;
-                } else if (Func::run(*client, m_output, m_error)) {
-                    Logger::Log("[InNetwork] Disconnecting client: "); // todo log
+                    Logger::Log("[InNetwork] Unable to find the client's information: ");
+                } else if (Func::run(client, m_output, m_error)) {
+                    Logger::Log("[InNetwork] Disconnecting client: ");
                     m_selector.erase(client->getSocket());
-                    m_clients.erase(client);
+                    ClientStore::Instance().removeClient(client);
                 }
             }
         }

@@ -26,11 +26,10 @@ class Core
     private:
         bool m_running = false;
 
-        std::vector<ClientSocket> m_clients;
         std::map<std::string, ProcessUnit<MarketContainer>> m_markets;
 
         InUDP m_q_udp;
-        InAction m_q_action;
+        InputRouter m_q_router;
         MarketEntry m_q_markets;
         InMarketData m_q_data;
         InOutNetwork m_q_repdata;

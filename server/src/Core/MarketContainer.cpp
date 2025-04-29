@@ -1,16 +1,19 @@
 #include "Server/Core/MarketContainer.hpp"
 #include "Server/Core/Pipeline/Naming.hpp"
 
-MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp, std::vector<ClientSocket> &_clients)
+MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp)
     : m_name(_name), m_ob(m_name, m_q_event),
         m_market("Market-" + m_name, m_ob, m_q_action, _tcp),
         m_obevent("OBEvent-" + m_name, m_name, m_q_event, _udp, _tcp),
-        m_notify("Notif-" + m_name, m_name, m_ob, _clients)
+        m_notify("Notif-" + m_name, m_name, m_ob, _tcp)
 {
 }
 
 void MarketContainer::runtime(std::stop_token _st)
 {
+    m_market.start();
+    m_obevent.start();
+    m_notify.start();
     while (!_st.stop_requested()) {
         m_market.status();
         m_obevent.status();
