@@ -5,7 +5,7 @@ MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNet
     : m_name(_name), m_ob(m_name, m_q_event),
         m_market("Market-" + m_name, m_ob, m_q_action, _tcp),
         m_obevent("OBEvent-" + m_name, m_name, m_q_event, _udp, _tcp),
-        m_notify("Notif-" + m_name, m_name, m_ob)
+        m_notify("Notif-" + m_name, m_name, m_ob, _tcp)
 {
 }
 

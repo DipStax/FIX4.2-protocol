@@ -38,6 +38,6 @@ namespace pip
 
             InputRouter &m_input;       ///< Intput data queue.
             InMarketData &m_q_data;      ///< Map of every market ouput data queue.
-            InOutNetwork &m_q_raw;           ///< Raw message queue.
+            InOutNetwork &m_tcp_output;           ///< Raw message queue.
     };
 }

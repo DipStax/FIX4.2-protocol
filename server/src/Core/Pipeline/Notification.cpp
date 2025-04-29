@@ -4,8 +4,8 @@
 
 namespace pip
 {
-    Notification::Notification(const std::string &_name, OrderBook &_ob)
-        : m_name(_name), m_ob(_ob)
+    Notification::Notification(const std::string &_name, OrderBook &_ob, InOutNetwork &_tcp)
+        : m_name(_name), m_tcp_output(_tcp), m_ob(_ob)
     {
     }
 
@@ -30,11 +30,7 @@ namespace pip
                         notif.header.set34_msgSeqNum(std::to_string((_client->SeqNumber)++));
                         notif.header.set49_SenderCompId(PROVIDER_NAME);
                         notif.header.set56_TargetCompId(_client->User);
-                        Logger::Log("[Refresh] Subscribtion of user: ", _client->User, ", generated");
-                        if (_client->getSocket()->is_open()) {
-                            Logger::Log("[Refresh] Subscribtion notification for: ", _client->User, ", send");
-                            _client->getSocket()->send(notif.to_string());
-                        }
+                        m_tcp_output.append(_client, notif);
                     }
                 });
                 m_ob.cache_flush();
