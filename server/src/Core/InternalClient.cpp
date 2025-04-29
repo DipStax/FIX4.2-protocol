@@ -27,6 +27,7 @@ void InternalClient::disconnect()
     m_logged_in = false;
     m_should_dc = false;
     m_seq_num = 0;
+    m_subscribe.clear();
 }
 
 void InternalClient::shouldDisconnect(bool _disconnect)
@@ -62,9 +63,14 @@ std::shared_ptr<net::tcp::Socket> InternalClient::getSocket() const
     return m_socket;
 }
 
+bool InternalClient::isSubscribeTo(const std::string &_symbol)
+{
+    return m_subscribe.contains(_symbol);
+}
+
 InternalClient::Subs &InternalClient::subscribe(const std::string &_symbol)
 {
-    return m_subscribe[_symbol];
+    return m_subscribe.at(_symbol);
 }
 
 void InternalClient::unsubscribe(const std::string &_symbol)

@@ -31,7 +31,8 @@ class InternalClient
 
         [[nodiscard]] std::shared_ptr<net::tcp::Socket> getSocket() const;
 
-        [[nodiscard]] InternalClient::Subs &subscribe(const std::string &_symbol);
+        [[nodiscard]] bool isSubscribeTo(const std::string &_symbol);
+        [[nodiscard]] Subs &subscribe(const std::string &_symbol);
         void unsubscribe(const std::string &_symbol);
 
         bool operator==(const InternalClient &_client) const;

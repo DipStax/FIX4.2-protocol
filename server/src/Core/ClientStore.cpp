@@ -41,9 +41,12 @@ void ClientStore::removeClient(Client _client)
 {
     std::unique_lock lock(m_mutex);
 
-    std::remove_if(m_clients.begin(), m_clients.end(), [_client] (Client _original) {
-        return _client == _original;
-    });
+    m_clients.erase(
+        std::remove_if(m_clients.begin(), m_clients.end(), [_client] (Client _original) {
+            return _client == _original;
+        }),
+        m_clients.end()
+    );
 }
 
 void ClientStore::Apply(ForEachCallback<void> _callback)

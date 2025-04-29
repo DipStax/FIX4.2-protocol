@@ -20,14 +20,17 @@ namespace pip
             if (update_diff.count() >= NOTIF_UPDATE_TO) {
                 Logger::Log("[Refresh] incremenetal - start");
                 ClientStore::Instance().Apply([*this] (ClientStore::Client _client) {
-                    const InternalClient::Subs &subs = _client->subscribe(m_name);
-                    fix::MarketDataIncrementalRefresh notif;
+                    Logger::Log("[Refresh] Looking for subscribtion of ", m_name, " for user: ", _client == nullptr);
+                    if (_client->isSubscribeTo(m_name)) {
+                        const InternalClient::Subs &subs = _client->subscribe(m_name);
+                        fix::MarketDataIncrementalRefresh notif;
 
-                    Logger::Log("[Refresh] Incremental For client: ", _client->getUserId(), ", size of the query: ", subs.size());
-                    if (!subs.empty()) {
-                        for (const auto &_sub : subs)
-                            notif += m_ob.update(_sub);
-                        m_tcp_output.append(_client, notif);
+                        Logger::Log("[Refresh] Incremental For client: ", _client->getUserId(), ", size of the query: ", subs.size());
+                        if (!subs.empty()) {
+                            for (const auto &_sub : subs)
+                                notif += m_ob.update(_sub);
+                            m_tcp_output.append(_client, notif);
+                        }
                     }
                 });
                 m_ob.cache_flush();
