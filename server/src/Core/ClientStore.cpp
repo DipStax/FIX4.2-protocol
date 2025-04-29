@@ -32,7 +32,7 @@ ClientStore::Client ClientStore::findClient(const std::string &_client_id)
     std::shared_lock lock(m_mutex);
 
     auto it = std::find_if(m_clients.begin(), m_clients.end(), [_client_id] (const Client _original) {
-        return _client_id == _original->User;
+        return _client_id == _original->getUserId();
     });
     return it == m_clients.end() ? nullptr : *it;
 }

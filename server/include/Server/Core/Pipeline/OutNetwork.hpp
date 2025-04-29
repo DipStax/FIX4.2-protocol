@@ -5,7 +5,7 @@
 #include "Server/Core/Pipeline/Naming.hpp"
 
 #ifndef TS_SIZE_ON
-    #define TS_SIZE_ON 1
+    #define TS_SIZE_ON 10
 #endif
 
 namespace pip
@@ -32,7 +32,7 @@ namespace pip
         private:
             InOutNetwork &m_input;                       ///< Intput data queue.
 
-            ThreadPool<TS_SIZE_ON> m_tp;        ///< Thread pool used to send data to the target client in async.
+            ThreadPool<TS_SIZE_ON> m_tp;        ///< Thread pool used to send data to the target client in an other thread.
     };
 }
 

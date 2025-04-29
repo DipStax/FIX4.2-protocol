@@ -20,10 +20,10 @@ namespace net::tcp
     namespace out
     {
 
-        namespace priv
-        {
-            void LogTiming(ClientStore::Client _client);
-        }
+        // namespace priv
+        // {
+        //     void LogTiming(ClientStore::Client _client);
+        // }
 
         class Response
         {

@@ -39,9 +39,9 @@ namespace pip
                 if (client == nullptr) {
                     m_selector.erase(_client);
                     (void)_client->close();
-                    Logger::Log("[InNetwork] Unable to find the client's information: "); // todo log
+                    Logger::Log("[InNetwork] Unable to find the client's information: ");
                 } else if (Func::run(client, m_output, m_error)) {
-                    Logger::Log("[InNetwork] Disconnecting client: "); // todo log
+                    Logger::Log("[InNetwork] Disconnecting client: ");
                     m_selector.erase(client->getSocket());
                     ClientStore::Instance().removeClient(client);
                 }

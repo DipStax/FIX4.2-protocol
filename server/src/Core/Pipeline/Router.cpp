@@ -28,16 +28,16 @@ namespace pip
             if (!m_input.empty())
             {
                 input = m_input.pop_front();
-                reject = fix::Header::Verify(input.Message, input.Client->User, PROVIDER_NAME, input.Client->ClientSeqNumber - 1);
+                reject = fix::Header::Verify(input.Message, input.Client->getUserId(), PROVIDER_NAME, input.Client->getSeqNumber());
                 if (reject.first) {
-                    reject.second.header.set56_TargetCompId(input.Client->User);
+                    reject.second.header.set56_TargetCompId(input.Client->getUserId());
                     reject.second.header.set49_SenderCompId(PROVIDER_NAME);
                     Logger::Log("Header verification failed");
                     m_tcp_output.append(std::move(input.Client), std::move(reject.second));
                     continue;
                 }
                 Logger::Log("Header verification validated");
-                Logger::Log("Message from: (", input.Client->User, ") with type: ", input.Message.at(fix::Tag::MsgType));
+                Logger::Log("Message from: (", *(input.Client), ") with type: ", input.Message.at(fix::Tag::MsgType));
                 switch (input.Message.at("35")[0])
                 {
                     case fix::Logon::cMsgType: (void)treatLogon(input);
@@ -45,7 +45,7 @@ namespace pip
                     case fix::HeartBeat::cMsgType: (void)treatHeartbeat(input);
                         break;
                     default:
-                        if (input.Client->Logged) {
+                        if (input.Client->isLoggedin()) {
                             switch (input.Message.at("35")[0])
                             {
                                 case fix::NewOrderSingle::cMsgType: (void)treatNewOrderSingle(input);
@@ -82,21 +82,22 @@ namespace pip
             Logger::Log("(Logon) Reject moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
-        } else if (_input.Client->Logged) {
-            Logger::Log("(Logon) Client (", _input.Client->User, ") already connected");
+        } else if (_input.Client->isLoggedin()) {
+            Logger::Log("(Logon) Client (", *(_input.Client), ") already connected");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             reject.second.set58_text("Client already logged in");
-            Logger::Log("(Logon) Reject from (", _input.Client->User, ") moving to TCP output");
+            Logger::Log("(Logon) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
-        _input.Client->Logged = true;
-        _input.Client->User = _input.Message.at(fix::Tag::SenderCompId);
-        _input.Client->SeqNumber = utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum));
-        Logger::Log("(Logon) Client set as logged in as: (", _input.Client->User, ")");
+
+        _input.Client->login(_input.Message.at(fix::Tag::SenderCompId));
+        _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)));
+
+        Logger::Log("(Logon) Client set as logged in as: (", *(_input.Client), ")");
         logon.set98_EncryptMethod("0");
         logon.set108_HeartBtInt(_input.Message.at(fix::Tag::HearBtInt));
-        Logger::Log("(Logon) Reply to (", _input.Client->User, ") moving to TCP output");
+        Logger::Log("(Logon) Reply to (", *(_input.Client), ") moving to TCP output");
         m_tcp_output.append(std::move(_input.Client), std::move(logon));
         return true;
     }
@@ -110,10 +111,10 @@ namespace pip
         if (reject.first) {
             Logger::Log("(Logout) Request verification failed");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger::Log("(Logout) Reject from (", _input.Client->User, ") moving to TCP output");
+            Logger::Log("(Logout) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
-        } else if (_input.Client->Logged == false) {
+        } else if (!_input.Client->isLoggedin()) {
             Logger::Log("(Logout) Client try to logout without begin connected");
             reject.second.set58_text("Client not connected");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
@@ -121,12 +122,12 @@ namespace pip
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
-        _input.Client->Logged = false;
-        _input.Client->User = _input.Message.at(fix::Tag::SenderCompId);
-        _input.Client->Disconnect = true;
-        Logger::Log("(Logon) Client set as logged out: (", _input.Client->User, ")");
-        logout.header.set56_TargetCompId(_input.Client->User);
-        Logger::Log("(Logout) Reply to (", _input.Client->User, ") moving to TCP output");
+
+        _input.Client->shouldDisconnect(true);
+
+        Logger::Log("(Logon) Client set as logged out: (", *(_input.Client), ")");
+        logout.header.set56_TargetCompId(_input.Client->getUserId());
+        Logger::Log("(Logout) Reply to (", *(_input.Client), ") moving to TCP output");
         m_tcp_output.append(std::move(_input.Client), std::move(logout));
         return true;
     }
@@ -136,95 +137,108 @@ namespace pip
         Logger::Log("(New Order Single) Processing message...");
         MarketInput data(_input.Client);
         std::pair<bool, fix::Reject> reject = fix::NewOrderSingle::Verify(_input.Message);
-        Logger::Log("(New Order Single) Treating message from: ", _input.Client->User);
 
         if (reject.first) {
             Logger::Log("(New Order Single) Request verification failed");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger::Log("(Logout) Reject from (", _input.Client->User, ") moving to TCP output");
+            Logger::Log("(Logout) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
+
         data.OrderData.action = OrderBook::Data::Action::Add;
         data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
         data.OrderData.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
-        data.OrderData.order.userId = _input.Client->User;
+        data.OrderData.order.userId = _input.Client->getUserId();
         data.OrderData.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
         data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
-        Logger::Log("(New Order Single) Moving to target OrderBook Container order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")"); // todo log
+
+        Logger::Log("(New Order Single) Moving to target OrderBook Container new order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
         m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
     bool Router::treatOrderCancelRequest(RouterInput &_input)
     {
+        Logger::Log("(Order Cancel Request) Processing message...");
         MarketInput data(_input.Client);
         std::pair<bool, fix::Reject> reject = fix::OrderCancelRequest::Verify(_input.Message);
 
         if (reject.first) {
+            Logger::Log("(Order Cancel Request) Request verification failed");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+            Logger::Log("(Order Cancel Request) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
+
         data.OrderData.action = OrderBook::Data::Action::Cancel;
         data.OrderData.order.orderId = _input.Message.at(fix::Tag::OrigClOrdID);
-        data.OrderData.order.userId = _input.Client->User;
+        data.OrderData.order.userId = _input.Client->getUserId();
         data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
+
+        Logger::Log("(New Order Single) Moving to target OrderBook Container cancel order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
         m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
     bool Router::treatOrderCancelReplaceRequest(RouterInput &_input)
     {
+        Logger::Log("(Order Cancel Replace) Processing message...");
         MarketInput data(_input.Client);
         std::pair<bool, fix::Reject> reject = fix::OrderCancelReplaceRequest::Verify(_input.Message);
-        Logger::Log("(Order Cancel Replace) Treating message from: ", _input.Client->User);
 
         if (reject.first) {
-            Logger::Log("(Order Cancel Replace) Request verification failed: "); // todo log
+            Logger::Log("(Order Cancel Replace) Request verification failed");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+            Logger::Log("(Order Cancel Replace) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
 
         data.OrderData.action = OrderBook::Data::Action::Modify;
-        data.OrderData.order.userId = _input.Client->User;
+        data.OrderData.order.userId = _input.Client->getUserId();
         data.OrderData.target = _input.Message.at(fix::Tag::OrigClOrdID);
         data.OrderData.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
         data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
         data.OrderData.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
         data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
-        Logger::Log("(Order Cancel Replace) Waiting for action from data: "); // todo log
+
+        Logger::Log("(New Order Replace) Moving to target OrderBook Container replace order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
         m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
         return true;
     }
 
     bool Router::treatUnknown(RouterInput &_input)
     {
+        Logger::Log("(Unknown) Processing message...");
         fix::Reject reject;
 
-        Logger::Log("(New Order Single) Rejecting request from client: ", _input.Client->User, ", with request type: ", _input.Message.at(fix::Tag::MsgType));
+        Logger::Log("(New Order Single) Rejecting request from client: ", _input.Client->getUserId(), ", with request type: ", _input.Message.at(fix::Tag::MsgType));
         reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
         reject.set371_refTagId(fix::Tag::MsgType);
         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
         reject.set58_text("Unknown message type");
+        Logger::Log("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
         m_tcp_output.append(std::move(_input.Client), std::move(reject));
         return true;
     }
 
     bool Router::treatHeartbeat(RouterInput &_input)
     {
+        Logger::Log("(HeartBeat) Processing message...");
         fix::HeartBeat heartbeat;
         std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
 
         // need to modify user info
         if (reject.first) {
-            Logger::Log("(HeartBeat) Request verification failed: "); // todo log
+            Logger::Log("(HeartBeat) Request verification failed: ");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+            Logger::Log("(HearBeat) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(std::move(_input.Client), std::move(reject.second));
             return false;
         }
-        Logger::Log("(HeartBeat) Validate from client: ", _input.Client->User);
+        Logger::Log("(HeartBeat) Validate from client: ", _input.Client->getUserId());
         m_tcp_output.append(std::move(_input.Client), std::move(heartbeat));
         return true;
     }
@@ -235,7 +249,7 @@ namespace pip
         std::vector<std::string> types = utils::split<','>(_input.Message.at(fix::Tag::MDEntryType));
         std::vector<std::string> symbols = utils::split<','>(_input.Message.at(fix::Tag::Symbol));
 
-        sub.Client = std::move(_input.Client);
+        sub.Client = _input.Client;
         sub.Id = _input.Message.at(fix::Tag::MDReqID);
         sub.SubType = _input.Message.at(fix::Tag::SubscriptionRequestType)[0] - '0';
         sub.Depth = utils::to<size_t>(_input.Message.at(fix::Tag::MarketDepth));
@@ -251,7 +265,7 @@ namespace pip
         }
         for (const auto &_sym : symbols)
             sub.Symbols.push_back(std::move(_sym));
-        Logger::Log("(MarketDataRequest) Validate from client: ", _input.Client->User);
+        Logger::Log("(MarketDataRequest) Validate from client: ", _input.Client->getUserId());
         m_q_data.push(std::move(sub));
         return true;
     }

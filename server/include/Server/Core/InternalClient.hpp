@@ -15,33 +15,35 @@ class InternalClient
         using Subs = std::vector<OrderBook::Subscription>;
 
         InternalClient(std::shared_ptr<net::tcp::Socket> _socket = nullptr);
-        InternalClient(const InternalClient &_client);
-        InternalClient(const InternalClient &&_client) noexcept;
         ~InternalClient() = default;
 
-        bool Logged = false;
-        bool Disconnect = false;
-        UserId User = "";
-        size_t SeqNumber = 1;
-        size_t ClientSeqNumber = 1;
+        void login(const std::string &_user_id);
+        [[nodiscard]] bool isLoggedin() const;
+        [[nodiscard]] std::string getUserId() const;
+
+        void disconnect();
+        void shouldDisconnect(bool _disconnect);
+        [[nodiscard]] bool shouldDisconnect();
+
+        void setSeqNumber(size_t _seqnum);
+        size_t nextSeqNumber();
+        [[nodiscard]] size_t getSeqNumber() const;
 
         [[nodiscard]] std::shared_ptr<net::tcp::Socket> getSocket() const;
-
-        void newRequest();
-        [[nodiscard]] bool hasRequest(size_t _seqNumber) const;
-        std::chrono::system_clock::time_point getRequest(size_t _seqNumber);
 
         [[nodiscard]] InternalClient::Subs &subscribe(const std::string &_symbol);
         void unsubscribe(const std::string &_symbol);
 
-        InternalClient &operator=(InternalClient &&_client) noexcept;
-
         bool operator==(const InternalClient &_client) const;
-        operator bool() const;
 
         friend std::ostream &operator<<(std::ostream &_os, const InternalClient &_client);
 
-    protected:
+    private:
+        bool m_logged_in = false;
+        bool m_should_dc = false;
+        UserId m_user_id = "";
+        size_t m_seq_num = 1;
+
         using SubcribeMap = std::unordered_map<std::string, InternalClient::Subs>;
 
         std::shared_ptr<net::tcp::Socket> m_socket = nullptr;
