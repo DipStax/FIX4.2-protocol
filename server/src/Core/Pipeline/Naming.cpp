@@ -15,29 +15,39 @@ RouterInput::RouterInput(const fix::Serializer::AnonMessage &&_msg)
 {
 }
 
-RouterInput &RouterInput::operator=(RouterInput &&_data) noexcept
-{
-    if (this != &_data)
-        Message = std::move(_data.Message);
-    return *this;
-}
-
 MarketInput::MarketInput(MarketInput &&_data) noexcept
-    : OrderData(std::move(_data.OrderData))
+    : type(_data.type)
 {
-}
-
-MarketInput::MarketInput(const MarketInput &_data)
-    : OrderData(_data.OrderData)
-{
+    if (type == Type::Order) {
+        OrderData = std::move(_data.OrderData);
+    } else {
+        RefreshData = std::move(_data.RefreshData);
+    }
 }
 
 MarketInput &MarketInput::operator=(MarketInput &&_data) noexcept
 {
-    if (this != &_data)
-        OrderData = std::move(_data.OrderData);
+    if (this != &_data) {
+        type = _data.type;
+        if (type == Type::Order) {
+            OrderData = std::move(_data.OrderData);
+        } else {
+            RefreshData = std::move(_data.RefreshData);
+        }
+    }
     return *this;
 }
+
+MarketInput::MarketInput(const MarketInput &_data)
+    : type(_data.type)
+{
+    if (type == Type::Order) {
+        OrderData = _data.OrderData;
+    } else {
+        RefreshData = _data.RefreshData;
+    }
+}
+
 
 OutNetworkInput::OutNetworkInput(OutNetworkInput &&_data) noexcept
     : Message(std::move(_data.Message))
@@ -58,17 +68,5 @@ OutNetworkInput &OutNetworkInput::operator=(OutNetworkInput &&_data) noexcept
 {
     if (this != &_data)
         Message = std::move(_data.Message);
-    return *this;
-}
-
-MarketDataInput::MarketDataInput(const MarketDataInput &&_data) noexcept
-    : MarketDataInputData(std::move(_data))
-{
-}
-
-MarketDataInput &MarketDataInput::operator=(MarketDataInput &&_data) noexcept
-{
-    if (this != &_data)
-        MarketDataInputData::operator=(std::move(_data));
     return *this;
 }

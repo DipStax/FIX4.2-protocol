@@ -8,14 +8,14 @@
 #include "Server/Core/Pipeline/DataRefresh.hpp"
 #include "Server/Core/Pipeline/ProcessUnit.hpp"
 
-class MarketContainer : public IProcessUnit
+class MarketContainer : public IProcessUnit<Context<MarketInput>>
 {
     public:
         MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
         virtual ~MarketContainer() = default;
 
         [[nodiscard]] const std::string &getMarketSymbol() const;
-        [[nodiscard]] InMarket &getInput();
+        [[nodiscard]] QueueInputType &getInput();
 
     protected:
         void runtime(std::stop_token _st);
@@ -24,10 +24,7 @@ class MarketContainer : public IProcessUnit
         const std::string m_name;
 
         OrderBook::EventQueue m_q_event;
-        InMarket m_q_input;
-
-        InMarket m_q_order;
-        InMarket m_q_refresh;
+        QueueInputType m_input;
 
         ProcessUnit<pip::OBEvent> m_obevent;
         OrderBook m_ob;

@@ -12,7 +12,8 @@ template<class T>
 class IProcessUnit : IProcessUnitBase
 {
     public:
-        using InputType = ts::Queue<T>;
+        using InputType = T;
+        using QueueInputType = ts::Queue<T>;
 
         InputType &getInput();
 };

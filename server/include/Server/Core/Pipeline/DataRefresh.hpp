@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/MarketContainer.hpp"
 #include "Server/Core/Pipeline/IProcessUnit.hpp"
 #include "Server/Core/Pipeline/ProcessUnit.hpp"
 
@@ -13,6 +12,8 @@ namespace pip
             DataRefresh(OrderBook &_ob, InOutNetwork &_output);
             virtual ~DataRefresh() = default;
 
+            [[nodiscard]] QueueInputType &getInput();
+
         protected:
             void runtime(std::stop_token _st);
 
@@ -21,7 +22,7 @@ namespace pip
 
             OrderBook &m_ob;
 
-            InMarket m_input;
+            QueueInputType m_input;
             InOutNetwork &m_tcp_output;
     };
 }

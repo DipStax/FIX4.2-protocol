@@ -18,7 +18,7 @@ namespace pip
         m_market_input.emplace(_name, _input);
     }
 
-    Router::InputType &Router::getInput()
+    Router::QueueInputType &Router::getInput()
     {
         return m_input;
     }
@@ -269,7 +269,7 @@ namespace pip
                 return false; // build reject
         }
         for (const auto &_sym : symbols)
-            m_market_input[_sym].append(std::move(sub)); // reject if not found
+            m_market_input.at(_sym).append(std::move(sub)); // reject if not found
         Logger::Log("(MarketDataRequest) Validate from client: ", _input.Client->getUserId());
         return true;
     }

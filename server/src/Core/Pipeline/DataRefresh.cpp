@@ -3,8 +3,13 @@
 namespace pip
 {
     DataRefresh::DataRefresh(OrderBook &_ob, InOutNetwork &_output)
-        : m_ob(_ob), m_input(_input), m_tcp_output(_output)
+        : m_ob(_ob), m_tcp_output(_output)
     {
+    }
+
+    DataRefresh::QueueInputType &DataRefresh::getInput()
+    {
+        return m_input;
     }
 
     void DataRefresh::runtime(std::stop_token _st)

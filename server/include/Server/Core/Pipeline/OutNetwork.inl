@@ -7,9 +7,9 @@ namespace pip
 {
     template<class Func>
     requires IsProcessor<Func, Context<OutNetworkInput> &>
-    OutNetwork<Func>::OutNetwork(InOutNetwork &_input)
-        : m_input(_input)
+    OutNetwork<Func>::QueueInputType &OutNetwork<Func>::getInput()
     {
+        return m_input;
     }
 
     template<class Func>

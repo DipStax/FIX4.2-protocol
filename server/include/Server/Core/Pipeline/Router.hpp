@@ -9,17 +9,12 @@ namespace pip
     class Router : public IProcessUnit<Context<RouterInput>>
     {
         public:
-            /// @brief Core pipeline type.
-            /// @brief Construct the pipeline.
-            /// @param _input Input data queue of the pipeline.
-            /// @param _output Output data queue of the pipeline.
-            /// @param _raw Raw message queue send to the pip::OutNetwork pipeline.
             Router(InOutNetwork &_raw);
             virtual ~Router() = default;
 
             void registerMarket(const std::string &_name, InMarket &_input);
 
-            InputType &getInput();
+            [[nodiscard]] QueueInputType &getInput();
 
         protected:
             /// @brief Core function of the pipeline determining it's behavior
@@ -38,7 +33,7 @@ namespace pip
         private:
             MarketEntry m_market_input;      ///< Map of every market ouput data queue.
 
-            InputRouter m_input;       ///< Intput data queue.
+            QueueInputType m_input;       ///< Intput data queue.
             InOutNetwork &m_tcp_output;           ///< Raw message queue.
     };
 }

@@ -11,7 +11,7 @@ namespace pip
     {
     }
 
-    OBEvent::InputType &OBEvent::getInput()
+    OBEvent::QueueInputType &OBEvent::getInput()
     {
         return m_input;
     }

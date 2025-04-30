@@ -19,13 +19,15 @@
 
 namespace pip
 {
-    class UDPOutNetwork : public IProcessUnit
+    class UDPOutNetwork : public IProcessUnit<data::UDPPackage>
     {
         public:
             /// @brief Construct the pipeline.
             /// @param _input Input data queue.
-            UDPOutNetwork(InUDP &_input, uint32_t _port);
+            UDPOutNetwork(uint32_t _port);
             virtual ~UDPOutNetwork() = default;
+
+            [[nodiscard]] QueueInputType &getInput();
 
         protected:
             void runtime(std::stop_token _st);
@@ -39,6 +41,6 @@ namespace pip
 
             net::udp::Socket m_socket;
 
-            InUDP &m_input;
+            QueueInputType m_input;
     };
 }

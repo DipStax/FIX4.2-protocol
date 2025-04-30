@@ -70,7 +70,7 @@ class OrderBook
 
         [[nodiscard]] bool contain(OrderType _type, Price _price);
 
-        [[nodiscard]] std::string getSymbol() const;
+        [[nodiscard]] const std::string &getSymbol() const;
 
     protected:
         template<IsBook T>

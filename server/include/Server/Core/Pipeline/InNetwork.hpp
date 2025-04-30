@@ -18,7 +18,7 @@ namespace pip
     /// @tparam __T is the format socket are stored in the vector referenced.
     template<class Func>
     requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
-    class InNetwork : public IProcessUnit
+    class InNetwork : public IProcessUnitBase
     {
         public:
             /// @brief Setup the network input and start listening on _port

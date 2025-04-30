@@ -94,7 +94,7 @@ bool OrderBook::contain(OrderType _type, Price _price)
     return m_bid.contains(_price);
 }
 
-std::string OrderBook::getSymbol() const
+const std::string &OrderBook::getSymbol() const
 {
     return m_name;
 }

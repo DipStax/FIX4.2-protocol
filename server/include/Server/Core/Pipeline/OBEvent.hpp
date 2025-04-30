@@ -18,7 +18,7 @@ namespace pip
             OBEvent(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
             virtual ~OBEvent() = default;
 
-            [[nodiscard]] InputType &getInput();
+            [[nodiscard]] QueueInputType &getInput();
 
         protected:
             void runtime(std::stop_token _st);
@@ -30,7 +30,7 @@ namespace pip
         private:
             const std::string m_name;
 
-            OrderBook::EventQueue m_input;
+            QueueInputType m_input;
 
             InUDP &m_udp_output;
             InOutNetwork &m_tcp_output;

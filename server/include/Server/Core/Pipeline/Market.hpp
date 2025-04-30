@@ -18,10 +18,10 @@ namespace pip
             /// @param _ob OrderBook reference.
             /// @param _input Input data queue.
             /// @param _output Output data queue.
-            Market(OrderBook &_ob, InMarket &_input, InOutNetwork &_output);
+            Market(OrderBook &_ob, InOutNetwork &_output);
             virtual ~Market() = default;
 
-            [[nodiscard]] InputType &getInput();
+            [[nodiscard]] QueueInputType &getInput();
 
         protected:
             void runtime(std::stop_token _st);
@@ -37,7 +37,7 @@ namespace pip
 
             const std::string m_name;
 
-            InMarket m_input;        ///< Intput data queue.
+            QueueInputType m_input;        ///< Intput data queue.
             InOutNetwork &m_tcp_output;          ///< Output data queue.
 
             ThreadPool<TS_SIZE_OB> m_tp;    ///< Thread pool to run async processing.

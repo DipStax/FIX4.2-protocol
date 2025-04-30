@@ -2,11 +2,11 @@
 #include "Server/Core/Pipeline/Naming.hpp"
 
 MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp)
-    : m_obevent("OBEvent-" + m_name, m_name, _udp, _tcp),
-    m_ob(m_name, m_obevent.getInput()),
-    m_market("Market-" + m_name, m_ob, m_q_order, _tcp),
-    m_notify("Notif-" + m_name, m_ob, _tcp),
-    m_data_refresh("Refresh-" + m_name, m_ob, m_q_refresh, _tcp);
+    : m_obevent("OBEvent-" + _name, _name, _udp, _tcp),
+    m_ob(_name, m_obevent.getInput()),
+    m_market("Market-" + _name, m_ob, _tcp),
+    m_notify("Notif-" + _name, m_ob, _tcp),
+    m_data_refresh("Refresh-" + _name, m_ob, _tcp)
 {
 }
 
@@ -15,9 +15,9 @@ const std::string &MarketContainer::getMarketSymbol() const
     return m_ob.getSymbol();
 }
 
-InMarket &MarketContainer::getInput()
+MarketContainer::QueueInputType &MarketContainer::getInput()
 {
-    return m_q_input;
+    return m_input;
 }
 
 void MarketContainer::runtime(std::stop_token _st)
@@ -29,18 +29,17 @@ void MarketContainer::runtime(std::stop_token _st)
     m_notify.start();
     while (!_st.stop_requested()) {
         // move to an other thread
-        if (!m_q_action.empty()) {
-            input = m_q_action.pop_front();
+        if (!m_input.empty()) {
+            input = m_input.pop_front();
 
             switch (input.type)
             {
-            case MarketInput::Type::Order:
-                break;
-            case MarketInput::Type::Refresh:
-                
-                break;
-            default:
-                break;
+                case MarketInput::Type::Order:
+                    m_market.getInput().append(std::move(input));
+                    break;
+                case MarketInput::Type::Refresh:
+                    m_data_refresh.getInput().append(std::move(input));
+                    break;
             }
         }
 

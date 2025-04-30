@@ -1,13 +1,11 @@
-#include <iostream>
-
 #include "Common/Core/Logger.hpp"
 #include "Server/Core/Core.hpp"
 
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
-    : m_tcp_output("Standard TCP Output", m_q_tcp),
-    m_udp_output("UDP broadcast", _udp_port)
+    : m_tcp_output("Standard TCP Output"),
+    m_udp_output("UDP broadcast", _udp_port),
     m_router("Router", m_tcp_output.getInput()),
-    m_tcp_input("Input Network", m_router.getInput(), m_tcp_output.getInput(), _tcp_port),
+    m_tcp_input("Input Network", m_router.getInput(), m_tcp_output.getInput(), _tcp_port)
 {
     market_init();
 }
@@ -27,11 +25,11 @@ bool Core::start()
     {
         try {
             m_udp_output.status();
-            m_tcp_input.status();
-            for (auto &[_, _pip] : m_markets)
-                _pip.status();
-            m_router.status();
             m_tcp_output.status();
+            for (auto &[_, _pip] : m_markets)
+            _pip.status();
+            m_router.status();
+            m_tcp_input.status();
         } catch (std::future_error &_e) {
             Logger::Log("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
             break;

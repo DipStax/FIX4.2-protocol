@@ -5,12 +5,15 @@
 
 namespace pip
 {
-    UDPOutNetwork::UDPOutNetwork(InUDP &_input, uint32_t _port)
-        : m_input(_input)
+    UDPOutNetwork::UDPOutNetwork(uint32_t _port)
     {
-
         if (!m_socket.broadcastOn(_port))
             Logger::Log("[UDPOutNetwork] Failed to setup broadcast, crashing after first action");
+    }
+
+    UDPOutNetwork::QueueInputType &UDPOutNetwork::getInput()
+    {
+        return m_input;
     }
 
     void UDPOutNetwork::runtime(std::stop_token _st)

@@ -8,12 +8,12 @@
 
 namespace pip
 {
-    Market::Market(OrderBook &_ob, InMarket &_input, InOutNetwork &_output)
+    Market::Market(OrderBook &_ob, InOutNetwork &_output)
         : m_tcp_output(_output), m_ob(_ob)
     {
     }
 
-    Market::InputType &Market::getInput()
+    Market::QueueInputType &Market::getInput()
     {
         return m_input;
     }

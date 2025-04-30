@@ -15,6 +15,7 @@ struct Context : T
     Context(const Context<T> &_data);
     template<class ...Ts>
     Context(const ClientStore::Client &_client, std::chrono::system_clock::time_point _time, Ts &&..._args);
+    ~Context() = default;
 
     ClientStore::Client Client = nullptr;                      ///< Sender client information.
     std::chrono::system_clock::time_point ReceiveTime;
@@ -29,6 +30,7 @@ struct RouterInput
     RouterInput(RouterInput &&_data) noexcept;
     RouterInput(const RouterInput &_data);
     RouterInput(const fix::Serializer::AnonMessage &&_message);
+    virtual ~RouterInput() = default;
 
     RouterInput &operator=(RouterInput &&_data) noexcept;
 
@@ -51,6 +53,7 @@ struct MarketInput
     MarketInput() = default;
     MarketInput(MarketInput &&_data) noexcept;
     MarketInput(const MarketInput &_data);
+    virtual ~MarketInput();
 
     enum Type
     {
@@ -60,10 +63,10 @@ struct MarketInput
 
     MarketInput &operator=(MarketInput &&_data) noexcept;
 
-    Type type;
+    Type type = Order;
 
     union {
-        OrderBook::Data OrderData;                        ///< Action to apply to the OrderBook.
+        OrderBook::Data OrderData{};                        ///< Action to apply to the OrderBook.
         MarketRefreshInputData RefreshData;
     };
 };
@@ -75,6 +78,7 @@ struct OutNetworkInput
     OutNetworkInput(OutNetworkInput &&_data) noexcept;
     OutNetworkInput(const OutNetworkInput &_data);
     OutNetworkInput(const fix::Message &&_msg) noexcept;
+    virtual ~OutNetworkInput() = default;
 
     OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept;
 
