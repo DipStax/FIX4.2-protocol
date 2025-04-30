@@ -41,10 +41,11 @@ namespace net::tcp
     {
         bool Response::run(Context<OutNetworkInput> &_data)
         {
+            std::string data = _data.Message.to_string();
+
             _data.Message.header.set49_SenderCompId(PROVIDER_NAME);
             _data.Message.header.set34_msgSeqNum(std::to_string(_data.Client->nextSeqNumber()));
             _data.Message.header.set56_TargetCompId(_data.Client->getUserId());
-            std::string data = _data.Message.to_string();
 
             if (_data.Client->getSocket()) { // todo is_open
                 if (_data.Client->getSocket()->send(reinterpret_cast<const uint8_t *>(data.c_str()), data.size()) == data.size())

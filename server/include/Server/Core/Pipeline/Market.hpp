@@ -11,7 +11,7 @@
 namespace pip
 {
     /// @brief Pipeline managing the OrderBook.
-    class Market : public IProcessUnit
+    class Market : public IProcessUnit<Context<MarketInput>>
     {
         public:
             /// @brief Construct the pipeline.
@@ -20,6 +20,8 @@ namespace pip
             /// @param _output Output data queue.
             Market(OrderBook &_ob, InMarket &_input, InOutNetwork &_output);
             virtual ~Market() = default;
+
+            [[nodiscard]] InputType &getInput();
 
         protected:
             void runtime(std::stop_token _st);
@@ -35,8 +37,8 @@ namespace pip
 
             const std::string m_name;
 
-            InMarket &m_input;        ///< Intput data queue.
-            InOutNetwork &m_output;          ///< Output data queue.
+            InMarket m_input;        ///< Intput data queue.
+            InOutNetwork &m_tcp_output;          ///< Output data queue.
 
             ThreadPool<TS_SIZE_OB> m_tp;    ///< Thread pool to run async processing.
 

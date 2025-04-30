@@ -31,16 +31,10 @@ class Core
         InUDP m_q_udp;
         InputRouter m_q_router;
         MarketEntry m_q_markets;
-        InMarketData m_q_data;
-        InOutNetwork m_q_repdata;
         InOutNetwork m_q_tcp;
 
-        ProcessUnit<pip::InNetwork<net::tcp::in::Basic>> m_innet;
+        ProcessUnit<pip::InNetwork<net::tcp::in::Basic>> m_tcp_input;
         ProcessUnit<pip::Router> m_router;
-        ProcessUnit<pip::DataRefresh> m_data;
-
-        ProcessUnit<pip::OutNetwork<net::tcp::out::Response>> m_outnet;
-        ProcessUnit<pip::OutNetwork<net::tcp::out::SubResponse>> m_outdata;
-
-        ProcessUnit<pip::UDPOutNetwork> m_udp;
+        ProcessUnit<pip::OutNetwork<net::tcp::out::Response>> m_tcp_output;
+        ProcessUnit<pip::UDPOutNetwork> m_udp_output;
 };

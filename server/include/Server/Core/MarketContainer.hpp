@@ -5,6 +5,7 @@
 #include "Server/Core/Pipeline/Naming.hpp"
 #include "Server/Core/Pipeline/OBEvent.hpp"
 #include "Server/Core/Pipeline/Notification.hpp"
+#include "Server/Core/Pipeline/DataRefresh.hpp"
 #include "Server/Core/Pipeline/ProcessUnit.hpp"
 
 class MarketContainer : public IProcessUnit
@@ -13,11 +14,7 @@ class MarketContainer : public IProcessUnit
         MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
         virtual ~MarketContainer() = default;
 
-        [[nodiscard]] fix::MarketDataSnapshotFullRefresh refresh(const OrderBook::Subscription &_sub);
-        [[nodiscard]] fix::MarketDataIncrementalRefresh update(const OrderBook::Subscription &_sub);
-        void cache_flush();
-
-        [[nodiscard]] const std::string &getMarketName() const;
+        [[nodiscard]] const std::string &getMarketSymbol() const;
         [[nodiscard]] InMarket &getInput();
 
     protected:
@@ -27,11 +24,15 @@ class MarketContainer : public IProcessUnit
         const std::string m_name;
 
         OrderBook::EventQueue m_q_event;
-        InMarket m_q_action;
+        InMarket m_q_input;
 
+        InMarket m_q_order;
+        InMarket m_q_refresh;
+
+        ProcessUnit<pip::OBEvent> m_obevent;
         OrderBook m_ob;
 
         ProcessUnit<pip::Market> m_market;
-        ProcessUnit<pip::OBEvent> m_obevent;
         ProcessUnit<pip::Notification> m_notify;
+        ProcessUnit<pip::DataRefresh> m_data_refresh;
 };

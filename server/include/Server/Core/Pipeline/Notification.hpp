@@ -14,7 +14,7 @@
 
 namespace pip
 {
-    class Notification : public IProcessUnit
+    class Notification : public IProcessUnitBase
     {
         public:
             Notification(const std::string &_name, OrderBook &_ob, InOutNetwork &_tcp);

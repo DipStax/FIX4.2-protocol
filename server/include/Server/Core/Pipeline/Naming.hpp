@@ -35,6 +35,16 @@ struct RouterInput
     fix::Serializer::AnonMessage Message{};     ///< Undefined message data.
 };
 
+
+struct MarketRefreshInputData
+{
+    std::string Id;
+    uint8_t SubType;
+    uint8_t Depth;
+    uint8_t UpdateType;
+    std::vector<OrderType> Types;
+};
+
 /// @brief Data transfered from the pip::Action pipeline to the pip::Market pipeline
 struct MarketInput
 {
@@ -42,9 +52,20 @@ struct MarketInput
     MarketInput(MarketInput &&_data) noexcept;
     MarketInput(const MarketInput &_data);
 
+    enum Type
+    {
+        Order,
+        Refresh
+    };
+
     MarketInput &operator=(MarketInput &&_data) noexcept;
 
-    OrderBook::Data OrderData{};                        ///< Action to apply to the OrderBook.
+    Type type;
+
+    union {
+        OrderBook::Data OrderData;                        ///< Action to apply to the OrderBook.
+        MarketRefreshInputData RefreshData;
+    };
 };
 
 /// @brief Data transfered from the pip::Market pipeline to the pip::OutNetwork pipeline
@@ -60,32 +81,12 @@ struct OutNetworkInput
     fix::Message Message{};                     ///< Final message send to the client.
 };
 
-struct MarketDataInputData
-{
-    std::string Id;
-    uint8_t SubType;
-    uint8_t Depth;
-    uint8_t UpdateType;
-    std::vector<OrderType> Types;
-    std::vector<std::string> Symbols;
-};
-
-struct MarketDataInput : public MarketDataInputData
-{
-    MarketDataInput() = default;
-    MarketDataInput(const MarketDataInput &&_data) noexcept;
-
-    MarketDataInput &operator=(MarketDataInput &&_data) noexcept;
-};
-
 /// @brief Queue type use to transfer data from pip::InNetwork to pip::Action pipeline.
 using InputRouter = ts::Queue<Context<RouterInput>>;
 /// @brief Queue type use to transfer data from pip::Action to pip::Market pipeline.
 using InMarket = ts::Queue<Context<MarketInput>>;
 /// @brief Queue type use to transfer data from pip::Market to pip::OutNetwork pipeline.
 using InOutNetwork = ts::Queue<Context<OutNetworkInput>>;
-/// @brief Queue type use to transfer direct message from any pipeline to the pip::OutNetwork pipeline.
-using InMarketData = ts::Queue<Context<MarketDataInput>>;
 /// @brief Queue type use to transfer data to be formated and send by the pip::UDPOutNetwork pipeline.
 using InUDP = ts::Queue<data::UDPPackage>;
 

@@ -8,14 +8,19 @@
 
 namespace pip
 {
-    Router::Router(InputRouter &_input, InMarketData &_data, InOutNetwork &_raw)
-        : m_input(_input), m_q_data(_data), m_tcp_output(_raw)
+    Router::Router(InOutNetwork &_tcp_output)
+        : m_tcp_output(_tcp_output)
     {
     }
 
     void Router::registerMarket(const std::string &_name, InMarket &_input)
     {
         m_market_input.emplace(_name, _input);
+    }
+
+    Router::InputType &Router::getInput()
+    {
+        return m_input;
     }
 
     void Router::runtime(std::stop_token _st)
@@ -245,28 +250,27 @@ namespace pip
 
     bool Router::treatMarketDataRequest(Context<RouterInput> &_input)
     {
-        Context<MarketDataInput> sub(_input.Client, _input.ReceiveTime);
+        Context<MarketInput> sub(_input.Client, _input.ReceiveTime);
         std::vector<std::string> types = utils::split<','>(_input.Message.at(fix::Tag::MDEntryType));
         std::vector<std::string> symbols = utils::split<','>(_input.Message.at(fix::Tag::Symbol));
 
         sub.Client = _input.Client;
-        sub.Id = _input.Message.at(fix::Tag::MDReqID);
-        sub.SubType = _input.Message.at(fix::Tag::SubscriptionRequestType)[0] - '0';
-        sub.Depth = utils::to<size_t>(_input.Message.at(fix::Tag::MarketDepth));
+        sub.RefreshData.Id = _input.Message.at(fix::Tag::MDReqID);
+        sub.RefreshData.SubType = _input.Message.at(fix::Tag::SubscriptionRequestType)[0] - '0';
+        sub.RefreshData.Depth = utils::to<size_t>(_input.Message.at(fix::Tag::MarketDepth));
         // if (sub.SubType == 1)
         //     sub.UpdateType = _input.Message.at(fix::Tag::MDUpdateType)[0] - '0';
         for (const auto &_type : types) {
             if (_type == "0")
-                sub.Types.push_back(OrderType::Bid);
+                sub.RefreshData.Types.push_back(OrderType::Bid);
             else if (_type == "1")
-                sub.Types.push_back(OrderType::Ask);
+                sub.RefreshData.Types.push_back(OrderType::Ask);
             else
                 return false; // build reject
         }
         for (const auto &_sym : symbols)
-            sub.Symbols.push_back(std::move(_sym));
+            m_market_input[_sym].append(std::move(sub)); // reject if not found
         Logger::Log("(MarketDataRequest) Validate from client: ", _input.Client->getUserId());
-        m_q_data.push(std::move(sub));
         return true;
     }
 }

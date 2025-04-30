@@ -7,21 +7,21 @@
 
 namespace pip
 {
-    class DataRefresh : public IProcessUnit
+    class DataRefresh : public IProcessUnit<Context<MarketInput>>
     {
         public:
-            DataRefresh(std::map<std::string, ProcessUnit<MarketContainer>> &_markets, InMarketData &_input, InOutNetwork &_output);
+            DataRefresh(OrderBook &_ob, InOutNetwork &_output);
             virtual ~DataRefresh() = default;
 
         protected:
             void runtime(std::stop_token _st);
 
         private:
-            void process(Context<MarketDataInput> &_input);
+            void process(Context<MarketInput> &_input);
 
-            std::map<std::string, ProcessUnit<MarketContainer>> &m_markets;
+            OrderBook &m_ob;
 
-            InMarketData &m_input;
-            InOutNetwork &m_output;
+            InMarket m_input;
+            InOutNetwork &m_tcp_output;
     };
 }
