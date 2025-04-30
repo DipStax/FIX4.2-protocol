@@ -27,11 +27,11 @@ namespace pip
         private:
             /// @brief Apply the action received by the pip::Action pipeline on the OrderBook.
             /// @param _data Data to build and run action on the OrderBook.
-            void process(MarketInput &_data);
+            void process(Context<MarketInput> &_data);
 
-            bool runAdd(const MarketInput &_data);
-            bool runModify(const MarketInput &_data);
-            bool runCancel(const MarketInput &_data);
+            bool runAdd(const Context<MarketInput> &_data);
+            bool runModify(const Context<MarketInput> &_data);
+            bool runCancel(const Context<MarketInput> &_data);
 
             const std::string m_name;
 

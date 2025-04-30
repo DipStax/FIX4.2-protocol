@@ -29,7 +29,7 @@ namespace pip
                         if (!subs.empty()) {
                             for (const auto &_sub : subs)
                                 notif += m_ob.update(_sub);
-                            m_tcp_output.append(_client, notif);
+                            m_tcp_output.append(_client, std::chrono::system_clock::now(), std::move(notif));
                         }
                     }
                 });

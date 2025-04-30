@@ -24,14 +24,14 @@ namespace pip
             void runtime(std::stop_token _st);
 
         protected:
-            bool treatLogon(RouterInput &_input);
-            bool treatLogout(RouterInput &_input);
-            bool treatNewOrderSingle(RouterInput &_input);
-            bool treatOrderCancelRequest(RouterInput &_input);
-            bool treatOrderCancelReplaceRequest(RouterInput &_input);
-            bool treatUnknown(RouterInput &_input);
-            bool treatHeartbeat(RouterInput &_input);
-            bool treatMarketDataRequest(RouterInput &_input);
+            bool treatLogon(Context<RouterInput> &_input);
+            bool treatLogout(Context<RouterInput> &_input);
+            bool treatNewOrderSingle(Context<RouterInput> &_input);
+            bool treatOrderCancelRequest(Context<RouterInput> &_input);
+            bool treatOrderCancelReplaceRequest(Context<RouterInput> &_input);
+            bool treatUnknown(Context<RouterInput> &_input);
+            bool treatHeartbeat(Context<RouterInput> &_input);
+            bool treatMarketDataRequest(Context<RouterInput> &_input);
 
         private:
             MarketEntry m_market_input;      ///< Map of every market ouput data queue.

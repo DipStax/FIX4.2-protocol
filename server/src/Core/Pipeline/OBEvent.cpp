@@ -46,7 +46,7 @@ namespace pip
         report.set55_symbol(m_name);
         report.set151_leavesQty(std::to_string(_input.quantity));
         report.set150_execType(std::to_string(static_cast<uint8_t>(_input.status)));
-        m_tcp.append(std::move(client), std::move(report));
+        m_tcp.append(client, std::chrono::system_clock::now(), std::move(report));
         Logger::Log("[OBEvent] (TCP) Report created: "); // todo log
         return true;
     }

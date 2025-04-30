@@ -6,17 +6,17 @@
 namespace pip
 {
     template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &>
+    requires IsProcessor<Func, Context<OutNetworkInput> &>
     OutNetwork<Func>::OutNetwork(InOutNetwork &_input)
         : m_input(_input)
     {
     }
 
     template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &>
+    requires IsProcessor<Func, Context<OutNetworkInput> &>
     void OutNetwork<Func>::runtime(std::stop_token _st)
     {
-        OutNetworkInput input;
+        Context<OutNetworkInput> input;
 
         while (!_st.stop_requested()) {
             if (!this->m_input.empty()) {

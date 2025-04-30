@@ -12,7 +12,7 @@ namespace pip
 {
     /// @brief Pipeline to send reply to a client over TCP network.
     template<class Func>
-    requires IsProcessor<Func, OutNetworkInput &>
+    requires IsProcessor<Func, Context<OutNetworkInput> &>
     class OutNetwork : public IProcessUnit
     {
         public:

@@ -7,16 +7,31 @@
 #include "Common/Network/UDPPackage.hpp"
 #include "Server/Core/ClientStore.hpp"
 
+template<class T>
+struct Context : T
+{
+    Context() = default;
+    Context(const Context<T> &&_data) noexcept;
+    Context(const Context<T> &_data);
+    template<class ...Ts>
+    Context(const ClientStore::Client &_client, std::chrono::system_clock::time_point _time, Ts &&..._args);
+
+    ClientStore::Client Client = nullptr;                      ///< Sender client information.
+    std::chrono::system_clock::time_point ReceiveTime;
+
+    Context<T> &operator=(Context<T> &&_data) noexcept;
+};
+
 /// @brief Data transfered from the pip::InNetwork pipeline to the pip::Action pipeline.
 struct RouterInput
 {
     RouterInput() = default;
-    RouterInput(const RouterInput &&_data) noexcept;
-    RouterInput(ClientStore::Client _client, const fix::Serializer::AnonMessage &&_message);
+    RouterInput(RouterInput &&_data) noexcept;
+    RouterInput(const RouterInput &_data);
+    RouterInput(const fix::Serializer::AnonMessage &&_message);
 
     RouterInput &operator=(RouterInput &&_data) noexcept;
 
-    ClientStore::Client Client = nullptr;                      ///< Sender client information.
     fix::Serializer::AnonMessage Message{};     ///< Undefined message data.
 };
 
@@ -24,13 +39,11 @@ struct RouterInput
 struct MarketInput
 {
     MarketInput() = default;
-    MarketInput(const MarketInput &&_data) noexcept;
+    MarketInput(MarketInput &&_data) noexcept;
     MarketInput(const MarketInput &_data);
-    MarketInput(ClientStore::Client _client) noexcept;
 
     MarketInput &operator=(MarketInput &&_data) noexcept;
 
-    ClientStore::Client Client = nullptr;                              ///< Sender client information.
     OrderBook::Data OrderData{};                        ///< Action to apply to the OrderBook.
 };
 
@@ -38,14 +51,12 @@ struct MarketInput
 struct OutNetworkInput
 {
     OutNetworkInput() = default;
-    OutNetworkInput(const OutNetworkInput &&_data) noexcept;
+    OutNetworkInput(OutNetworkInput &&_data) noexcept;
     OutNetworkInput(const OutNetworkInput &_data);
-    OutNetworkInput(ClientStore::Client _client, const fix::Message &&_msg) noexcept;
-    OutNetworkInput(ClientStore::Client _client, const fix::Message &_msg);
+    OutNetworkInput(const fix::Message &&_msg) noexcept;
 
     OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept;
 
-    ClientStore::Client Client = nullptr;                              ///< Sender client information.
     fix::Message Message{};                     ///< Final message send to the client.
 };
 
@@ -63,23 +74,22 @@ struct MarketDataInput : public MarketDataInputData
 {
     MarketDataInput() = default;
     MarketDataInput(const MarketDataInput &&_data) noexcept;
-    MarketDataInput(ClientStore::Client _client, const MarketDataInputData &&_data) noexcept;
 
     MarketDataInput &operator=(MarketDataInput &&_data) noexcept;
-
-    ClientStore::Client Client = nullptr;
 };
 
 /// @brief Queue type use to transfer data from pip::InNetwork to pip::Action pipeline.
-using InputRouter = ts::Queue<RouterInput>;
+using InputRouter = ts::Queue<Context<RouterInput>>;
 /// @brief Queue type use to transfer data from pip::Action to pip::Market pipeline.
-using InMarket = ts::Queue<MarketInput>;
+using InMarket = ts::Queue<Context<MarketInput>>;
 /// @brief Queue type use to transfer data from pip::Market to pip::OutNetwork pipeline.
-using InOutNetwork = ts::Queue<OutNetworkInput>;
+using InOutNetwork = ts::Queue<Context<OutNetworkInput>>;
 /// @brief Queue type use to transfer direct message from any pipeline to the pip::OutNetwork pipeline.
-using InMarketData = ts::Queue<MarketDataInput>;
+using InMarketData = ts::Queue<Context<MarketDataInput>>;
 /// @brief Queue type use to transfer data to be formated and send by the pip::UDPOutNetwork pipeline.
 using InUDP = ts::Queue<data::UDPPackage>;
 
 /// @brief Map of market input MarketInput with as key the symbol of the market.
 using MarketEntry = std::unordered_map<std::string, InMarket &>;
+
+#include "Server/Core/Pipeline/Naming.inl"

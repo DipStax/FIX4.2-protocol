@@ -17,7 +17,7 @@ namespace pip
             void runtime(std::stop_token _st);
 
         private:
-            void process(MarketDataInput &_input);
+            void process(Context<MarketDataInput> &_input);
 
             std::map<std::string, ProcessUnit<MarketContainer>> &m_markets;
 

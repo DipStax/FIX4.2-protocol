@@ -10,7 +10,7 @@ namespace pip
     void DataRefresh::runtime(std::stop_token _st)
     {
         Logger::SetThreadName(THIS_THREAD_ID, "DataRefresh");
-        MarketDataInput input;
+        Context<MarketDataInput> input;
 
         while (!_st.stop_requested()) {
             if (!m_input.empty()) {
@@ -20,7 +20,7 @@ namespace pip
         }
     }
 
-    void DataRefresh::process(MarketDataInput &_input)
+    void DataRefresh::process(Context<MarketDataInput> &_input)
     {
         if (_input.SubType == 0) {
             Logger::Log("[DataRefresh] SubType is refresh");
@@ -38,7 +38,7 @@ namespace pip
                 }
                 m_markets.at(_sym).cache_flush();
                 message.set55_symbol(_sym);
-                m_output.append(std::move(_input.Client), std::move(message));
+                m_output.append(_input.Client, _input.ReceiveTime, std::move(message));
             }
             Logger::Log("[DataRefresh] Refresh done");
         } else if (_input.SubType == 1) {
@@ -60,7 +60,7 @@ namespace pip
                 message.set262_mDReqID(_input.Id);
                 message += m_markets.at(_sym).refresh(sub);
                 // std::cout << "subcribtion size after: " << _input.Client.subscribe(_sym).size() << std::endl;
-                m_output.append(std::move(_input.Client), std::move(message));
+                m_output.append(_input.Client, _input.ReceiveTime, std::move(message));
             }
         } else {
             Logger::Log("[DataRefresh] SubType is unsubscribe");

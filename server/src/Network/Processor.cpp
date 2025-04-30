@@ -9,7 +9,7 @@ namespace net::tcp
 {
     namespace in
     {
-        bool Basic::run(ClientStore::Client _client, InputRouter &_serial, InOutNetwork &_error)
+        bool Basic::run(const ClientStore::Client &_client, InputRouter &_serial, InOutNetwork &_error)
         {
             int error = 0;
             fix::Serializer::AnonMessage msg;
@@ -29,30 +29,17 @@ namespace net::tcp
             if (fix::Serializer::run(data, msg) != fix::Serializer::Error::None) {
                 Logger::Log("[Processor] Error: will parsing the client message");
                 // build reject
-                _error.append(_client, std::move(reject));
+                _error.append(_client, std::chrono::system_clock::now(), std::move(reject));
                 return false;
             }
-            _serial.append(_client, std::move(msg));
+            _serial.append(_client, std::chrono::system_clock::now(), std::move(msg));
             return false;
         }
     }
 
     namespace out
     {
-        // namespace priv
-        // {
-        //     void LogTiming(ClientStore::Client _client)
-        //     {
-        //         if (!_client->hasRequest(_client->SeqNumber - 1))
-        //             return;
-        //         auto start = _client->getRequest(_client->SeqNumber - 1);
-        //         auto end = std::chrono::system_clock::now();
-        //         auto diff = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        //         Logger::Log("[Responce] Send respond after: ", diff.count(), " ms");
-        //     }
-        // }
-
-        bool Response::run(OutNetworkInput &_data)
+        bool Response::run(Context<OutNetworkInput> &_data)
         {
             _data.Message.header.set49_SenderCompId(PROVIDER_NAME);
             _data.Message.header.set34_msgSeqNum(std::to_string(_data.Client->nextSeqNumber()));
@@ -78,7 +65,7 @@ namespace net::tcp
             return false;
         }
 
-        bool SubResponse::run(OutNetworkInput &_data)
+        bool SubResponse::run(Context<OutNetworkInput> &_data)
         {
             std::string data{};
 
