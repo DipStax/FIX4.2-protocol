@@ -19,19 +19,7 @@ namespace net::tcp
 
     namespace out
     {
-
-        // namespace priv
-        // {
-        //     void LogTiming(ClientStore::Client _client);
-        // }
-
         class Response
-        {
-            public:
-                static bool run(Context<OutNetworkInput> &_input);
-        };
-
-        class SubResponse
         {
             public:
                 static bool run(Context<OutNetworkInput> &_input);

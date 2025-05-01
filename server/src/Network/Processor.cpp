@@ -52,7 +52,7 @@ namespace net::tcp
                     Logger::Log("[Responce] Data send successfuly: ", data);
                 else
                     Logger::Log("[Responce] Error occured when sending data");
-                // priv::LogTiming(_data.Client);
+                // todo log timing
                 Logger::Log("[Responce] Updated client status: { UserId: ", _data.Client->getUserId(), " }"); // todo log
                 if (_data.Client->shouldDisconnect()) {
                     _data.Client->disconnect();
@@ -63,22 +63,6 @@ namespace net::tcp
                 ClientStore::Instance().removeClient(_data.Client);
                 return true;
             }
-            return false;
-        }
-
-        bool SubResponse::run(Context<OutNetworkInput> &_data)
-        {
-            std::string data{};
-
-            _data.Message.header.set49_SenderCompId(PROVIDER_NAME);
-            _data.Message.header.set34_msgSeqNum(std::to_string(_data.Client->nextSeqNumber()));
-            _data.Message.header.set56_TargetCompId(_data.Client->getUserId());
-            data = _data.Message.to_string();
-            if (_data.Client->getSocket()->send(reinterpret_cast<const uint8_t *>(data.c_str()), data.size()) == data.size())
-                Logger::Log("[Responce] Data send successfuly: ", data);
-            else
-                Logger::Log("[Responce] Error occured when sending data");
-            // priv::LogTiming(_data.Client);
             return false;
         }
     }
