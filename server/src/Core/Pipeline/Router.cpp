@@ -140,8 +140,9 @@ namespace pip
     bool Router::treatNewOrderSingle(Context<RouterInput> &_input)
     {
         Logger::Log("(New Order Single) Processing message...");
-        Context<MarketInput> data(_input.Client, _input.ReceiveTime);
+        Context<MarketInput> nos(_input.Client, _input.ReceiveTime);
         std::pair<bool, fix::Reject> reject = fix::NewOrderSingle::Verify(_input.Message);
+        OrderBook::Data &data = std::get<OrderBook::Data>(nos.Data);
 
         if (reject.first) {
             Logger::Log("(New Order Single) Request verification failed");
@@ -151,23 +152,24 @@ namespace pip
             return false;
         }
 
-        data.OrderData.action = OrderBook::Data::Action::Add;
-        data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
-        data.OrderData.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
-        data.OrderData.order.userId = _input.Client->getUserId();
-        data.OrderData.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
-        data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
+        data.action = OrderBook::Data::Action::Add;
+        data.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
+        data.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
+        data.order.userId = _input.Client->getUserId();
+        data.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
+        data.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
 
-        Logger::Log("(New Order Single) Moving to target OrderBook Container new order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
-        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        Logger::Log("(New Order Single) Moving to target OrderBook Container new order: (", data.order.orderId,") from: (", data.order.userId, ")");
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(nos));
         return true;
     }
 
     bool Router::treatOrderCancelRequest(Context<RouterInput> &_input)
     {
         Logger::Log("(Order Cancel Request) Processing message...");
-        Context<MarketInput> data(_input.Client, _input.ReceiveTime);
+        Context<MarketInput> ocr(_input.Client, _input.ReceiveTime);
         std::pair<bool, fix::Reject> reject = fix::OrderCancelRequest::Verify(_input.Message);
+        OrderBook::Data &data = std::get<OrderBook::Data>(ocr.Data);
 
         if (reject.first) {
             Logger::Log("(Order Cancel Request) Request verification failed");
@@ -177,21 +179,22 @@ namespace pip
             return false;
         }
 
-        data.OrderData.action = OrderBook::Data::Action::Cancel;
-        data.OrderData.order.orderId = _input.Message.at(fix::Tag::OrigClOrdID);
-        data.OrderData.order.userId = _input.Client->getUserId();
-        data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
+        data.action = OrderBook::Data::Action::Cancel;
+        data.order.orderId = _input.Message.at(fix::Tag::OrigClOrdID);
+        data.order.userId = _input.Client->getUserId();
+        data.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
 
-        Logger::Log("(New Order Single) Moving to target OrderBook Container cancel order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
-        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        Logger::Log("(New Order Single) Moving to target OrderBook Container cancel order: (", data.order.orderId,") from: (", data.order.userId, ")");
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(ocr));
         return true;
     }
 
     bool Router::treatOrderCancelReplaceRequest(Context<RouterInput> &_input)
     {
         Logger::Log("(Order Cancel Replace) Processing message...");
-        Context<MarketInput> data(_input.Client, _input.ReceiveTime);
+        Context<MarketInput> ocrr(_input.Client, _input.ReceiveTime);
         std::pair<bool, fix::Reject> reject = fix::OrderCancelReplaceRequest::Verify(_input.Message);
+        OrderBook::Data &data = std::get<OrderBook::Data>(ocrr.Data);
 
         if (reject.first) {
             Logger::Log("(Order Cancel Replace) Request verification failed");
@@ -201,16 +204,16 @@ namespace pip
             return false;
         }
 
-        data.OrderData.action = OrderBook::Data::Action::Modify;
-        data.OrderData.order.userId = _input.Client->getUserId();
-        data.OrderData.target = _input.Message.at(fix::Tag::OrigClOrdID);
-        data.OrderData.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
-        data.OrderData.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
-        data.OrderData.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
-        data.OrderData.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
+        data.action = OrderBook::Data::Action::Modify;
+        data.order.userId = _input.Client->getUserId();
+        data.target = _input.Message.at(fix::Tag::OrigClOrdID);
+        data.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
+        data.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
+        data.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
+        data.type = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
 
-        Logger::Log("(New Order Replace) Moving to target OrderBook Container replace order: (", data.OrderData.order.orderId,") from: (", data.OrderData.order.userId, ")");
-        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(data));
+        Logger::Log("(New Order Replace) Moving to target OrderBook Container replace order: (", data.order.orderId,") from: (", data.order.userId, ")");
+        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(ocrr));
         return true;
     }
 
@@ -253,18 +256,20 @@ namespace pip
         Context<MarketInput> sub(_input.Client, _input.ReceiveTime);
         std::vector<std::string> types = utils::split<','>(_input.Message.at(fix::Tag::MDEntryType));
         std::vector<std::string> symbols = utils::split<','>(_input.Message.at(fix::Tag::Symbol));
+        sub.type = MarketInput::Type::Refresh;
+        MarketRefreshInputData &data = std::get<MarketRefreshInputData>(sub.Data);
 
         sub.Client = _input.Client;
-        sub.RefreshData.Id = _input.Message.at(fix::Tag::MDReqID);
-        sub.RefreshData.SubType = _input.Message.at(fix::Tag::SubscriptionRequestType)[0] - '0';
-        sub.RefreshData.Depth = utils::to<size_t>(_input.Message.at(fix::Tag::MarketDepth));
+        data.Id = _input.Message.at(fix::Tag::MDReqID);
+        data.SubType = _input.Message.at(fix::Tag::SubscriptionRequestType)[0] - '0';
+        data.Depth = utils::to<size_t>(_input.Message.at(fix::Tag::MarketDepth));
         // if (sub.SubType == 1)
         //     sub.UpdateType = _input.Message.at(fix::Tag::MDUpdateType)[0] - '0';
         for (const auto &_type : types) {
             if (_type == "0")
-                sub.RefreshData.Types.push_back(OrderType::Bid);
+                data.Types.push_back(OrderType::Bid);
             else if (_type == "1")
-                sub.RefreshData.Types.push_back(OrderType::Ask);
+                data.Types.push_back(OrderType::Ask);
             else
                 return false; // build reject
         }

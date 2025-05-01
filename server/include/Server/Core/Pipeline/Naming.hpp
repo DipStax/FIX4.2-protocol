@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 #include "Common/Message/Fix.hpp"
 #include "Common/Message/Serializer.hpp"
 #include "Common/Thread/Queue.hpp"
@@ -27,12 +29,12 @@ struct Context : T
 struct RouterInput
 {
     RouterInput() = default;
-    RouterInput(RouterInput &&_data) noexcept;
-    RouterInput(const RouterInput &_data);
+    RouterInput(RouterInput &&_data) noexcept = default;
+    RouterInput(const RouterInput &_data) = default;
     RouterInput(const fix::Serializer::AnonMessage &&_message);
     virtual ~RouterInput() = default;
 
-    RouterInput &operator=(RouterInput &&_data) noexcept;
+    RouterInput &operator=(RouterInput &&_data) noexcept = default;
 
     fix::Serializer::AnonMessage Message{};     ///< Undefined message data.
 };
@@ -51,9 +53,9 @@ struct MarketRefreshInputData
 struct MarketInput
 {
     MarketInput() = default;
-    MarketInput(MarketInput &&_data) noexcept;
-    MarketInput(const MarketInput &_data);
-    virtual ~MarketInput();
+    MarketInput(MarketInput &&_data) noexcept = default;
+    MarketInput(const MarketInput &_data) = default;
+    virtual ~MarketInput() = default;
 
     enum Type
     {
@@ -61,26 +63,23 @@ struct MarketInput
         Refresh
     };
 
-    MarketInput &operator=(MarketInput &&_data) noexcept;
+    MarketInput &operator=(MarketInput &&_data) noexcept = default;
 
     Type type = Order;
 
-    union {
-        OrderBook::Data OrderData{};                        ///< Action to apply to the OrderBook.
-        MarketRefreshInputData RefreshData;
-    };
+    std::variant<OrderBook::Data, MarketRefreshInputData> Data;
 };
 
 /// @brief Data transfered from the pip::Market pipeline to the pip::OutNetwork pipeline
 struct OutNetworkInput
 {
     OutNetworkInput() = default;
-    OutNetworkInput(OutNetworkInput &&_data) noexcept;
-    OutNetworkInput(const OutNetworkInput &_data);
+    OutNetworkInput(OutNetworkInput &&_data) noexcept = default;
+    OutNetworkInput(const OutNetworkInput &_data) = default;
     OutNetworkInput(const fix::Message &&_msg) noexcept;
     virtual ~OutNetworkInput() = default;
 
-    OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept;
+    OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept = default;
 
     fix::Message Message{};                     ///< Final message send to the client.
 };
