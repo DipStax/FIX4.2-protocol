@@ -35,7 +35,7 @@ void InternalClient::shouldDisconnect(bool _disconnect)
     m_should_dc = _disconnect;
 }
 
-bool InternalClient::shouldDisconnect()
+bool InternalClient::shouldDisconnect() const
 {
     return m_should_dc;
 }

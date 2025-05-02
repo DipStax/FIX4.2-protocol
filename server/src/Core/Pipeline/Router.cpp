@@ -30,13 +30,11 @@ namespace pip
 
         while (!_st.stop_requested())
         {
-            if (!m_input.empty())
+            while (!m_input.empty())
             {
                 input = m_input.pop_front();
                 reject = fix::Header::Verify(input.Message, input.Client->getUserId(), PROVIDER_NAME, input.Client->getSeqNumber());
                 if (reject.first) {
-                    reject.second.header.set56_TargetCompId(input.Client->getUserId());
-                    reject.second.header.set49_SenderCompId(PROVIDER_NAME);
                     Logger::Log("Header verification failed");
                     m_tcp_output.append(input.Client, input.ReceiveTime, std::move(reject.second));
                     continue;
@@ -131,7 +129,6 @@ namespace pip
         _input.Client->shouldDisconnect(true);
 
         Logger::Log("(Logon) Client set as logged out: (", *(_input.Client), ")");
-        logout.header.set56_TargetCompId(_input.Client->getUserId());
         Logger::Log("(Logout) Reply to (", *(_input.Client), ") moving to TCP output");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(logout));
         return true;
