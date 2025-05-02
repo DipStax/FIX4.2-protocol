@@ -70,6 +70,8 @@ class OrderBook
 
         [[nodiscard]] bool contain(OrderType _type, Price _price);
 
+        [[nodiscard]] const std::string &getSymbol() const;
+
     protected:
         template<IsBook T>
         using OrderIdMap = std::unordered_map<OrderId, std::pair<typename T::iterator, OrderList::iterator>>;

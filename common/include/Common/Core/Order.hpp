@@ -22,7 +22,8 @@ using Price = double;
 using OrderList = std::vector<Order>;
 
 /// @brief Available value for OrdStatus [39](https://www.onixs.biz/fix-dictionary/4.2/tagNum_39.html).
-enum OrderStatus {
+enum OrderStatus
+{
     New = 0,
     PartiallyFilled,
     Filled,

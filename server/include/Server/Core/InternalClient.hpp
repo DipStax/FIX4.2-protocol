@@ -23,7 +23,7 @@ class InternalClient
 
         void disconnect();
         void shouldDisconnect(bool _disconnect);
-        [[nodiscard]] bool shouldDisconnect();
+        [[nodiscard]] bool shouldDisconnect() const;
 
         void setSeqNumber(size_t _seqnum);
         size_t nextSeqNumber();

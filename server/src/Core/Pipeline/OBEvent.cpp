@@ -6,9 +6,14 @@
 
 namespace pip
 {
-    OBEvent::OBEvent(const std::string &_name, OrderBook::EventQueue &_input, InUDP &_udp, InOutNetwork &_tcp)
-        : m_name(_name), m_input(_input), m_udp(_udp), m_tcp(_tcp)
+    OBEvent::OBEvent(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp)
+        : m_name(_name), m_udp_output(_udp), m_tcp_output(_tcp)
     {
+    }
+
+    OBEvent::QueueInputType &OBEvent::getInput()
+    {
+        return m_input;
     }
 
     void OBEvent::runtime(std::stop_token _st)
@@ -46,13 +51,14 @@ namespace pip
         report.set55_symbol(m_name);
         report.set151_leavesQty(std::to_string(_input.quantity));
         report.set150_execType(std::to_string(static_cast<uint8_t>(_input.status)));
-        m_tcp.append(std::move(client), std::move(report));
+        m_tcp_output.append(client, std::chrono::system_clock::now(), std::move(report));
         Logger::Log("[OBEvent] (TCP) Report created: "); // todo log
         return true;
     }
 
     bool OBEvent::createUdp(const OrderBook::Event &_input)
     {
+        static uint64_t id = 0;
         data::UDPPackage package;
 
         if (_input.status == OrderStatus::Pending || _input.quantity == 0)
@@ -62,17 +68,19 @@ namespace pip
         package.flag = 0;
         package.quantity = 0;
         package.price = 0;
-        package.id = m_id++;
+        package.id = id++;
         UDP_FLAG_SET_SOLD(package.flag, _input.sold);
         UDP_FLAG_SET_STATUS(package.flag, _input.status);
         (_input.side == OrderType::Ask) ? UDP_FLAG_SET_ASK(package.flag) : UDP_FLAG_SET_BID(package.flag);
         package.quantity = _input.quantity;
         package.price = _input.price;
+
         Logger::Log("[OBEvent] (UDP) Setting Symbol");
         std::memset(package.symbol, '0', std::min(m_name.size(), (size_t)MARKET_NAME_MAX_SIZE));
         std::memcpy(package.symbol, m_name.c_str(), std::min(m_name.size(), (size_t)MARKET_NAME_MAX_SIZE));
+
         Logger::Log("[OBEvent] (UDP) Report created: ", package);
-        m_udp.append(std::move(package));
+        m_udp_output.append(std::move(package));
         return true;
     }
 }

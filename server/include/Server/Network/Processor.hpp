@@ -13,28 +13,16 @@ namespace net::tcp
         class Basic
         {
             public:
-                static bool run(ClientStore::Client _client, InputRouter &_serial, InOutNetwork &_error);
+                static bool run(const ClientStore::Client &_client, InputRouter &_serial, InOutNetwork &_error);
         };
     }
 
     namespace out
     {
-
-        // namespace priv
-        // {
-        //     void LogTiming(ClientStore::Client _client);
-        // }
-
         class Response
         {
             public:
-                static bool run(OutNetworkInput &_input);
-        };
-
-        class SubResponse
-        {
-            public:
-                static bool run(OutNetworkInput &_input);
+                static bool run(Context<OutNetworkInput> &_input);
         };
     }
 }

@@ -4,8 +4,8 @@
 
 namespace pip
 {
-    Notification::Notification(const std::string &_name, OrderBook &_ob, InOutNetwork &_tcp)
-        : m_name(_name), m_tcp_output(_tcp), m_ob(_ob)
+    Notification::Notification(OrderBook &_ob, InOutNetwork &_tcp)
+        : m_tcp_output(_tcp), m_ob(_ob)
     {
     }
 
@@ -20,16 +20,16 @@ namespace pip
             if (update_diff.count() >= NOTIF_UPDATE_TO) {
                 Logger::Log("[Refresh] incremenetal - start");
                 ClientStore::Instance().Apply([*this] (ClientStore::Client _client) {
-                    Logger::Log("[Refresh] Looking for subscribtion of ", m_name, " for user: ", _client == nullptr);
-                    if (_client->isSubscribeTo(m_name)) {
-                        const InternalClient::Subs &subs = _client->subscribe(m_name);
+                    Logger::Log("[Refresh] Looking for subscribtion of ", m_ob.getSymbol(), " for user: ", _client == nullptr);
+                    if (_client->isSubscribeTo(m_ob.getSymbol())) {
+                        const InternalClient::Subs &subs = _client->subscribe(m_ob.getSymbol());
                         fix::MarketDataIncrementalRefresh notif;
 
                         Logger::Log("[Refresh] Incremental For client: ", _client->getUserId(), ", size of the query: ", subs.size());
                         if (!subs.empty()) {
                             for (const auto &_sub : subs)
                                 notif += m_ob.update(_sub);
-                            m_tcp_output.append(_client, notif);
+                            m_tcp_output.append(_client, std::chrono::system_clock::now(), std::move(notif));
                         }
                     }
                 });

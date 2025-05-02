@@ -12,11 +12,13 @@
 
 namespace pip
 {
-    class OBEvent : public IProcessUnit
+    class OBEvent : public IProcessUnit<OrderBook::Event>
     {
         public:
-            OBEvent(const std::string &_name, OrderBook::EventQueue &_input, InUDP &_udp, InOutNetwork &_tcp);
+            OBEvent(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
             virtual ~OBEvent() = default;
+
+            [[nodiscard]] QueueInputType &getInput();
 
         protected:
             void runtime(std::stop_token _st);
@@ -28,11 +30,10 @@ namespace pip
         private:
             const std::string m_name;
 
-            OrderBook::EventQueue &m_input;
-            InUDP &m_udp;
-            InOutNetwork &m_tcp;
+            QueueInputType m_input;
 
-            uint64_t m_id = 0;
+            InUDP &m_udp_output;
+            InOutNetwork &m_tcp_output;
 
             ThreadPool<TS_SIZE_OE> m_tp;
     };

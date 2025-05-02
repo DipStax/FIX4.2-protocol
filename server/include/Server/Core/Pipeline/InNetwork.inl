@@ -6,7 +6,7 @@
 namespace pip
 {
     template<class Func>
-    requires IsProcessor<Func, ClientStore::Client, InputRouter &, InOutNetwork &>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
     InNetwork<Func>::InNetwork(InputRouter &_output, InOutNetwork &_error, uint32_t _port)
         : m_output(_output), m_error(_error), m_acceptor(), m_selector()
     {
@@ -17,7 +17,7 @@ namespace pip
     }
 
     template<class Func>
-    requires IsProcessor<Func, ClientStore::Client, InputRouter &, InOutNetwork &>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
     void InNetwork<Func>::runtime(std::stop_token _st)
     {
         ClientStore::ClientSocket accept = nullptr;

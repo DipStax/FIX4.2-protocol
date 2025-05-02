@@ -14,10 +14,10 @@
 
 namespace pip
 {
-    class Notification : public IProcessUnit
+    class Notification : public IProcessUnitBase
     {
         public:
-            Notification(const std::string &_name, OrderBook &_ob, InOutNetwork &_tcp);
+            Notification(OrderBook &_ob, InOutNetwork &_tcp);
             virtual ~Notification() = default;
 
         protected:

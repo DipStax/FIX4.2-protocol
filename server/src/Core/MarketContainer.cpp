@@ -2,19 +2,47 @@
 #include "Server/Core/Pipeline/Naming.hpp"
 
 MarketContainer::MarketContainer(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp)
-    : m_name(_name), m_ob(m_name, m_q_event),
-        m_market("Market-" + m_name, m_ob, m_q_action, _tcp),
-        m_obevent("OBEvent-" + m_name, m_name, m_q_event, _udp, _tcp),
-        m_notify("Notif-" + m_name, m_name, m_ob, _tcp)
+    : m_obevent("OBEvent-" + _name, _name, _udp, _tcp),
+    m_ob(_name, m_obevent.getInput()),
+    m_market("Market-" + _name, m_ob, _tcp),
+    m_notify("Notif-" + _name, m_ob, _tcp),
+    m_data_refresh("Refresh-" + _name, m_ob, _tcp)
 {
+}
+
+const std::string &MarketContainer::getMarketSymbol() const
+{
+    return m_ob.getSymbol();
+}
+
+MarketContainer::QueueInputType &MarketContainer::getInput()
+{
+    return m_input;
 }
 
 void MarketContainer::runtime(std::stop_token _st)
 {
+    Context<MarketInput> input;
+
     m_market.start();
     m_obevent.start();
     m_notify.start();
     while (!_st.stop_requested()) {
+        // move to an other thread
+        if (!m_input.empty()) {
+            input = m_input.pop_front();
+
+            switch (input.type)
+            {
+                case MarketInput::Type::Order:
+                    m_market.getInput().append(std::move(input));
+                    break;
+                case MarketInput::Type::Refresh:
+                    m_data_refresh.getInput().append(std::move(input));
+                    break;
+            }
+        }
+
         m_market.status();
         m_obevent.status();
         m_notify.status();
@@ -22,29 +50,4 @@ void MarketContainer::runtime(std::stop_token _st)
     m_market.stop();
     m_obevent.stop();
     m_notify.stop();
-}
-
-fix::MarketDataSnapshotFullRefresh MarketContainer::refresh(const OrderBook::Subscription &_sub)
-{
-    return m_ob.refresh(_sub);
-}
-
-fix::MarketDataIncrementalRefresh MarketContainer::update(const OrderBook::Subscription &_sub)
-{
-    return m_ob.update(_sub);
-}
-
-void MarketContainer::cache_flush()
-{
-    m_ob.cache_flush();
-}
-
-const std::string &MarketContainer::getMarketName() const
-{
-    return m_name;
-}
-
-InMarket &MarketContainer::getInput()
-{
-    return m_q_action;
 }

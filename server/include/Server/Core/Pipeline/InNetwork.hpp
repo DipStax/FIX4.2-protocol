@@ -17,8 +17,8 @@ namespace pip
     /// @tparam _T is function to process when an action is needed on a socket.
     /// @tparam __T is the format socket are stored in the vector referenced.
     template<class Func>
-    requires IsProcessor<Func, ClientStore::Client, InputRouter &, InOutNetwork &>
-    class InNetwork : public IProcessUnit
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    class InNetwork : public IProcessUnitBase
     {
         public:
             /// @brief Setup the network input and start listening on _port
