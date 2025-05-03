@@ -74,38 +74,6 @@ namespace pu
         }
     }
 
-    bool Router::treatLogon(Context<RouterInput> &_input)
-    {
-        Logger::Log("(Logon) Processing message...");
-        fix::Logon logon;
-        std::pair<bool, fix::Reject> reject = fix::Logon::Verify(_input.Message);
-
-        if (reject.first) {
-            Logger::Log("(Logon) Request verification failed");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger::Log("(Logon) Reject moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
-        } else if (_input.Client->isLoggedin()) {
-            Logger::Log("(Logon) Client (", *(_input.Client), ") already connected");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            reject.second.set58_text("Client already logged in");
-            Logger::Log("(Logon) Reject from (", *(_input.Client), ") moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
-        }
-
-        _input.Client->login(_input.Message.at(fix::Tag::SenderCompId));
-        _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)));
-
-        Logger::Log("(Logon) Client set as logged in as: (", *(_input.Client), ")");
-        logon.set98_EncryptMethod("0");
-        logon.set108_HeartBtInt(_input.Message.at(fix::Tag::HearBtInt));
-        Logger::Log("(Logon) Reply to (", *(_input.Client), ") moving to TCP output");
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(logon));
-        return true;
-    }
-
     bool Router::treatLogout(Context<RouterInput> &_input)
     {
         Logger::Log("(Logout) Processing message...");

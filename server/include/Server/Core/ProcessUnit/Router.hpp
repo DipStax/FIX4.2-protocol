@@ -21,7 +21,6 @@ namespace pu
             void runtime(std::stop_token _st);
 
         protected:
-            bool treatLogon(Context<RouterInput> &_input);
             bool treatLogout(Context<RouterInput> &_input);
             bool treatNewOrderSingle(Context<RouterInput> &_input);
             bool treatOrderCancelRequest(Context<RouterInput> &_input);
