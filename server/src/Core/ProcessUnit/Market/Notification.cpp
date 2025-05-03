@@ -10,6 +10,11 @@ namespace pu::market
     {
     }
 
+    std::string Notification::getThreadName() const
+    {
+        return "Market Notification - " + m_ob.getSymbol();
+    }
+
     void Notification::runtime(std::stop_token _st)
     {
         auto update = std::chrono::system_clock::now();

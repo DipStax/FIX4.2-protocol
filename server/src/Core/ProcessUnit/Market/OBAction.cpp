@@ -19,6 +19,11 @@ namespace pu::market
         return m_input;
     }
 
+    std::string OBAction::getThreadName() const
+    {
+        return "Market Action - " + m_ob.getSymbol();
+    }
+
     void OBAction::runtime(std::stop_token _st)
     {
         Context<MarketInput> input;

@@ -16,6 +16,11 @@ namespace pu::user
         return m_input;
     }
 
+    std::string LogoutHandler::getThreadName() const
+    {
+        return "Logout Handler";
+    }
+
     void LogoutHandler::runtime(std::stop_token _st)
     {
         while (!_st.stop_requested()) {

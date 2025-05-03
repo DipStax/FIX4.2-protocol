@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "Server/Core/ProcessUnit/User/HeartBeat.hpp"
 
 #include "Common/Message/HeartBeat.hpp"
@@ -29,20 +31,24 @@ namespace pu::user
         return m_input;
     }
 
+    std::string HeartBeatHandler::getThreadName() const
+    {
+        return "HeartBeat Handler";
+    }
+
     void HeartBeatHandler::runtime(std::stop_token _st)
     {
         while (!_st.stop_requested()) {
             while (!m_input.empty()) {
                 m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    Logger::Log("(HeartBeat) Processing message...");
+                    Logger::Log("Processing message...");
                     fix::HeartBeat heartbeat;
                     std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
 
-                    // need to modify user info
                     if (reject.first) {
-                        Logger::Log("(HeartBeat) Request verification failed: ");
+                        Logger::Log("Request verification failed: ");
                         reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-                        Logger::Log("(HearBeat) Reject from (", *(_input.Client), ") moving to TCP output");
+                        Logger::Log("Reject from (", *(_input.Client), ") moving to TCP output");
                         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
                         return false;
                     }
@@ -54,6 +60,7 @@ namespace pu::user
                         auto it = std::find_if(m_heartbeat.begin(), m_heartbeat.end(), [_input] (const HeartBeatPair &_pair) {
                             return _pair.first == _input.Client;
                         });
+                        Logger::Log("Updated client (", *(_input.Client), ") heartbeat");
                         it->second = _input.ReceiveTime;
                     }
 
@@ -74,6 +81,8 @@ namespace pu::user
 
     void HeartBeatHandler::handle(std::stop_token _st)
     {
+        Logger::SetThreadName(THIS_THREAD_ID, "HeartBeat Suppressor");
+
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
@@ -81,8 +90,10 @@ namespace pu::user
                 std::shared_lock lock(m_mutex);
 
                 for (const HeartBeatPair &_hb : m_heartbeat) {
-                    if (std::chrono::duration<double>(now - _hb.second).count() > PU_HEARTBEAT_TO)
+                    if (std::chrono::duration<double>(now - _hb.second).count() > PU_HEARTBEAT_TO) {
+                        Logger::Log("Client (", *(_hb.first), ") failed heartbeat");
                         ClientStore::Instance().removeClient(_hb.first);
+                    }
                 }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(50));

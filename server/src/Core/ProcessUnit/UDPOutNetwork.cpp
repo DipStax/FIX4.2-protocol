@@ -17,6 +17,11 @@ namespace pu
         return m_input;
     }
 
+    std::string UDPOutNetwork::getThreadName() const
+    {
+        return "UDP Broadcast";
+    }
+
     void UDPOutNetwork::runtime(std::stop_token _st)
     {
         while (!_st.stop_requested()) {

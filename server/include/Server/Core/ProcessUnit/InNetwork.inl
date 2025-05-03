@@ -20,6 +20,13 @@ namespace pu
 
     template<class Func>
     requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    std::string InNetwork<Func>::getThreadName() const
+    {
+        return "TCP Input";
+    }
+
+    template<class Func>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
     void InNetwork<Func>::runtime(std::stop_token _st)
     {
         ClientStore::ClientSocket accept = nullptr;

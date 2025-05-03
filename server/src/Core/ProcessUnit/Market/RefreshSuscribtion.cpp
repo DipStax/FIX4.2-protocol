@@ -12,6 +12,11 @@ namespace pu::market
         return m_input;
     }
 
+    std::string RefreshSuscribtion::getThreadName() const
+    {
+        return "Market Subscribtion - " + m_ob.getSymbol();
+    }
+
     void RefreshSuscribtion::runtime(std::stop_token _st)
     {
         Context<MarketInput> input;

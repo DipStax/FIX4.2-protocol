@@ -17,7 +17,8 @@ namespace pu
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
-            /// @brief Core function of the pipeline determining it's behavior
+            std::string getThreadName() const;
+
             void runtime(std::stop_token _st);
 
         protected:

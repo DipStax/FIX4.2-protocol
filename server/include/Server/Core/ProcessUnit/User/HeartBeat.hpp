@@ -32,6 +32,8 @@ namespace pu::user
             QueueInputType &getInput();
 
         protected:
+            std::string getThreadName() const;
+
             void runtime(std::stop_token _st);
 
             void onStop();

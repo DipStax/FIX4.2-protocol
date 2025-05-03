@@ -15,6 +15,13 @@ namespace pu
 
     template<class Func>
     requires IsProcessor<Func, Context<OutNetworkInput> &>
+    std::string OutNetwork<Func>::getThreadName() const
+    {
+        return "TCP Output";
+    }
+
+    template<class Func>
+    requires IsProcessor<Func, Context<OutNetworkInput> &>
     void OutNetwork<Func>::runtime(std::stop_token _st)
     {
         Context<OutNetworkInput> input;

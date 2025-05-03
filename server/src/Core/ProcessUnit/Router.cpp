@@ -24,6 +24,11 @@ namespace pu
         return m_input;
     }
 
+    std::string Router::getThreadName() const
+    {
+        return "Router";
+    }
+
     void Router::runtime(std::stop_token _st)
     {
         std::pair<bool, fix::Reject> reject;

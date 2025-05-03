@@ -17,6 +17,11 @@ namespace pu::market
         return m_input;
     }
 
+    std::string OBEvent::getThreadName() const
+    {
+        return "Market Event - " + m_name;
+    }
+
     void OBEvent::runtime(std::stop_token _st)
     {
         OrderBook::Event input;

@@ -16,6 +16,11 @@ namespace pu::user
         return m_input;
     }
 
+    std::string LogonHandler::getThreadName() const
+    {
+        return "Logon Handler";
+    }
+
     void LogonHandler::runtime(std::stop_token _st)
     {
         while (!_st.stop_requested()) {

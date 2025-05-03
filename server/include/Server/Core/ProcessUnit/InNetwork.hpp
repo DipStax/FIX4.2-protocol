@@ -31,6 +31,8 @@ namespace pu
             virtual ~InNetwork() = default;
 
         protected:
+            std::string getThreadName() const;
+
             void runtime(std::stop_token _st);
 
         private:
