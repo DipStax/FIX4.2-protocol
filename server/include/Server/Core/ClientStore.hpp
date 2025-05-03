@@ -15,18 +15,21 @@ class ClientStore
         using Client = std::shared_ptr<InternalClient>;
 
         template<class T>
-        using ForEachCallback = std::function<T(Client _client)>;
+        using ForEachCallback = std::function<T(Client)>;
+        using OnClientCallback = std::function<void(const Client &)>;
 
         ~ClientStore() = default;
 
         static ClientStore &Instance();
 
         void newClientSocket(ClientSocket _client);
+        static void OnNewClient(OnClientCallback _callback);
 
         Client findClient(ClientSocket _client);
         Client findClient(const std::string &_client_id);
 
         void removeClient(Client _client);
+        static void OnRemoveClient(OnClientCallback _callback);
 
         template<class T>
         std::vector<T> forEach(ForEachCallback<T> _callback);
@@ -36,8 +39,14 @@ class ClientStore
     private:
         ClientStore() = default;
 
-        std::shared_mutex m_mutex{};
+        std::shared_mutex m_client_mutex{};
         std::vector<Client> m_clients{};
+
+        static inline std::shared_mutex m_onnew_mutex{};
+        static inline std::vector<OnClientCallback> m_onnew{};
+
+        static inline std::shared_mutex m_onremove_mutex{};
+        static inline std::vector<OnClientCallback> m_onremove{};
 };
 
 #include "Server/Core/ClientStore.inl"

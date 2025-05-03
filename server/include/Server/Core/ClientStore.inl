@@ -3,7 +3,7 @@
 template<class T>
 std::vector<T> ClientStore::forEach(ForEachCallback<T> _callback)
 {
-    std::shared_lock lock(m_mutex);
+    std::shared_lock lock(m_client_mutex);
     std::vector<T> result;
 
     result.reserve(m_clients.size());
