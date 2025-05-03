@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "Server/Core/InternalClient.hpp"
+
 #include "Common/Network/Acceptor.hpp"
 #include "Common/Network/Socket.hpp"
 

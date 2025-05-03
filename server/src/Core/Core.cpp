@@ -4,7 +4,8 @@
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     : m_tcp_output("Standard TCP Output"),
     m_udp_output("UDP broadcast", _udp_port),
-    m_router("Router", m_tcp_output.getInput()),
+    m_logon("Logon handler", m_tcp_output.getInput()),
+    m_router("Router", m_tcp_output.getInput(), m_logon.getInput()),
     m_tcp_input("Input Network", m_router.getInput(), m_tcp_output.getInput(), _tcp_port)
 {
     market_init();
@@ -26,8 +27,9 @@ bool Core::start()
         try {
             m_udp_output.status();
             m_tcp_output.status();
+            m_logon.status();
             for (auto &[_, _pip] : m_markets)
-            _pip.status();
+                _pip.status();
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
@@ -51,6 +53,8 @@ void Core::stop()
         Logger::Log(m_tcp_input.getName(), " PU stoped");
         m_router.stop();
         Logger::Log(m_router.getName(), " PU stoped");
+        m_logon.stop();
+        Logger::Log(m_logon.getName(), " PU stoped");
         for (auto &[_name, _pip] : m_markets) {
             _pip.stop();
            Logger::Log(_pip.getName(), " PU stoped");
@@ -70,6 +74,8 @@ bool Core::internal_start()
     Logger::Log(m_udp_output.getName(), " PU started");
     m_tcp_output.start();
     Logger::Log(m_tcp_output.getName(), " PU started");
+    m_logon.start();
+    Logger::Log(m_logon.getName(), " PU started");
 
     for (auto &[_name, _pip] : m_markets) {
         _pip.start();

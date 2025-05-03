@@ -2,8 +2,9 @@
 #include <numeric>
 #include <vector>
 
-#include "Common/Core/Logger.hpp"
 #include "Server/Core/OrderBook.hpp"
+
+#include "Common/Core/Logger.hpp"
 
 template<IsBook T, class _T>
 bool OrderBook::add(T &_book, Price _price, Order &_order)

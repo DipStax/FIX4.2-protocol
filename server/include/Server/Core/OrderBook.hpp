@@ -4,11 +4,12 @@
 #include <map>
 #include <unordered_map>
 
-#include "Common/Core/Order.hpp"
 #include "Server/Core/meta.hpp"
-#include "Common/Thread/Queue.hpp"
-#include "Common/Message/MarketDataSnapshotFullRefresh.hpp"
+
+#include "Common/Core/Order.hpp"
 #include "Common/Message/MarketDataIncrementalRefresh.hpp"
+#include "Common/Message/MarketDataSnapshotFullRefresh.hpp"
+#include "Common/Thread/Queue.hpp"
 
 using AskBook = std::map<Price, OrderList, std::greater<Price>>;
 using BidBook = std::map<Price, OrderList, std::less<Price>>;

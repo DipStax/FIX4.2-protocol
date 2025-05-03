@@ -2,8 +2,8 @@
 
 #include <chrono>
 
-#include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/Pipeline/IProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
 
 #ifndef UDP_TICK
     #define UDP_TICK 1
@@ -17,7 +17,7 @@
     #define UDP_MAX_MSG 20
 #endif
 
-namespace pip
+namespace pu
 {
     class UDPOutNetwork : public IProcessUnit<data::UDPPackage>
     {

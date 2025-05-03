@@ -1,25 +1,25 @@
 #pragma once
 
+#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Common/Thread/Pool.hpp"
-#include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/Pipeline/IProcessUnit.hpp"
 
 #ifndef TS_SIZE_OB
     #define TS_SIZE_OB 1
 #endif
 
-namespace pip
+namespace pu::market
 {
     /// @brief Pipeline managing the OrderBook.
-    class Market : public IProcessUnit<Context<MarketInput>>
+    class OBAction : public IProcessUnit<Context<MarketInput>>
     {
         public:
             /// @brief Construct the pipeline.
             /// @param _ob OrderBook reference.
             /// @param _input Input data queue.
             /// @param _output Output data queue.
-            Market(OrderBook &_ob, InOutNetwork &_output);
-            virtual ~Market() = default;
+            OBAction(OrderBook &_ob, InOutNetwork &_output);
+            virtual ~OBAction() = default;
 
             [[nodiscard]] QueueInputType &getInput();
 

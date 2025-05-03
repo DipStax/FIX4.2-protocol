@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Router.hpp"
-#include "Server/Core/Pipeline/DataRefresh.hpp"
-#include "Server/Core/Pipeline/InNetwork.hpp"
-#include "Server/Core/Pipeline/OutNetwork.hpp"
-#include "Server/Core/Pipeline/UDPOutNetwork.hpp"
-#include "Server/Core/MarketContainer.hpp"
+#include "Server/Core/ProcessUnit/User/Logon.hpp"
+#include "Server/Core/ProcessUnit/InNetwork.hpp"
+#include "Server/Core/ProcessUnit/MarketContainer.hpp"
+#include "Server/Core/ProcessUnit/OutNetwork.hpp"
+#include "Server/Core/ProcessUnit/ProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/Router.hpp"
+#include "Server/Core/ProcessUnit/UDPOutNetwork.hpp"
 #include "Server/Network/Processor.hpp"
-#include "Server/Core/Pipeline/ProcessUnit.hpp"
 
 class Core
 {
@@ -26,10 +26,13 @@ class Core
     private:
         bool m_running = false;
 
-        std::map<std::string, ProcessUnit<MarketContainer>> m_markets;
+        std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
-        ProcessUnit<pip::OutNetwork<net::tcp::out::Response>> m_tcp_output;
-        ProcessUnit<pip::UDPOutNetwork> m_udp_output;
-        ProcessUnit<pip::Router> m_router;
-        ProcessUnit<pip::InNetwork<net::tcp::in::Basic>> m_tcp_input;
+        ProcessUnit<pu::OutNetwork<net::tcp::out::Response>> m_tcp_output;
+        ProcessUnit<pu::UDPOutNetwork> m_udp_output;
+
+        ProcessUnit<pu::user::LogonHandler> m_logon;
+
+        ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::InNetwork<net::tcp::in::Basic>> m_tcp_input;
 };

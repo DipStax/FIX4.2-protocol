@@ -2,12 +2,13 @@
 
 #include <variant>
 
+#include "Server/Core/ClientStore.hpp"
+#include "Server/Core/OrderBook.hpp"
+
 #include "Common/Message/Fix.hpp"
 #include "Common/Message/Serializer.hpp"
-#include "Common/Thread/Queue.hpp"
-#include "Server/Core/OrderBook.hpp"
 #include "Common/Network/UDPPackage.hpp"
-#include "Server/Core/ClientStore.hpp"
+#include "Common/Thread/Queue.hpp"
 
 template<class T>
 struct Context : T
@@ -96,4 +97,4 @@ using InUDP = ts::Queue<data::UDPPackage>;
 /// @brief Map of market input MarketInput with as key the symbol of the market.
 using MarketEntry = std::unordered_map<std::string, InMarket &>;
 
-#include "Server/Core/Pipeline/Naming.inl"
+#include "Server/Core/ProcessUnit/Naming.inl"

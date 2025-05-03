@@ -1,16 +1,15 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/Pipeline/IProcessUnit.hpp"
-#include "Server/Core/Pipeline/ProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
 
-namespace pip
+namespace pu::market
 {
-    class DataRefresh : public IProcessUnit<Context<MarketInput>>
+    class RefreshSuscribtion : public IProcessUnit<Context<MarketInput>>
     {
         public:
-            DataRefresh(OrderBook &_ob, InOutNetwork &_output);
-            virtual ~DataRefresh() = default;
+            RefreshSuscribtion(OrderBook &_ob, InOutNetwork &_output);
+            virtual ~RefreshSuscribtion() = default;
 
             [[nodiscard]] QueueInputType &getInput();
 

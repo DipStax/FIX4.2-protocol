@@ -1,16 +1,17 @@
 #pragma once
 
 #include "Common/Network/Selector.hpp"
-#include "Server/Core/Pipeline/Naming.hpp"
-#include "Server/Core/meta.hpp"
-#include "Server/Core/Pipeline/IProcessUnit.hpp"
+
+#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Server/Core/ClientStore.hpp"
+#include "Server/Core/meta.hpp"
 
 #ifndef NET_RECV_SIZE
     #define NET_RECV_SIZE 4096
 #endif
 
-namespace pip
+namespace pu
 {
     /// @brief Pipeline managing the Network input.
     /// @tparam T is the socket type managed.
@@ -41,4 +42,4 @@ namespace pip
     };
 }
 
-#include "Server/Core/Pipeline/InNetwork.inl"
+#include "Server/Core/ProcessUnit/InNetwork.inl"

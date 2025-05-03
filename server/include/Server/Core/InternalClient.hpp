@@ -5,9 +5,10 @@
 #include <unordered_map>
 #include <set>
 
+#include "Server/Core/OrderBook.hpp"
+
 #include "Common/Core/Order.hpp"
 #include "Common/Network/Socket.hpp"
-#include "Server/Core/OrderBook.hpp"
 
 class InternalClient
 {

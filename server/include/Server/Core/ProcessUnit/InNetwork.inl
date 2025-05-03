@@ -1,9 +1,11 @@
 #include <future>
 
-#include "Server/Core/Pipeline/InNetwork.hpp"
+#include "Server/Core/ProcessUnit/InNetwork.hpp"
+
 #include "Common/Core/Logger.hpp"
 #include "Common/Message/Message.hpp"
-namespace pip
+
+namespace pu
 {
     template<class Func>
     requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>

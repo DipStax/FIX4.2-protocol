@@ -1,15 +1,16 @@
 #include <future>
 
+#include "Server/Core/ProcessUnit/Router.hpp"
+#include "Server/Core/meta.hpp"
+
 #include "Common/Core/Logger.hpp"
 #include "Common/Core/Utils.hpp"
 #include "Common/Message/Message.hpp"
-#include "Server/Core/Pipeline/Router.hpp"
-#include "Server/Core/meta.hpp"
 
-namespace pip
+namespace pu
 {
-    Router::Router(InOutNetwork &_tcp_output)
-        : m_tcp_output(_tcp_output)
+    Router::Router(InOutNetwork &_tcp_output, QueueInputType &_logon)
+        : m_tcp_output(_tcp_output), m_logon_handler(_logon)
     {
     }
 
@@ -43,7 +44,7 @@ namespace pip
                 Logger::Log("Message from: (", *(input.Client), ") with type: ", input.Message.at(fix::Tag::MsgType));
                 switch (input.Message.at("35")[0])
                 {
-                    case fix::Logon::cMsgType: (void)treatLogon(input);
+                    case fix::Logon::cMsgType: m_logon_handler.push(std::move(input));
                         break;
                     case fix::HeartBeat::cMsgType: (void)treatHeartbeat(input);
                         break;

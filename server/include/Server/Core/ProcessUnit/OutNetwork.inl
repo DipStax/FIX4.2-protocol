@@ -1,9 +1,10 @@
 #include <future>
 
-#include "Common/Core/Logger.hpp"
-#include "Server/Core/Pipeline/OutNetwork.hpp"
+#include "Server/Core/ProcessUnit/OutNetwork.hpp"
 
-namespace pip
+#include "Common/Core/Logger.hpp"
+
+namespace pu
 {
     template<class Func>
     requires IsProcessor<Func, Context<OutNetworkInput> &>

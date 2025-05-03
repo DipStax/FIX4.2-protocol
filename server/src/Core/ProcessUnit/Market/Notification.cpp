@@ -1,8 +1,9 @@
-#include "Server/Core/Pipeline/Notification.hpp"
+#include "Server/Core/ProcessUnit/Market/Notification.hpp"
+
 #include "Common/Message/MarketDataIncrementalRefresh.hpp"
 #include "Common/Message/MarketDataSnapshotFullRefresh.hpp"
 
-namespace pip
+namespace pu::market
 {
     Notification::Notification(OrderBook &_ob, InOutNetwork &_tcp)
         : m_tcp_output(_tcp), m_ob(_ob)
