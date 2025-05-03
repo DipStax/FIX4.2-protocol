@@ -9,8 +9,8 @@
 
 namespace pu
 {
-    Router::Router(InOutNetwork &_tcp_output, QueueInputType &_logon, QueueInputType &_logout)
-        : m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout)
+    Router::Router(InOutNetwork &_tcp_output, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat)
+        : m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat)
     {
     }
 
@@ -46,7 +46,7 @@ namespace pu
                 {
                     case fix::Logon::cMsgType: m_logon_handler.push(std::move(input));
                         break;
-                    case fix::HeartBeat::cMsgType: (void)treatHeartbeat(input);
+                    case fix::HeartBeat::cMsgType: m_heartbeat_handler.push(std::move(input));
                         break;
                     case fix::Logout::cMsgType: m_logout_handler.push(std::move(input));
                         break;
@@ -166,25 +166,6 @@ namespace pu
         reject.set58_text("Unknown message type");
         Logger::Log("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-        return true;
-    }
-
-    bool Router::treatHeartbeat(Context<RouterInput> &_input)
-    {
-        Logger::Log("(HeartBeat) Processing message...");
-        fix::HeartBeat heartbeat;
-        std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
-
-        // need to modify user info
-        if (reject.first) {
-            Logger::Log("(HeartBeat) Request verification failed: ");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger::Log("(HearBeat) Reject from (", *(_input.Client), ") moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
-        }
-        Logger::Log("(HeartBeat) Validate from client: ", _input.Client->getUserId());
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(heartbeat));
         return true;
     }
 

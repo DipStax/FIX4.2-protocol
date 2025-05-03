@@ -6,9 +6,11 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     m_udp_output("UDP broadcast", _udp_port),
     m_logon("Logon handler", m_tcp_output.getInput()),
     m_logout("Logout handler", m_tcp_output.getInput()),
+    m_heartbeat("HeartBeat handler", m_tcp_output.getInput()),
     m_router("Router", m_tcp_output.getInput(),
         m_logon.getInput(),
-        m_logout.getInput()
+        m_logout.getInput(),
+        m_heartbeat.getInput()
     ),
     m_tcp_input("Input Network", m_router.getInput(), m_tcp_output.getInput(), _tcp_port)
 {
@@ -33,6 +35,7 @@ bool Core::start()
             m_tcp_output.status();
             m_logon.status();
             m_logout.status();
+            m_heartbeat.status();
             for (auto &[_, _pip] : m_markets)
                 _pip.status();
             m_router.status();
@@ -62,6 +65,8 @@ void Core::stop()
         Logger::Log(m_logon.getName(), " PU stoped");
         m_logout.stop();
         Logger::Log(m_logout.getName(), " PU stoped");
+        m_heartbeat.stop();
+        Logger::Log(m_heartbeat.getName(), " PU stoped");
         for (auto &[_name, _pip] : m_markets) {
             _pip.stop();
            Logger::Log(_pip.getName(), " PU stoped");
@@ -86,6 +91,8 @@ bool Core::internal_start()
     Logger::Log(m_logon.getName(), " PU started");
     m_logout.start();
     Logger::Log(m_logout.getName(), " PU started");
+    m_heartbeat.start();
+    Logger::Log(m_heartbeat.getName(), " PU started");
 
     for (auto &[_name, _pip] : m_markets) {
         _pip.start();

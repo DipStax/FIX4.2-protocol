@@ -9,7 +9,7 @@ namespace pu
     class Router : public IProcessUnit<Context<RouterInput>>
     {
         public:
-            Router(InOutNetwork &_raw, QueueInputType &_logon, QueueInputType &_logout);
+            Router(InOutNetwork &_raw, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat);
             virtual ~Router() = default;
 
             void registerMarket(const std::string &_name, InMarket &_input);
@@ -25,7 +25,6 @@ namespace pu
             bool treatOrderCancelRequest(Context<RouterInput> &_input);
             bool treatOrderCancelReplaceRequest(Context<RouterInput> &_input);
             bool treatUnknown(Context<RouterInput> &_input);
-            bool treatHeartbeat(Context<RouterInput> &_input);
             bool treatMarketDataRequest(Context<RouterInput> &_input);
 
         private:
@@ -37,5 +36,6 @@ namespace pu
 
             QueueInputType &m_logon_handler;
             QueueInputType &m_logout_handler;
+            QueueInputType &m_heartbeat_handler;
     };
 }
