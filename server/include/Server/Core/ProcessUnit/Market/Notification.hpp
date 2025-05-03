@@ -1,18 +1,14 @@
 #pragma once
 
-#include "Server/Core/Pipeline/Naming.hpp"
+#include "Server/Core/ProcessUnit/interface/IProcessUnitBase.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Server/Core/OrderBook.hpp"
-#include "Server/Core/Pipeline/IProcessUnit.hpp"
-
-#ifndef NOTIF_REFRESH_TO
-    #define NOTIF_REFRESH_TO 5000
-#endif
 
 #ifndef NOTIF_UPDATE_TO
     #define NOTIF_UPDATE_TO 5000
 #endif
 
-namespace pip
+namespace pu::market
 {
     class Notification : public IProcessUnitBase
     {

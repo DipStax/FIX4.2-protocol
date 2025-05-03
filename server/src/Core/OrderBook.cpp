@@ -1,8 +1,8 @@
 #include <numeric>
 
+#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Server/Core/OrderBook.hpp"
 #include "Common/Message/ExecutionReport.hpp"
-#include "Server/Core/Pipeline/Naming.hpp"
 
 OrderBook::OrderBook(const std::string &_name, EventQueue &_output)
     : m_name(_name), m_output(_output)

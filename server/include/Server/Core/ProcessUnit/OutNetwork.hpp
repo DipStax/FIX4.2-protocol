@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Server/Core/meta.hpp"
+#include "Server/Core/ProcessUnit/Naming.hpp"
+
 #include "Common/Thread/Pool.hpp"
-#include "Server/Core/Pipeline/Naming.hpp"
 
 #ifndef TS_SIZE_ON
     #define TS_SIZE_ON 10
 #endif
 
-namespace pip
+namespace pu
 {
     /// @brief Pipeline to send reply to a client over TCP network.
     template<class Func>
@@ -34,4 +35,4 @@ namespace pip
     };
 }
 
-#include "Server/Core/Pipeline/OutNetwork.inl"
+#include "Server/Core/ProcessUnit/OutNetwork.inl"

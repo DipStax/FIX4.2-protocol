@@ -1,20 +1,19 @@
-#include "Server/Core/Pipeline/DataRefresh.hpp"
+#include "Server/Core/ProcessUnit/Market/RefreshSuscribtion.hpp"
 
-namespace pip
+namespace pu::market
 {
-    DataRefresh::DataRefresh(OrderBook &_ob, InOutNetwork &_output)
+    RefreshSuscribtion::RefreshSuscribtion(OrderBook &_ob, InOutNetwork &_output)
         : m_ob(_ob), m_tcp_output(_output)
     {
     }
 
-    DataRefresh::QueueInputType &DataRefresh::getInput()
+    RefreshSuscribtion::QueueInputType &RefreshSuscribtion::getInput()
     {
         return m_input;
     }
 
-    void DataRefresh::runtime(std::stop_token _st)
+    void RefreshSuscribtion::runtime(std::stop_token _st)
     {
-        Logger::SetThreadName(THIS_THREAD_ID, "DataRefresh");
         Context<MarketInput> input;
 
         while (!_st.stop_requested()) {
@@ -25,19 +24,19 @@ namespace pip
         }
     }
 
-    void DataRefresh::process(Context<MarketInput> &_input)
+    void RefreshSuscribtion::process(Context<MarketInput> &_input)
     {
         MarketRefreshInputData &data = std::get<MarketRefreshInputData>(_input.Data);
 
         if (data.SubType == 0) {
-            Logger::Log("[DataRefresh] SubType is refresh");
+            Logger::Log("[RefreshSuscribtion] SubType is refresh");
             OrderBook::Subscription sub;
             fix::MarketDataSnapshotFullRefresh message;
 
             message.set262_mDReqID(data.Id);
-            Logger::Log("[DataRefresh] Checking for symbol: ", m_ob.getSymbol());
+            Logger::Log("[RefreshSuscribtion] Checking for symbol: ", m_ob.getSymbol());
             for (OrderType _type : data.Types) {
-                Logger::Log("[DataRefresh] Checking symbol: ", m_ob.getSymbol(), ", for type: ", (int)_type);
+                Logger::Log("[RefreshSuscribtion] Checking symbol: ", m_ob.getSymbol(), ", for type: ", (int)_type);
                 sub.depth = data.Depth;
                 sub.type = _type;
                 message += m_ob.refresh(sub);
@@ -45,9 +44,9 @@ namespace pip
             m_ob.cache_flush();
             message.set55_symbol(m_ob.getSymbol());
             m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(message));
-            Logger::Log("[DataRefresh] Refresh done");
+            Logger::Log("[RefreshSuscribtion] Refresh done");
         } else if (data.SubType == 1) {
-            Logger::Log("[DataRefresh] SubType is subscribe");
+            Logger::Log("[RefreshSuscribtion] SubType is subscribe");
             OrderBook::Subscription sub;
 
             sub.depth = data.Depth;
@@ -56,7 +55,7 @@ namespace pip
             fix::MarketDataSnapshotFullRefresh message;
 
             for (OrderType _type : data.Types) {
-                Logger::Log("[DataRefresh] (Subscribe) to: ", m_ob.getSymbol(), " with type: ", _type);
+                Logger::Log("[RefreshSuscribtion] (Subscribe) to: ", m_ob.getSymbol(), " with type: ", _type);
                 sub.type = _type;
                 subs.push_back(sub);
             }
@@ -66,7 +65,7 @@ namespace pip
             // std::cout << "subcribtion size after: " << data.Client.subscribe(_sym).size() << std::endl;
             m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(message));
         } else {
-            Logger::Log("[DataRefresh] SubType is unsubscribe");
+            Logger::Log("[RefreshSuscribtion] SubType is unsubscribe");
             std::vector<OrderBook::Subscription> &subs = _input.Client->subscribe(m_ob.getSymbol());
 
             for (OrderType _type : data.Types)
