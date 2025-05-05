@@ -7,6 +7,7 @@
 
 #include "Common/Network/Acceptor.hpp"
 #include "Common/Network/Socket.hpp"
+#include "Common/Thread/Pool.hpp"
 
 class ClientStore
 {
@@ -44,9 +45,11 @@ class ClientStore
 
         static inline std::shared_mutex m_onnew_mutex{};
         static inline std::vector<OnClientCallback> m_onnew{};
+        static inline ThreadPool<1> m_tp_onnew{};
 
         static inline std::shared_mutex m_onremove_mutex{};
         static inline std::vector<OnClientCallback> m_onremove{};
+        static inline ThreadPool<1> m_tp_onremove{};
 };
 
 #include "Server/Core/ClientStore.inl"

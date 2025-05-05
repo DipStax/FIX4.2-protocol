@@ -19,10 +19,12 @@ void ClientStore::newClientSocket(ClientSocket _client)
 
         m_clients.emplace_back(std::make_shared<InternalClient>(_client));
 
-        std::shared_lock lock_onnew(m_onnew_mutex);
+        m_tp_onnew.enqueue([this, _client = m_clients.back()] () {
+            std::shared_lock lock_onnew(m_onnew_mutex);
 
-        for (OnClientCallback _cb : m_onnew)
-            _cb(m_clients.back());
+            for (OnClientCallback _cb : m_onnew)
+                _cb(_client);
+        });
     }
 }
 
@@ -60,12 +62,12 @@ void ClientStore::removeClient(Client _client)
         return _client == _original;
     });
 
-    {
+    m_tp_onremove.enqueue([this, _client] {
         std::shared_lock lock_remove(m_onremove_mutex);
 
         for (OnClientCallback _cb : m_onremove)
             _cb(_client);
-    }
+    });
     m_clients.erase(it);
 }
 
