@@ -24,6 +24,8 @@ namespace pu::market
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
+            std::string getThreadName() const;
+
             void runtime(std::stop_token _st);
 
         private:

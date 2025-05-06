@@ -2,9 +2,8 @@
 
 template<class T>
 template<class ...Ts>
-ProcessUnit<T>::ProcessUnit(const std::string &_name, Ts &&..._args)
+ProcessUnit<T>::ProcessUnit(Ts &&..._args)
     : T(std::forward<Ts>(_args)...),
-    m_status(PUStatus::Initialize), m_name(_name),
     m_future(m_promise.get_future())
 {
 }
@@ -44,18 +43,19 @@ void ProcessUnit<T>::stop()
 }
 
 template<class T>
-const std::string &ProcessUnit<T>::getName() const
-{
-    return m_name;
-}
-
-template<class T>
 void ProcessUnit<T>::process(std::stop_token _st)
 {
-    Logger::SetThreadName(THIS_THREAD_ID, getName());
+    Logger::SetThreadName(THIS_THREAD_ID, this->getThreadName());
+    Logger::Log("PU Started");
+
     try {
         T::runtime(_st);
     } catch (...) {
         m_promise.set_exception(std::current_exception());
     }
+
+    if constexpr (IsPUStopable<T>)
+        this->onStop();
+
+    Logger::Log("PU Exiting");
 }

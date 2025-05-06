@@ -5,22 +5,22 @@
 
 #include "Common/Thread/Pool.hpp"
 
-#if !defined(PU_LOGON_TP_SIZE) || PU_LOGON_TP_SIZE <= 0
-    #define PU_LOGON_TP_SIZE 1
+#if !defined(PU_LOGOUT_TP_SIZE) || PU_LOGOUT_TP_SIZE <= 0
+    #define PU_LOGOUT_TP_SIZE 1
 #endif
 
 namespace data
 {
-    using LogonInput = RouterInput;
+    using LogoutInput = RouterInput;
 }
 
 namespace pu::user
 {
-    class LogonHandler : public IProcessUnit<Context<data::LogonInput>>
+    class LogoutHandler : public IProcessUnit<Context<data::LogoutInput>>
     {
         public:
-            LogonHandler(InOutNetwork &_tcp_output);
-            virtual ~LogonHandler() = default;
+            LogoutHandler(InOutNetwork &_tcp_output);
+            virtual ~LogoutHandler() = default;
 
             QueueInputType &getInput();
 
@@ -35,6 +35,6 @@ namespace pu::user
             QueueInputType m_input;
             InOutNetwork &m_tcp_output;
 
-            ThreadPool<PU_LOGON_TP_SIZE> m_tp;
+            ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;
     };
 }

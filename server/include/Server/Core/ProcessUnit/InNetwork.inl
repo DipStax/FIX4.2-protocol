@@ -16,6 +16,16 @@ namespace pu
         (void)m_acceptor.blocking(false);
         m_selector.timeout(100);
         Logger::Log("[InNetwork] listening to port: ", _port);
+        ClientStore::OnRemoveClient([this] (const ClientStore::Client _client) {
+            m_selector.erase(_client->getSocket());
+        });
+    }
+
+    template<class Func>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    std::string InNetwork<Func>::getThreadName() const
+    {
+        return "TCP Input";
     }
 
     template<class Func>
@@ -43,8 +53,7 @@ namespace pu
                     (void)_client->close();
                     Logger::Log("[InNetwork] Unable to find the client's information: ");
                 } else if (Func::run(client, m_output, m_error)) {
-                    Logger::Log("[InNetwork] Disconnecting client: ");
-                    m_selector.erase(client->getSocket());
+                    Logger::Log("[InNetwork] Disconnecting client (", *client, ")");
                     ClientStore::Instance().removeClient(client);
                 }
             }

@@ -3,6 +3,8 @@
 #include <future>
 #include <thread>
 
+#include "Server/Core/ProcessUnit/interface/IProcessUnitStopable.hpp"
+
 enum PUStatus
 {
     Initialize,
@@ -12,12 +14,15 @@ enum PUStatus
 };
 
 template<class T>
+concept IsPUStopable = std::is_base_of_v<pu::IProcessUnitStopable, T>;
+
+template<class T>
 class ProcessUnit : public T
 {
     public:
+        ProcessUnit() = default;
         template<class ...Ts>
-        ProcessUnit(const std::string &_name, Ts &&..._args);
-        ProcessUnit();
+        ProcessUnit(Ts &&..._args);
 
         void start();
 
@@ -25,15 +30,10 @@ class ProcessUnit : public T
 
         void stop();
 
-        [[nodiscard]] const std::string &getName() const;
-
     protected:
         void process(std::stop_token _st);
 
     private:
-        PUStatus m_status;
-
-        std::string m_name;
         std::promise<void> m_promise;
         std::future<void> m_future;
         std::jthread m_thread;
