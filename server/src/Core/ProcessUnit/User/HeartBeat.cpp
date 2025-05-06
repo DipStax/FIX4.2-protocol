@@ -41,31 +41,7 @@ namespace pu::user
         while (!_st.stop_requested()) {
             while (!m_input.empty()) {
                 m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    Logger::Log("Processing message...");
-                    fix::HeartBeat heartbeat;
-                    std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
-
-                    if (reject.first) {
-                        Logger::Log("Request verification failed: ");
-                        reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-                        Logger::Log("Reject from (", *(_input.Client), ") moving to TCP output");
-                        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-                        return false;
-                    }
-
-                    {
-                        std::shared_lock lock(m_mutex);
-
-                        // cant be end()
-                        auto it = std::find_if(m_heartbeat.begin(), m_heartbeat.end(), [_input] (const HeartBeatPair &_pair) {
-                            return _pair.first == _input.Client;
-                        });
-                        Logger::Log("Updated client (", *(_input.Client), ") heartbeat");
-                        it->second = _input.ReceiveTime;
-                    }
-
-                    m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(heartbeat));
-                    return true;
+                    process(std::move(_input));
                 });
             }
         }
@@ -77,6 +53,35 @@ namespace pu::user
             m_thread.request_stop();
             m_thread.join();
         }
+    }
+
+    bool HeartBeatHandler::process(InputType &&_input)
+    {
+        Logger::Log("Processing message...");
+        fix::HeartBeat heartbeat;
+        std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
+
+        if (reject.first) {
+            Logger::Log("Request verification failed: ");
+            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+            Logger::Log("Reject from (", *(_input.Client), ") moving to TCP output");
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
+            return false;
+        }
+
+        {
+            std::shared_lock lock(m_mutex);
+
+            // cant be end()
+            auto it = std::find_if(m_heartbeat.begin(), m_heartbeat.end(), [_input] (const HeartBeatPair &_pair) {
+                return _pair.first == _input.Client;
+            });
+            Logger::Log("Updated client (", *(_input.Client), ") heartbeat");
+            it->second = _input.ReceiveTime;
+        }
+
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(heartbeat));
+        return true;
     }
 
     void HeartBeatHandler::handle(std::stop_token _st)

@@ -30,6 +30,8 @@ namespace pu::user
             void runtime(std::stop_token _st);
 
         private:
+            bool process(InputType &&_input);
+
             QueueInputType m_input;
             InOutNetwork &m_tcp_output;
 

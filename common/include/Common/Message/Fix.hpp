@@ -32,7 +32,6 @@ namespace fix
         protected:
             friend class Serializer;
 
-
             InsertMap<std::string, std::string> m_params{};
     };
 }

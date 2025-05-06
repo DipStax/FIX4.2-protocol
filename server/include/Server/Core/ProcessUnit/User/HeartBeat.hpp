@@ -39,6 +39,8 @@ namespace pu::user
             void onStop();
 
         private:
+            bool process(InputType &&_input);
+
             void handle(std::stop_token _st);
 
             std::jthread m_thread;
