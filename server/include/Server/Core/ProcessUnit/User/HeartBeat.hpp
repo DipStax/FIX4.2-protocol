@@ -4,7 +4,7 @@
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/interface/IProcessUnitStopable.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
 
@@ -26,7 +26,7 @@ namespace pu::user
     class HeartBeatHandler : public IProcessUnit<Context<data::HeartBeatInput>>, public IProcessUnitStopable
     {
         public:
-            HeartBeatHandler(InOutNetwork &_tcp_output);
+            HeartBeatHandler(InputNetworkOutput &_tcp_output);
             virtual ~HeartBeatHandler() = default;
 
             QueueInputType &getInput();
@@ -48,7 +48,7 @@ namespace pu::user
             using HeartBeatPair = std::pair<ClientStore::Client, std::chrono::system_clock::time_point>;
             QueueInputType m_input;
 
-            InOutNetwork &m_tcp_output;
+            InputNetworkOutput &m_tcp_output;
 
             std::shared_mutex m_mutex;
             std::vector<HeartBeatPair> m_heartbeat;

@@ -7,7 +7,7 @@
 
 namespace pu::user
 {
-    HeartBeatHandler::HeartBeatHandler(InOutNetwork &_tcp_output)
+    HeartBeatHandler::HeartBeatHandler(InputNetworkOutput &_tcp_output)
         : m_tcp_output(_tcp_output)
     {
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {

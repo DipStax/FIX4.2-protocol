@@ -7,24 +7,24 @@
 namespace pu
 {
     template<class Func>
-    requires IsProcessor<Func, Context<OutNetworkInput> &>
+    requires IsProcessor<Func, Context<data::OutNetworkInput> &>
     OutNetwork<Func>::QueueInputType &OutNetwork<Func>::getInput()
     {
         return m_input;
     }
 
     template<class Func>
-    requires IsProcessor<Func, Context<OutNetworkInput> &>
+    requires IsProcessor<Func, Context<data::OutNetworkInput> &>
     std::string OutNetwork<Func>::getThreadName() const
     {
         return "TCP Output";
     }
 
     template<class Func>
-    requires IsProcessor<Func, Context<OutNetworkInput> &>
+    requires IsProcessor<Func, Context<data::OutNetworkInput> &>
     void OutNetwork<Func>::runtime(std::stop_token _st)
     {
-        Context<OutNetworkInput> input;
+        InputType input;
 
         while (!_st.stop_requested()) {
             if (!this->m_input.empty()) {

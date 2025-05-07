@@ -3,7 +3,7 @@
 #include <chrono>
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #ifndef UDP_TICK
     #define UDP_TICK 1

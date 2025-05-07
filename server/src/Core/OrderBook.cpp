@@ -1,6 +1,5 @@
 #include <numeric>
 
-#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Server/Core/OrderBook.hpp"
 #include "Common/Message/ExecutionReport.hpp"
 

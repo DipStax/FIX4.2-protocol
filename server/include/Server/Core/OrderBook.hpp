@@ -29,23 +29,6 @@ class OrderBook
             bool sold;
         };
 
-        struct Data
-        {
-            enum class Action
-            {
-                Add,
-                Modify,
-                Cancel
-            };
-
-            Action action;
-            OrderType type;
-            Price price;
-            Price oprice;
-            OrderId target;
-            Order order;
-        };
-
         struct Subscription
         {
             size_t depth = 0;

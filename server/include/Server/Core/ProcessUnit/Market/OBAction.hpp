@@ -1,24 +1,21 @@
 #pragma once
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
-#include "Common/Thread/Pool.hpp"
+#include "Server/Core/ProcessUnit/data/Market.hpp"
 
-#ifndef TS_SIZE_OB
-    #define TS_SIZE_OB 1
-#endif
+#include "Common/Thread/Pool.hpp"
 
 namespace pu::market
 {
     /// @brief Pipeline managing the OrderBook.
-    class OBAction : public IProcessUnit<Context<MarketInput>>
+    class OBAction : public IProcessUnit<Context<data::OBActionInput>>
     {
         public:
             /// @brief Construct the pipeline.
             /// @param _ob OrderBook reference.
             /// @param _input Input data queue.
             /// @param _output Output data queue.
-            OBAction(OrderBook &_ob, InOutNetwork &_output);
+            OBAction(OrderBook &_ob, InputNetworkOutput &_output);
             virtual ~OBAction() = default;
 
             [[nodiscard]] QueueInputType &getInput();
@@ -29,21 +26,19 @@ namespace pu::market
             void runtime(std::stop_token _st);
 
         private:
-            /// @brief Apply the action received by the pip::Action pipeline on the OrderBook.
-            /// @param _data Data to build and run action on the OrderBook.
-            void process(Context<MarketInput> &_data);
+            void process(InputType &_data);
 
-            bool runAdd(const Context<MarketInput> &_data);
-            bool runModify(const Context<MarketInput> &_data);
-            bool runCancel(const Context<MarketInput> &_data);
+            bool runAdd(const InputType &_data);
+            bool runModify(const InputType &_data);
+            bool runCancel(const InputType &_data);
 
             const std::string m_name;
 
-            QueueInputType m_input;        ///< Intput data queue.
-            InOutNetwork &m_tcp_output;          ///< Output data queue.
+            QueueInputType m_input;
+            InputNetworkOutput &m_tcp_output;
 
-            ThreadPool<TS_SIZE_OB> m_tp;    ///< Thread pool to run async processing.
+            ThreadPool<1> m_tp;
 
-            OrderBook &m_ob;                ///< OrderBook manage by the pipeline.
+            OrderBook &m_ob;
     };
 }

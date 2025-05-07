@@ -1,18 +1,18 @@
 #pragma once
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Market.hpp"
 
 namespace pu
 {
     /// @brief Pipeline running action depending on received message.
-    class Router : public IProcessUnit<Context<RouterInput>>
+    class Router : public IProcessUnit<Context<data::RouterInput>>
     {
         public:
-            Router(InOutNetwork &_raw, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat);
+            Router(InputNetworkOutput &_raw, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat);
             virtual ~Router() = default;
 
-            void registerMarket(const std::string &_name, InMarket &_input);
+            void registerMarket(const std::string &_name, QueueInputType &_input);
 
             [[nodiscard]] QueueInputType &getInput();
 
@@ -22,18 +22,16 @@ namespace pu
             void runtime(std::stop_token _st);
 
         protected:
-            bool treatNewOrderSingle(Context<RouterInput> &_input);
-            bool treatOrderCancelRequest(Context<RouterInput> &_input);
-            bool treatOrderCancelReplaceRequest(Context<RouterInput> &_input);
-            bool treatUnknown(Context<RouterInput> &_input);
-            bool treatMarketDataRequest(Context<RouterInput> &_input);
+            void redirectToMarket(InputType &_input);
+            bool treatUnknown(InputType &_input);
+            bool treatMarketDataRequest(InputType &_input);
 
         private:
-            MarketEntry m_market_input;      ///< Map of every market ouput data queue.
+            std::map<std::string, QueueInputType &> m_market_input;
 
-            QueueInputType m_input;       ///< Intput data queue.
+            QueueInputType m_input;
 
-            InOutNetwork &m_tcp_output;           ///< Raw message queue.
+            InputNetworkOutput &m_tcp_output;
 
             QueueInputType &m_logon_handler;
             QueueInputType &m_logout_handler;

@@ -1,4 +1,3 @@
-#include "Server/Core/ProcessUnit/Naming.hpp"
 #include "Server/Network/Processor.hpp"
 
 #include "Common/Core/Logger.hpp"
@@ -9,7 +8,7 @@ namespace net::tcp
 {
     namespace in
     {
-        bool Basic::run(const ClientStore::Client &_client, InputRouter &_serial, InOutNetwork &_error)
+        bool Basic::run(const ClientStore::Client &_client, InputRouter &_serial, InputNetworkOutput &_error)
         {
             int error = 0;
             fix::Serializer::AnonMessage msg;
@@ -39,7 +38,7 @@ namespace net::tcp
 
     namespace out
     {
-        bool Response::run(Context<OutNetworkInput> &_data)
+        bool Response::run(Context<data::OutNetworkInput> &_data)
         {
             _data.Message.header.set34_msgSeqNum(std::to_string(_data.Client->nextSeqNumber()));
             _data.Message.header.set49_SenderCompId(PROVIDER_NAME);

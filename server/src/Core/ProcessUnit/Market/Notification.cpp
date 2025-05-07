@@ -5,7 +5,7 @@
 
 namespace pu::market
 {
-    Notification::Notification(OrderBook &_ob, InOutNetwork &_tcp)
+    Notification::Notification(OrderBook &_ob, InputNetworkOutput &_tcp)
         : m_tcp_output(_tcp), m_ob(_ob)
     {
     }
