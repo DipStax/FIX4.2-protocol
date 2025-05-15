@@ -8,8 +8,8 @@
 namespace pu
 {
     template<class Func>
-    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
-    InNetwork<Func>::InNetwork(InputRouter &_output, InOutNetwork &_error, uint32_t _port)
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InputNetworkOutput &>
+    InNetwork<Func>::InNetwork(InputRouter &_output, InputNetworkOutput &_error, uint32_t _port)
         : m_output(_output), m_error(_error), m_acceptor(), m_selector()
     {
         (void)m_acceptor.listen(_port);
@@ -22,14 +22,14 @@ namespace pu
     }
 
     template<class Func>
-    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InputNetworkOutput &>
     std::string InNetwork<Func>::getThreadName() const
     {
         return "TCP Input";
     }
 
     template<class Func>
-    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InputNetworkOutput &>
     void InNetwork<Func>::runtime(std::stop_token _st)
     {
         ClientStore::ClientSocket accept = nullptr;

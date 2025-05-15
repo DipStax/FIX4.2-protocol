@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Market.hpp"
 
 namespace pu::market
 {
-    class RefreshSuscribtion : public IProcessUnit<Context<MarketInput>>
+    class RefreshSuscribtion : public IProcessUnit<Context<data::RefreshSubInput>>
     {
         public:
-            RefreshSuscribtion(OrderBook &_ob, InOutNetwork &_output);
+            RefreshSuscribtion(OrderBook &_ob, InputNetworkOutput &_output);
             virtual ~RefreshSuscribtion() = default;
 
             [[nodiscard]] QueueInputType &getInput();
@@ -19,11 +19,11 @@ namespace pu::market
             void runtime(std::stop_token _st);
 
         private:
-            void process(Context<MarketInput> &_input);
+            void process(InputType &_input);
 
             OrderBook &m_ob;
 
             QueueInputType m_input;
-            InOutNetwork &m_tcp_output;
+            InputNetworkOutput &m_tcp_output;
     };
 }

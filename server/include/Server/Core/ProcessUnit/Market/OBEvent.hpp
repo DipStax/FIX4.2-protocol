@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Market.hpp"
 #include "Common/Thread/Pool.hpp"
 #include "Server/Core/OrderBook.hpp"
 
@@ -12,10 +12,10 @@
 
 namespace pu::market
 {
-    class OBEvent : public IProcessUnit<OrderBook::Event>
+    class OBEvent : public IProcessUnit<data::OBEventInput>
     {
         public:
-            OBEvent(const std::string &_name, InUDP &_udp, InOutNetwork &_tcp);
+            OBEvent(const std::string &_symbol, InputUdp &_udp, InputNetworkOutput &_tcp);
             virtual ~OBEvent() = default;
 
             [[nodiscard]] QueueInputType &getInput();
@@ -30,12 +30,12 @@ namespace pu::market
             bool createUdp(const OrderBook::Event &_input);
 
         private:
-            const std::string m_name;
+            const std::string m_symbol;
 
             QueueInputType m_input;
 
-            InUDP &m_udp_output;
-            InOutNetwork &m_tcp_output;
+            InputUdp &m_udp_output;
+            InputNetworkOutput &m_tcp_output;
 
             ThreadPool<TS_SIZE_OE> m_tp;
     };

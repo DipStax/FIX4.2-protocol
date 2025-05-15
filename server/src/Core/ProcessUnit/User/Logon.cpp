@@ -6,7 +6,7 @@
 
 namespace pu::user
 {
-    LogonHandler::LogonHandler(InOutNetwork &_tcp_output)
+    LogonHandler::LogonHandler(InputNetworkOutput &_tcp_output)
         : m_tcp_output(_tcp_output)
     {
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
 
@@ -19,7 +19,7 @@ namespace pu::user
     class LogoutHandler : public IProcessUnit<Context<data::LogoutInput>>
     {
         public:
-            LogoutHandler(InOutNetwork &_tcp_output);
+            LogoutHandler(InputNetworkOutput &_tcp_output);
             virtual ~LogoutHandler() = default;
 
             QueueInputType &getInput();
@@ -33,7 +33,7 @@ namespace pu::user
             bool process(InputType &&_input);
 
             QueueInputType m_input;
-            InOutNetwork &m_tcp_output;
+            InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;
     };

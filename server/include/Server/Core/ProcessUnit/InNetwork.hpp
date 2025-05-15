@@ -3,7 +3,7 @@
 #include "Common/Network/Selector.hpp"
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Global.hpp"
 #include "Server/Core/ClientStore.hpp"
 #include "Server/Core/meta.hpp"
 
@@ -18,7 +18,7 @@ namespace pu
     /// @tparam _T is function to process when an action is needed on a socket.
     /// @tparam __T is the format socket are stored in the vector referenced.
     template<class Func>
-    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InOutNetwork &>
+    requires IsProcessor<Func, const ClientStore::Client &, InputRouter &, InputNetworkOutput &>
     class InNetwork : public IProcessUnitBase
     {
         public:
@@ -27,7 +27,7 @@ namespace pu
             /// @param _output Output data queue of the pipeline.
             /// @param _error Error output directly connected to pip::OutNetwork
             /// @param _port Port on which the network will listen to, for connection and receive message.
-            InNetwork(InputRouter &_output, InOutNetwork &_error, uint32_t _port);
+            InNetwork(InputRouter &_output, InputNetworkOutput &_error, uint32_t _port);
             virtual ~InNetwork() = default;
 
         protected:
@@ -37,7 +37,7 @@ namespace pu
 
         private:
             InputRouter &m_output;                     ///< Ouput data queue
-            InOutNetwork &m_error;                  ///< Output message queue directly to the pip::OutNetwork
+            InputNetworkOutput &m_error;                  ///< Output message queue directly to the pip::OutNetwork
 
             net::Acceptor<net::tcp::Socket> m_acceptor;            ///< Acceptor listening the the port passed as parameter.
             net::Selector<net::tcp::Socket> m_selector;            ///< Selector managing the client list action.

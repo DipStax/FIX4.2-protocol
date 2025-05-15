@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Server/Core/meta.hpp"
-#include "Server/Core/ProcessUnit/Naming.hpp"
+#include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
 
@@ -13,8 +13,8 @@ namespace pu
 {
     /// @brief Pipeline to send reply to a client over TCP network.
     template<class Func>
-    requires IsProcessor<Func, Context<OutNetworkInput> &>
-    class OutNetwork : public IProcessUnit<Context<OutNetworkInput>>
+    requires IsProcessor<Func, Context<data::OutNetworkInput> &>
+    class OutNetwork : public IProcessUnit<Context<data::OutNetworkInput>>
     {
         public:
             /// @brief Socket format used
