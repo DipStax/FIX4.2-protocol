@@ -10,6 +10,7 @@
 #include "Server/Core/ProcessUnit/Router.hpp"
 #include "Server/Core/ProcessUnit/UDPOutNetwork.hpp"
 #include "Server/Network/Processor.hpp"
+#include "Common/Log/Manager.hpp"
 
 class Core
 {
@@ -27,6 +28,7 @@ class Core
         void market_init();
 
     private:
+
         bool m_running = false;
 
         std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
@@ -40,4 +42,6 @@ class Core
 
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::InNetwork<net::tcp::in::Basic>> m_tcp_input;
+
+        std::unique_ptr<log::ILogger> Logger = nullptr;
 };

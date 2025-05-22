@@ -100,7 +100,6 @@ fix::MarketDataSnapshotFullRefresh OrderBook::refresh(T &_cache, size_t _depth)
 {
     std::lock_guard<std::mutex> guard(m_mutex);
 
-
     size_t size = 0;
     fix::MarketDataSnapshotFullRefresh result;
     const std::string type = (std::is_same_v<T, cache_BidBook>) ? "0" : "1";
