@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Common/Core/Utils.hpp"
+#include "Common/Utils.hpp"
 #include "Common/Message/Fix.hpp"
 
 class ChecksumTest : public ::testing::Test

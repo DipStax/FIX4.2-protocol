@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include "Client/Processor/OrderBook.hpp"
-#include "Common/Core/Utils.hpp"
+#include "Common/Utils.hpp"
 
 namespace data
 {
