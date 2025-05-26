@@ -4,9 +4,8 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <arpa/inet.h> 
+#include <arpa/inet.h>
 
-#include "Common/Core/Logger.hpp"
 #include "Common/Network/Socket.hpp"
 
 namespace net
@@ -39,7 +38,6 @@ namespace net
         std::string str = "";
 
         if (_error == -1) {
-            Logger::Log("[Socket] Error will trying to receive data: ", strerror(errno));
             if (data != nullptr)
                 delete[] data;
             return str;
@@ -55,7 +53,6 @@ namespace net
         std::string str = "";
 
         if (_error == -1) {
-            Logger::Log("[Socket] Error will trying to receive data: ", strerror(errno));
             if (data != nullptr)
                 delete[] data;
             return str;
@@ -91,7 +88,6 @@ namespace net
         Socket::Socket()
             : ::net::Socket(SOCK_STREAM)
         {
-            Logger::Log("[tcp::Socket] New TCP socket");
         }
 
     }
@@ -101,7 +97,6 @@ namespace net
         Socket::Socket()
             : ::net::Socket(SOCK_DGRAM)
         {
-            Logger::Log("[udp::Socket] New UDP socket");
         }
 
         bool Socket::broadcasting() const
@@ -119,7 +114,6 @@ namespace net
             if (!c_create())
                 return false;
             if (setsockopt(raw(), SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable)) == -1) {
-                Logger::Log("[udp::Socket] Failed to set the broadcast flag: ", strerror(errno));
                 close();
                 return false;
             }
@@ -135,11 +129,7 @@ namespace net
 
         bool Socket::broadcast(const uint8_t *_data, size_t _size)
         {
-            if (sendto(raw(), _data, _size, 0, (struct sockaddr*)&m_broad_addr, sizeof(sockaddr_in)) == -1) {
-                Logger::Log("[udp::Socket] Failed to send the data on the broadcast: ", strerror(errno));
-                return false;
-            }
-            return true;
+            return sendto(raw(), _data, _size, 0, (struct sockaddr*)&m_broad_addr, sizeof(sockaddr_in)) != -1;
         }
 
         bool Socket::bind() {

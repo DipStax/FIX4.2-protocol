@@ -16,10 +16,21 @@ InsertMap<T, _T> &InsertMap<T, _T>::operator=(const InsertMap<T, _T> &_map)
 }
 
 template<IsKey T, IsEmptyCtor _T>
-bool InsertMap<T, _T>::contains(const T &_key)
+bool InsertMap<T, _T>::contains(const T &_key) const
 {
     return find(_key) != m_map.end();
 }
+
+template<IsKey T, IsEmptyCtor _T>
+InsertMap<T, _T>::ConstIterator InsertMap<T, _T>::find(const T &_key) const
+{
+    // std::lock_guard<std::mutex> guard(m_mutex);
+
+    return std::find_if(m_map.begin(), m_map.end(), [_key] (const Pair &_mkey) {
+        return _key == _mkey.first;
+    });
+}
+
 
 template<IsKey T, IsEmptyCtor _T>
 InsertMap<T, _T>::Iterator InsertMap<T, _T>::find(const T &_key)
@@ -62,6 +73,18 @@ const _T &InsertMap<T, _T>::at(const T &_key) const
 
 template<IsKey T, IsEmptyCtor _T>
 _T &InsertMap<T, _T>::operator[](const T &_key)
+{
+    Iterator it = find(_key);
+
+    if (it == m_map.end()) {
+        emplace(Pair{ _key, _T{} });
+        return find(_key)->second;
+    }
+    return it->second;
+}
+
+template<IsKey T, IsEmptyCtor _T>
+const _T &InsertMap<T, _T>::operator[](const T &_key) const
 {
     Iterator it = find(_key);
 

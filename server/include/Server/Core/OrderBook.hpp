@@ -10,6 +10,7 @@
 #include "Common/Message/MarketDataIncrementalRefresh.hpp"
 #include "Common/Message/MarketDataSnapshotFullRefresh.hpp"
 #include "Common/Thread/Queue.hpp"
+#include "Common/Log/ILogger.hpp"
 
 using AskBook = std::map<Price, OrderList, std::greater<Price>>;
 using BidBook = std::map<Price, OrderList, std::less<Price>>;
@@ -102,6 +103,8 @@ class OrderBook
 
         BidBook m_bid{};
         AskBook m_ask{};
+
+        std::unique_ptr<log::ILogger> Logger = nullptr;
 };
 
 #include "Server/Core/OrderBook.inl"

@@ -4,6 +4,7 @@
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Thread/Pool.hpp"
+#include "Common/Log/ILogger.hpp"
 
 namespace pu::market
 {
@@ -21,8 +22,6 @@ namespace pu::market
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
-            std::string getThreadName() const;
-
             void runtime(std::stop_token _st);
 
         private:
@@ -40,5 +39,7 @@ namespace pu::market
             ThreadPool<1> m_tp;
 
             OrderBook &m_ob;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

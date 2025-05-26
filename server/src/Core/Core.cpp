@@ -1,4 +1,3 @@
-#include "Common/Core/Logger.hpp"
 #include "Server/Core/Core.hpp"
 
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)

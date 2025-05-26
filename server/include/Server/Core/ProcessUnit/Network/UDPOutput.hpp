@@ -5,6 +5,8 @@
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
+#include "Common/Log/ILogger.hpp"
+
 #ifndef UDP_TICK
     #define UDP_TICK 1
 #endif
@@ -19,23 +21,18 @@
 
 namespace pu
 {
-    class UDPOutNetwork : public IProcessUnit<data::UDPPackage>
+    class UdpOutputNetwork : public IProcessUnit<data::UDPPackage>
     {
         public:
-            /// @brief Construct the pipeline.
-            /// @param _input Input data queue.
-            UDPOutNetwork(uint32_t _port);
-            virtual ~UDPOutNetwork() = default;
+            UdpOutputNetwork(uint32_t _port);
+            virtual ~UdpOutputNetwork() = default;
 
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
-            std::string getThreadName() const;
-
             void runtime(std::stop_token _st);
 
         protected:
-            /// @brief Clean the message vector if a message as expire.
             void clean();
 
         private:
@@ -44,5 +41,7 @@ namespace pu
             net::udp::Socket m_socket;
 
             QueueInputType m_input;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

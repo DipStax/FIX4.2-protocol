@@ -3,6 +3,8 @@
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
+#include "Common/Log/ILogger.hpp"
+
 namespace pu
 {
     /// @brief Pipeline running action depending on received message.
@@ -36,5 +38,7 @@ namespace pu
             QueueInputType &m_logon_handler;
             QueueInputType &m_logout_handler;
             QueueInputType &m_heartbeat_handler;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

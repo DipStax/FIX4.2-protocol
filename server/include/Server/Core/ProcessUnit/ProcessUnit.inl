@@ -45,9 +45,6 @@ void ProcessUnit<T>::stop()
 template<class T>
 void ProcessUnit<T>::process(std::stop_token _st)
 {
-    Logger::SetThreadName(THIS_THREAD_ID, this->getThreadName());
-    Logger::Log("PU Started");
-
     try {
         T::runtime(_st);
     } catch (...) {
@@ -56,6 +53,4 @@ void ProcessUnit<T>::process(std::stop_token _st)
 
     if constexpr (IsPUStopable<T>)
         this->onStop();
-
-    Logger::Log("PU Exiting");
 }

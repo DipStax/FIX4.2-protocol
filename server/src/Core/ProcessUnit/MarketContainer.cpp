@@ -22,11 +22,6 @@ namespace pu
         return m_router.getInput();
     }
 
-    std::string MarketContainer::getThreadName() const
-    {
-        return "Market Container - " + m_symbol;
-    }
-
     void MarketContainer::runtime(std::stop_token _st)
     {
         m_router.start();

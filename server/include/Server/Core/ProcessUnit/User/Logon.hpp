@@ -4,6 +4,7 @@
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
+#include "Common/Log/ILogger.hpp"
 
 #if !defined(PU_LOGON_TP_SIZE) || PU_LOGON_TP_SIZE <= 0
     #define PU_LOGON_TP_SIZE 1
@@ -36,5 +37,7 @@ namespace pu::user
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_LOGON_TP_SIZE> m_tp;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

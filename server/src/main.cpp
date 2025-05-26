@@ -1,4 +1,3 @@
-#include "Common/Core/Logger.hpp"
 #include "Server/Core/Core.hpp"
 
 #include "Common/Log/Manager.hpp"
@@ -10,8 +9,6 @@ int main(int _ac, const char **_av)
 {
     std::ignore = _ac;
     std::ignore = _av;
-
-    Logger::Init();
 
     log::Manager::registerNewLogger<log::imp::Console>("console");
     log::Manager::registerNewLogger<log::imp::File>("file");

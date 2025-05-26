@@ -3,6 +3,8 @@
 #include "Server/Core/ProcessUnit/interface/IProcessUnitBase.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
+#include "Common/Log/ILogger.hpp"
+
 #ifndef NOTIF_UPDATE_TO
     #define NOTIF_UPDATE_TO 5000
 #endif
@@ -16,8 +18,6 @@ namespace pu::market
             virtual ~Notification() = default;
 
         protected:
-            std::string getThreadName() const;
-
             void runtime(std::stop_token _st);
 
         private:
@@ -25,5 +25,7 @@ namespace pu::market
 
             InputNetworkOutput &m_tcp_output;
             OrderBook &m_ob;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

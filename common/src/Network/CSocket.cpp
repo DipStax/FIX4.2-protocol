@@ -4,7 +4,6 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "Common/Core/Logger.hpp"
 #include "Common/Network/CSocket.hpp"
 
 namespace net::c
@@ -74,10 +73,8 @@ namespace net::c
 
     bool Socket::close(int _fd)
     {
-        if (::close(_fd) != 0) {
-            Logger::Log("[c::Socket] Error will closing the socket: ", strerror(errno));
+        if (::close(_fd) != 0)
             return false;
-        }
         return true;
     }
 
@@ -91,10 +88,8 @@ namespace net::c
         struct sockaddr_in sin;
         socklen_t len = sizeof(sin);
 
-        if (getsockname(_fd, (struct sockaddr *)&sin, &len) == -1) {
-            Logger::Log("[c::Socket] failed to retrevei the port: ", strerror(errno));
+        if (getsockname(_fd, (struct sockaddr *)&sin, &len) == -1)
             return 0;
-        }
         return ntohs(sin.sin_port);
     }
 
@@ -125,10 +120,8 @@ namespace net::c
     bool Socket::c_create()
     {
         m_fd = create(m_dom, m_type, m_proto);
-        if (m_fd < 0) {
-            Logger::Log("[c::Socket] Error will creating the socket: ", strerror(errno));
+        if (m_fd < 0)
             return false;
-        }
         return true;
     }
 
@@ -136,23 +129,17 @@ namespace net::c
     {
         int reuse = 1;
 
-        if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) != 0) {
-            Logger::Log("[c::Socket] Bind: error when setting the reuse address flag: ", strerror(errno));
+        if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) != 0)
             return false;
-        }
-        if (bind(m_fd, _addr, sizeof(struct sockaddr_in)) == -1) {
-            Logger::Log("[c::Socket] Bind failed: ", strerror(errno));
+        if (bind(m_fd, _addr, sizeof(struct sockaddr_in)) == -1)
             return false;
-        }
         return true;
     }
 
     bool Socket::c_listen(int _max)
     {
-        if (listen(m_fd, _max) != 0) {
-            Logger::Log("[c::Socket] Failed initialisation of listening: ", strerror(errno));
+        if (listen(m_fd, _max) != 0)
             return false;
-        }
         return true;
     }
 
@@ -162,14 +149,10 @@ namespace net::c
 
         addr.sin_family = m_dom;
         addr.sin_port = htons(_port);
-        if (inet_pton(m_dom, _ip, &addr.sin_addr) <= 0) {
-            Logger::Log("[c::Socket] Connection failed: ", strerror(errno), ", when converting Ip");
+        if (inet_pton(m_dom, _ip, &addr.sin_addr) <= 0)
             return false;
-        }
-        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-            Logger::Log("[c::Socket] Connection failed: ", strerror(errno));
+        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
             return false;
-        }
         return true;
     }
 
