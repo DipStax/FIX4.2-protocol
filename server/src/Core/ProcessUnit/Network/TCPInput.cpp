@@ -21,6 +21,7 @@ namespace pu
 
     void TCPInputNetwork::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
         ClientStore::ClientSocket accept = nullptr;
         std::vector<ClientStore::ClientSocket> clients;
 

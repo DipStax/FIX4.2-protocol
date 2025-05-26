@@ -13,6 +13,7 @@ namespace pu::market
 
     void Notification::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
         auto update = std::chrono::system_clock::now();
 
         while (!_st.stop_requested()) {

@@ -20,6 +20,8 @@ namespace pu
 
     void UdpOutputNetwork::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
+
         while (!_st.stop_requested()) {
             auto now = std::chrono::steady_clock::now();
 

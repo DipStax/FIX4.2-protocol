@@ -19,6 +19,7 @@ namespace pu::market
 
     void OBEvent::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
         OrderBook::Event input;
 
         while (!_st.stop_requested()) {
