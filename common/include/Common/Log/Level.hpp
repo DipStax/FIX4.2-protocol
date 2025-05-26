@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+
 namespace log
 {
     enum Level
@@ -33,3 +36,5 @@ namespace log
         }
     }
 }
+
+#pragma GCC diagnostic pop

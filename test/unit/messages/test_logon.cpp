@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Common/Core/Utils.hpp"
+#include "Common/Utils.hpp"
 #include "Common/Message/Logon.hpp"
 
 class TestLogon : public ::testing::Test

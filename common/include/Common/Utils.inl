@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "Common/Core/Utils.hpp"
+#include "Common/Utils.hpp"
 #include "Common/Message/Reject.hpp"
 
 namespace utils

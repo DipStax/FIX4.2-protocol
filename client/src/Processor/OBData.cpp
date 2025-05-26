@@ -1,7 +1,7 @@
 #include <cstring>
 
 #include "Client/Processor/OBData.hpp"
-#include "Common/Core/Utils.hpp"
+#include "Common/Utils.hpp"
 
 namespace proc
 {
