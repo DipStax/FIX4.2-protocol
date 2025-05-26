@@ -45,7 +45,9 @@ namespace pu
                 {
                     case fix::Logon::cMsgType: m_logon_handler.push(std::move(input));
                         break;
-                    case fix::HeartBeat::cMsgType: m_heartbeat_handler.push(std::move(input));
+                    case fix::TestRequest::cMsgType:
+                    case fix::HeartBeat::cMsgType:
+                        m_heartbeat_handler.push(std::move(input));
                         break;
                     case fix::Logout::cMsgType: m_logout_handler.push(std::move(input));
                         break;

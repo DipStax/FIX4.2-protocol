@@ -86,12 +86,10 @@ _T &InsertMap<T, _T>::operator[](const T &_key)
 template<IsKey T, IsEmptyCtor _T>
 const _T &InsertMap<T, _T>::operator[](const T &_key) const
 {
-    Iterator it = find(_key);
+    ConstIterator it = find(_key);
 
-    if (it == m_map.end()) {
-        emplace(Pair{ _key, _T{} });
-        return find(_key)->second;
-    }
+    if (it == m_map.end())
+        throw std::out_of_range("Cannot find key");
     return it->second;
 }
 

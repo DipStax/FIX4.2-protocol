@@ -15,6 +15,14 @@ class InternalClient
     public:
         using Subs = std::vector<OrderBook::Subscription>;
 
+        struct HeartBeatInfo
+        {
+            std::shared_ptr<InternalClient> Client = nullptr;
+            std::chrono::system_clock::time_point Since{};
+            bool TestRequest = false;
+            std::optional<std::string> TestValue = std::nullopt;
+        };
+
         InternalClient(std::shared_ptr<net::tcp::Socket> _socket = nullptr);
         ~InternalClient() = default;
 
@@ -31,6 +39,8 @@ class InternalClient
         [[nodiscard]] size_t getSeqNumber() const;
 
         [[nodiscard]] std::shared_ptr<net::tcp::Socket> getSocket() const;
+
+        [[nodiscard]] HeartBeatInfo &getHeartBeatInfo();
 
         [[nodiscard]] bool isSubscribeTo(const std::string &_symbol);
         [[nodiscard]] Subs &subscribe(const std::string &_symbol);
@@ -51,4 +61,5 @@ class InternalClient
         std::shared_ptr<net::tcp::Socket> m_socket = nullptr;
         std::unordered_map<size_t, std::chrono::system_clock::time_point> m_request{};
         SubcribeMap m_subscribe{};
+        HeartBeatInfo m_hb_info{};
 };

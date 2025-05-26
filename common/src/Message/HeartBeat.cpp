@@ -10,7 +10,7 @@ namespace fix
         header.set35_MsgType(MsgType);
     }
 
-    std::pair<bool, Reject> HeartBeat::Verify(Serializer::AnonMessage &_msg)
+    std::pair<bool, Reject> HeartBeat::Verify(const Serializer::AnonMessage &_msg)
     {
         std::pair<bool, Reject> reject = { true, {} };
 

@@ -63,6 +63,11 @@ std::shared_ptr<net::tcp::Socket> InternalClient::getSocket() const
     return m_socket;
 }
 
+InternalClient::HeartBeatInfo &InternalClient::getHeartBeatInfo()
+{
+    return m_hb_info;
+}
+
 bool InternalClient::isSubscribeTo(const std::string &_symbol)
 {
     return m_subscribe.contains(_symbol);

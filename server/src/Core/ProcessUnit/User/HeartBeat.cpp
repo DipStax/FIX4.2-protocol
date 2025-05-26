@@ -1,4 +1,6 @@
 #include <iomanip>
+#include <chrono>
+#include <format>
 
 #include "Server/Core/ProcessUnit/User/HeartBeat.hpp"
 
@@ -12,16 +14,7 @@ namespace pu::user
         : m_tcp_output(_tcp_output), Logger(log::Manager::newLogger("HeartBeat"))
     {
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {
-            std::unique_lock lock(m_mutex);
-
-            m_heartbeat.emplace_back(_client, std::chrono::system_clock::now());
-        });
-        ClientStore::OnRemoveClient([this] (const ClientStore::Client &_client) {
-            std::unique_lock lock(m_mutex);
-
-            std::erase_if(m_heartbeat, [_client] (const HeartBeatPair &_pair) {
-                return _pair.first == _client;
-            });
+            _client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
         });
 
         m_thread = std::jthread(&HeartBeatHandler::handle, this);
@@ -38,8 +31,15 @@ namespace pu::user
 
         while (!_st.stop_requested()) {
             while (!m_input.empty()) {
-                m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    process(std::move(_input));
+                m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () {
+                    switch (_input.Message.at("35")[0]) {
+                        case fix::TestRequest::cMsgType:
+                            break;
+                        case fix::HeartBeat::cMsgType:
+                            processHeartBeat(_input);
+                            break;
+                    }
+                    Logger->log<log::Level::Error>("Unknow message", _input.Message.at("35")[0]);
                 });
             }
         }
@@ -54,7 +54,7 @@ namespace pu::user
         }
     }
 
-    bool HeartBeatHandler::process(InputType &&_input)
+    bool HeartBeatHandler::processHeartBeat(const InputType &_input)
     {
         Logger->log<log::Level::Info>("Processing message...");
         fix::HeartBeat heartbeat;
@@ -68,17 +68,30 @@ namespace pu::user
             return false;
         }
 
-        {
-            std::shared_lock lock(m_mutex);
+        InternalClient::HeartBeatInfo &hb = _input.Client->getHeartBeatInfo();
 
-            // cant be end()
-            auto it = std::find_if(m_heartbeat.begin(), m_heartbeat.end(), [_input] (const HeartBeatPair &_pair) {
-                return _pair.first == _input.Client;
-            });
-            Logger->log<log::Level::Info>("Updated client (", *(_input.Client), ") heartbeat");
-            it->second = _input.ReceiveTime;
+        Logger->log<log::Level::Info>("Updated client (", *(_input.Client), ") heartbeat");
+        if (hb.TestRequest) {
+            if (hb.TestValue.has_value()) {
+                if (hb.TestValue.value() != _input.Message[fix::Tag::TestReqId]) {
+                    fix::Reject reject;
+
+                    reject.set371_refTagId(_input.Message.at(fix::Tag::MsqSeqNum));
+                    reject.set372_refMsgType(_input.Message.at(fix::Tag::MsgType));
+                    reject.set373_sessionRejectReason(fix::Reject::ValueOORange);
+                    reject.set58_text("Incorrect Test Value");
+                    Logger->log<log::Level::Error>("Invalid Test Value: ", hb.TestValue.value(), " - ", _input.Message[fix::Tag::TestReqId], ", for client: (", *(_input.Client), ")");
+                    m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
+                    return false;
+                }
+                hb.TestRequest = false;
+                hb.TestValue = std::nullopt;
+            } else {
+                Logger->log<log::Level::Fatal>("Missing Test value in memory for client (", *(_input.Client), ")");
+                return false;
+            }
         }
-
+        hb.Since = _input.ReceiveTime;
         Logger->log<log::Level::Debug>("Heartbeat from (", *(_input.Client), ") moving to TCP output");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(heartbeat));
         return true;
@@ -89,17 +102,22 @@ namespace pu::user
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-            {
-                std::shared_lock lock(m_mutex);
+            ClientStore::Instance().Apply([this, now] (ClientStore::Client _client) {
+                if (std::chrono::duration<double>(now - _client->getHeartBeatInfo().Since).count() > PU_HEARTBEAT_TO) {
+                    if (!_client->getHeartBeatInfo().TestRequest) {
+                        fix::TestRequest test;
 
-                for (const HeartBeatPair &_hb : m_heartbeat) {
-                    if (std::chrono::duration<double>(now - _hb.second).count() > PU_HEARTBEAT_TO) {
-                        Logger->log<log::Level::Error>("Client (", *(_hb.first), ") failed heartbeat");
-                        ClientStore::Instance().removeClient(_hb.first);
+                        _client->getHeartBeatInfo().TestValue = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(now));
+                        test.set112_testReqID(_client->getHeartBeatInfo().TestValue.value());
+                        Logger->log<log::Level::Info>("Sending TestRequest to Client (", *(_client), ") for failed heartbeat");
+                        m_tcp_output.append(_client, now, std::move(test));
+                    } else {
+                        Logger->log<log::Level::Error>("Client (", *(_client), ") failed heartbeat & Test Request");
+                        ClientStore::Instance().removeClient(_client);
                     }
                 }
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            });
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
         Logger->log<log::Level::Warning>("Exiting processing thread");
     }

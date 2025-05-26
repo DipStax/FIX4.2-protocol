@@ -58,6 +58,7 @@ ClientStore::Client ClientStore::findClient(const std::string &_client_id)
 void ClientStore::removeClient(Client _client)
 {
     std::unique_lock lock_client(m_client_mutex);
+
     auto it = std::find_if(m_clients.begin(), m_clients.end(), [_client] (const Client _original) {
         return _client == _original;
     });
