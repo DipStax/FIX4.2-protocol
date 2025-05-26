@@ -5,6 +5,11 @@
 
 #include "Common/Log/Imp/Base.hpp"
 #include "Common/Thread/Queue.hpp"
+#include "Common/Thread/Pool.hpp"
+
+#if !defined(LOG_BUFFER_TP) || LOG_BUFFER_TP < 1
+    #define LOG_BUFFER_TP
+#endif
 
 namespace log::imp
 {
@@ -12,17 +17,15 @@ namespace log::imp
     {
         public:
             Buffer(const std::string &_name);
-            ~Buffer();
+            ~Buffer() = default;
 
             void newEventLog(Event _event);
 
         private:
-            void thread(std::stop_token _st);
-
-            std::jthread m_thread;
+            static void thread(std::stop_token _st);
 
             std::vector<std::unique_ptr<ILogger>> m_loggers;
 
-            ts::Queue<Event> m_queue;
+            inline static ThreadPool<LOG_BUFFER_TP> m_tp{};
     };
 }

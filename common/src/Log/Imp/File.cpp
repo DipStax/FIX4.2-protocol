@@ -32,6 +32,10 @@ namespace log::imp
         std::stringstream stream;
 
         stream << "[" << LevelToString(_event.level) << "] (" << Name << ") " << std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(_event.time)) << " - " << _event.content;
-        m_stream << stream.str() << std::endl;
+        {
+            std::lock_guard lock(m_mutex);
+
+            m_stream << stream.str() << std::endl;
+        }
     }
 }
