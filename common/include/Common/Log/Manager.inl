@@ -15,7 +15,6 @@ namespace log
     template<class T>
     void Manager::registerDefaultLogger()
     {
-        std::cout << "register new logger" << std::endl;
         m_default = [] (const std::string &_sub) {
             return std::make_unique<T>(_sub);
         };
