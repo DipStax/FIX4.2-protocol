@@ -9,7 +9,6 @@ namespace net
     Selector<T>::Selector()
         : c::EPoll((int)MAX_EVENT_EPOLL), m_to(0)
     {
-        Logger::Log("[Selector] New selector with maximum of event from epoll: ", MAX_EVENT_EPOLL);
     }
 
     template<IsSocket T>
@@ -53,10 +52,8 @@ namespace net
         int set = wait(events, m_to);
         std::vector<Client> clients;
 
-        if (set == -1) {
-            Logger::Log("[Selector] Error when waiting event from epoll: ", strerror(errno));
+        if (set == -1)
             return clients;
-        }
         for (int it = 0; it < std::min(set, MAX_SOCKET); it++) {
             clients.emplace_back(m_clients.at(events[it].data.fd));
         }

@@ -2,21 +2,18 @@
 
 #include "Common/Message/MarketDataIncrementalRefresh.hpp"
 #include "Common/Message/MarketDataSnapshotFullRefresh.hpp"
+#include "Common/Log/Manager.hpp"
 
 namespace pu::market
 {
     Notification::Notification(OrderBook &_ob, InputNetworkOutput &_tcp)
-        : m_tcp_output(_tcp), m_ob(_ob)
+        : m_tcp_output(_tcp), m_ob(_ob), Logger(log::Manager::newLogger("Market/" + m_ob.getSymbol() + "/Notification"))
     {
-    }
-
-    std::string Notification::getThreadName() const
-    {
-        return "Market Notification - " + m_ob.getSymbol();
     }
 
     void Notification::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
         auto update = std::chrono::system_clock::now();
 
         while (!_st.stop_requested()) {
@@ -24,14 +21,13 @@ namespace pu::market
             auto update_diff = std::chrono::duration_cast<std::chrono::seconds>(now - update);
 
             if (update_diff.count() >= NOTIF_UPDATE_TO) {
-                Logger::Log("[Refresh] incremenetal - start");
-                ClientStore::Instance().Apply([*this] (ClientStore::Client _client) {
-                    Logger::Log("[Refresh] Looking for subscribtion of ", m_ob.getSymbol(), " for user: ", _client == nullptr);
+                Logger->log<log::Level::Info>("[Refresh] incremenetal - start");
+                ClientStore::Instance().Apply([this] (ClientStore::Client _client) {
                     if (_client->isSubscribeTo(m_ob.getSymbol())) {
                         const InternalClient::Subs &subs = _client->subscribe(m_ob.getSymbol());
                         fix::MarketDataIncrementalRefresh notif;
 
-                        Logger::Log("[Refresh] Incremental For client: ", _client->getUserId(), ", size of the query: ", subs.size());
+                        Logger->log<log::Level::Debug>("[Refresh] Incremental For client: ", _client->getUserId(), ", size of the query: ", subs.size());
                         if (!subs.empty()) {
                             for (const auto &_sub : subs)
                                 notif += m_ob.update(_sub);
@@ -40,7 +36,7 @@ namespace pu::market
                     }
                 });
                 m_ob.cache_flush();
-                Logger::Log("[Refresh] Incremenetal - done");
+                Logger->log<log::Level::Info>("[Refresh] Incremenetal - done");
                 update = now;
             }
         }

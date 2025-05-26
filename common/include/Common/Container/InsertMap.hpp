@@ -20,7 +20,8 @@ class InsertMap
 
         InsertMap &operator=(const InsertMap<T, _T> &_map);
 
-        [[nodiscard]] bool contains(const T &_key);
+        [[nodiscard]] bool contains(const T &_key) const;
+        [[nodiscard]] ConstIterator find(const T &_key) const;
         [[nodiscard]] Iterator find(const T &_key);
         void append(const Pair &&_pair);
         template<class ...Ts>
@@ -30,6 +31,7 @@ class InsertMap
         [[nodiscard]] const _T &at(const T &_key) const;
 
         [[nodiscard]] _T &operator[](const T &_key);
+        [[nodiscard]] const _T &operator[](const T &_key) const;
 
         [[nodiscard]] constexpr size_t size() const;
         void clear();

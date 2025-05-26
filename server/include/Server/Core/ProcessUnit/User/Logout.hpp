@@ -4,6 +4,7 @@
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
+#include "Common/Log/ILogger.hpp"
 
 #if !defined(PU_LOGOUT_TP_SIZE) || PU_LOGOUT_TP_SIZE <= 0
     #define PU_LOGOUT_TP_SIZE 1
@@ -25,8 +26,6 @@ namespace pu::user
             QueueInputType &getInput();
 
         protected:
-            std::string getThreadName() const;
-
             void runtime(std::stop_token _st);
 
         private:
@@ -36,5 +35,7 @@ namespace pu::user
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

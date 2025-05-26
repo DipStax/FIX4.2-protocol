@@ -4,6 +4,7 @@
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Message/Message.hpp"
+#include "Common/Log/ILogger.hpp"
 
 namespace pu::market
 {
@@ -18,8 +19,6 @@ namespace pu::market
         protected:
             void runtime(std::stop_token _st);
 
-            std::string getThreadName() const;
-
         private:
             bool treatNewOrderSingle(InputType &&_input);
             bool treatOrderCancelRequest(InputType &&_input);
@@ -31,5 +30,7 @@ namespace pu::market
 
             QueueInputType m_input;
             InputOBAction &m_ob_action;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

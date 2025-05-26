@@ -2,8 +2,10 @@
 
 #include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
-#include "Common/Thread/Pool.hpp"
 #include "Server/Core/OrderBook.hpp"
+
+#include "Common/Thread/Pool.hpp"
+#include "Common/Log/ILogger.hpp"
 
 #ifndef TS_SIZE_OE
     #define TS_SIZE_OE 1
@@ -21,8 +23,6 @@ namespace pu::market
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
-            std::string getThreadName() const;
-
             void runtime(std::stop_token _st);
 
         protected:
@@ -38,5 +38,7 @@ namespace pu::market
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<TS_SIZE_OE> m_tp;
+
+            std::unique_ptr<log::ILogger> Logger = nullptr;
     };
 }

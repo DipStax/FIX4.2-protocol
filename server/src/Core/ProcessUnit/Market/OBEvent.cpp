@@ -3,11 +3,12 @@
 #include "Server/Core/ProcessUnit/Market/OBEvent.hpp"
 
 #include "Common/Message/ExecutionReport.hpp"
+#include "Common/Log/Manager.hpp"
 
 namespace pu::market
 {
-    OBEvent::OBEvent(const std::string &m_symbol, InputUdp &_udp, InputNetworkOutput &_tcp)
-        : m_symbol(m_symbol), m_udp_output(_udp), m_tcp_output(_tcp)
+    OBEvent::OBEvent(const std::string &_symbol, InputUdp &_udp, InputNetworkOutput &_tcp)
+        : m_symbol(_symbol), m_udp_output(_udp), m_tcp_output(_tcp), Logger(log::Manager::newLogger("Market/" + _symbol + "/OB-Event"))
     {
     }
 
@@ -16,18 +17,14 @@ namespace pu::market
         return m_input;
     }
 
-    std::string OBEvent::getThreadName() const
-    {
-        return "Market Event - " + m_symbol;
-    }
-
     void OBEvent::runtime(std::stop_token _st)
     {
+        Logger->log<log::Level::Info>("Starting process unit...");
         OrderBook::Event input;
 
         while (!_st.stop_requested()) {
             if (!m_input.empty()) {
-                Logger::Log("[OBEvent] New event from the OderBook");
+                Logger->log<log::Level::Info>("[OBEvent] New event from the OderBook");
                 m_tp.enqueue([this, _data = std::move(m_input.pop_front())] () {
                     createUdp(_data);
                     createTcp(_data);
@@ -56,7 +53,7 @@ namespace pu::market
         report.set151_leavesQty(std::to_string(_input.quantity));
         report.set150_execType(std::to_string(static_cast<uint8_t>(_input.status)));
         m_tcp_output.append(client, std::chrono::system_clock::now(), std::move(report));
-        Logger::Log("[OBEvent] (TCP) Report created: "); // todo log
+        Logger->log<log::Level::Debug>("[OBEvent] (TCP) Report created: "); // todo log
         return true;
     }
 
@@ -79,11 +76,11 @@ namespace pu::market
         package.quantity = _input.quantity;
         package.price = _input.price;
 
-        Logger::Log("[OBEvent] (UDP) Setting Symbol");
+        Logger->log<log::Level::Debug>("[OBEvent] (UDP) Setting Symbol");
         std::memset(package.symbol, '0', std::min(m_symbol.size(), (size_t)MARKET_NAME_MAX_SIZE));
         std::memcpy(package.symbol, m_symbol.c_str(), std::min(m_symbol.size(), (size_t)MARKET_NAME_MAX_SIZE));
 
-        Logger::Log("[OBEvent] (UDP) Report created: ", package);
+        Logger->log<log::Level::Debug>("[OBEvent] (UDP) Report created: ", package);
         m_udp_output.append(std::move(package));
         return true;
     }

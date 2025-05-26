@@ -1,4 +1,3 @@
-#include "Common/Core/Logger.hpp"
 #include "Server/Core/Core.hpp"
 
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
@@ -11,7 +10,8 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
         m_logout.getInput(),
         m_heartbeat.getInput()
     ),
-    m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), _tcp_port)
+    m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), _tcp_port),
+    Logger(log::Manager::newLogger("Core"))
 {
     market_init();
 }
@@ -23,7 +23,7 @@ Core::~Core()
 
 bool Core::start()
 {
-    Logger::Log("Starting...");
+    Logger->log<log::Level::Info>("Starting server...");
     m_running = true;
     if (internal_start())
         return false;
@@ -40,11 +40,11 @@ bool Core::start()
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
-            Logger::Log("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
-            break;
+            Logger->log<log::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
+            return false;
         } catch (std::exception &_e) {
-            Logger::Log("Pipeline have crash: ", _e.what());
-            break;
+            Logger->log<log::Level::Fatal>("Pipeline have crash: ", _e.what());
+            return false;
         }
     }
     stop();
@@ -55,7 +55,7 @@ void Core::stop()
 {
     if (m_running) {
         m_running = false;
-        Logger::Log("Stoping...");
+        Logger->log<log::Level::Info>("Stoping...");
         m_tcp_input.stop();
         m_router.stop();
         m_logon.stop();
@@ -65,13 +65,13 @@ void Core::stop()
             _pip.stop();
         m_tcp_output.stop();
         m_udp_output.stop();
-        Logger::Log("All process unit are stoped");
+        Logger->log<log::Level::Info>("All process unit are stoped");
     }
 }
 
 bool Core::internal_start()
 {
-    Logger::Log("Starting pipeline...");
+    Logger->log<log::Level::Info>("Starting pipeline...");
     m_udp_output.start();
     m_tcp_output.start();
 
