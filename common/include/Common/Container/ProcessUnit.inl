@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "Common/Container/ProcessUnit.hpp"
 
 template<class T>
