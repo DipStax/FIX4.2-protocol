@@ -1,39 +1,31 @@
 #pragma once
 
-#include <memory>
-#include <vector>
+#include "Client/ProcessUnit/TransitName.hpp"
+#include "Client/ProcessUnit/TcpInput.hpp"
 
-#include "Client/Handler/UDPHandler.hpp"
-#include "Client/Handler/UserInput.hpp"
-#include "Client/Handler/TCPHandler.hpp"
-#include "Client/Processor/IProcessor.hpp"
-#include "Common/Network/Ip.hpp"
-#include "Common/Thread/Queue.hpp"
+#include "Common/Container/ProcessUnit.hpp"
+#include "Common/Network/Socket.hpp"
+#include "Common/Log/ILogger.hpp"
 
 class Core
 {
     public:
-        Core(const net::Ip &_ip, uint32_t _tcp, uint32_t _udp);
+        Core(uint32_t _tcp_port, uint32_t _udp_port);
         ~Core();
 
-        void start();
-
+        bool start();
         void stop();
-
     private:
-        std::vector<std::shared_ptr<proc::IMessage>> m_proc_tcp;
-        std::vector<std::shared_ptr<proc::IUDP>> m_proc_udp;
-        std::vector<std::shared_ptr<proc::IEntry>> m_proc_entry;
+        bool m_running;
 
-        void setContext(fix::Message &_msg);
+        std::shared_ptr<net::tcp::Socket> m_server;
 
-        bool m_running = false;
+        ProcessUnit<pu::TcpInputNetwork> m_tcp_input;
 
-        Context m_context;
+        QueueTransit m_tmp;
+        // ProcessUnit<pu::Router> m_router;
+        // ProcessUnit<pu::User> m_user_handler;
 
-        io::UserInput m_input;
-        io::TCPHandler m_tcp;
-        io::UDPHandler m_udp;
+        std::unique_ptr<log::ILogger> Logger = nullptr;
 
-        std::thread m_thread;
 };
