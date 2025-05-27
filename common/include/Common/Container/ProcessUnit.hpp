@@ -3,7 +3,7 @@
 #include <future>
 #include <thread>
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnitStopable.hpp"
+#include "Common/Container/IProcessUnitStopable.hpp"
 
 enum PUStatus
 {
@@ -39,4 +39,4 @@ class ProcessUnit : public T
         std::jthread m_thread;
 };
 
-#include "Server/Core/ProcessUnit/ProcessUnit.inl"
+#include "Common/Container/ProcessUnit.inl"

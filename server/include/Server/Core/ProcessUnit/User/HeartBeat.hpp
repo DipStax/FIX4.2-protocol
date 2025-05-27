@@ -3,8 +3,8 @@
 #include <thread>
 #include <optional>
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
-#include "Server/Core/ProcessUnit/interface/IProcessUnitStopable.hpp"
+#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnitStopable.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"

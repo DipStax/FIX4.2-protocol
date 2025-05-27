@@ -2,7 +2,7 @@
 
 #include "Server/Core/meta.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 
 #include "Common/Thread/Pool.hpp"
 #include "Common/Log/ILogger.hpp"

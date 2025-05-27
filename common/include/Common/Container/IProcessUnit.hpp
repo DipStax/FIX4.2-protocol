@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnitBase.hpp"
+#include "Common/Container/IProcessUnitBase.hpp"
 
 #include "Common/Thread/Queue.hpp"
 
