@@ -188,8 +188,8 @@ namespace net::c
 
     bool Socket::c_close()
     {
-        if (!is_open())
-            return true;
+        // if (!is_open())
+        //     return true;
         return close(m_fd);
     }
 

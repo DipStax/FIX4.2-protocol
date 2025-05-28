@@ -24,7 +24,7 @@ namespace pu
             [[nodiscard]] QueueInputType &getInput();
 
         protected:
-            void runtime(std::stop_token _st);
+            void runtime(std::stop_token _st) override;
 
         private:
             QueueInputType m_input;
