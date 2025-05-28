@@ -13,8 +13,11 @@ namespace pu
         (void)m_acceptor.listen(_port);
         (void)m_acceptor.setBlocking(false);
         m_selector.timeout(100);
-        Logger->log<log::Level::Info>("[InNetwork] listening to port: ", _port);
+        Logger->log<log::Level::Debug>("listening to port: ", _port);
         ClientStore::OnRemoveClient([this] (const ClientStore::Client _client) {
+            Logger->log<log::Level::Info>("Removing client from selector (", *_client, ")");
+            if (!_client->getSocket()->close())
+                Logger->log<log::Level::Warning>("Closing socket for client failed");
             m_selector.erase(_client->getSocket());
         });
     }
@@ -48,6 +51,7 @@ namespace pu
                 }
             }
         }
+        Logger->log<log::Level::Warning>("Exiting process unit...");
     }
 
     bool TCPInputNetwork::process(const ClientStore::Client &_client)

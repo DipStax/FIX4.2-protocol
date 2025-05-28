@@ -103,12 +103,18 @@ namespace pu::user
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
             ClientStore::Instance().Apply([this, now] (ClientStore::Client _client) {
-                if (std::chrono::duration<double>(now - _client->getHeartBeatInfo().Since).count() > PU_HEARTBEAT_TO) {
-                    if (!_client->getHeartBeatInfo().TestRequest) {
+                InternalClient::HeartBeatInfo &hb_info = _client->getHeartBeatInfo();
+
+                if (_client->shouldDisconnect())
+                    return;
+                if (std::chrono::duration<double>(now - hb_info.Since).count() > PU_HEARTBEAT_TO) {
+                    if (!hb_info.TestRequest) {
                         fix::TestRequest test;
 
-                        _client->getHeartBeatInfo().TestValue = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(now));
-                        test.set112_testReqID(_client->getHeartBeatInfo().TestValue.value());
+                        hb_info.Since = now;
+                        hb_info.TestRequest = true;
+                        hb_info.TestValue = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(now));
+                        test.set112_testReqID(hb_info.TestValue.value());
                         Logger->log<log::Level::Info>("Sending TestRequest to Client (", *(_client), ") for failed heartbeat");
                         m_tcp_output.append(_client, now, std::move(test));
                     } else {

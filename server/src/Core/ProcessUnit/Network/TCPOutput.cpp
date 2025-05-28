@@ -20,8 +20,9 @@ namespace pu
         Logger->log<log::Level::Info>("Starting process unit...");
         InputType input;
 
+        bool t = _st.stop_requested();
         while (!_st.stop_requested()) {
-            if (!this->m_input.empty()) {
+            while (!this->m_input.empty()) {
                 m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
                     _input.Message.header.set34_msgSeqNum(std::to_string(_input.Client->nextSeqNumber()));
                     _input.Message.header.set49_SenderCompId(PROVIDER_NAME);
@@ -37,6 +38,7 @@ namespace pu
                         // todo log timing
                         Logger->log<log::Level::Info>("[Responce] Updated client status: { UserId: ", _input.Client->getUserId(), " }"); // todo log
                         if (_input.Client->shouldDisconnect()) {
+                            ClientStore::Instance().removeClient(_input.Client);
                             _input.Client->disconnect();
                             Logger->log<log::Level::Debug>("[Responce] Client has been disconnected: ", _input.Client->getUserId());
                         }
@@ -49,5 +51,6 @@ namespace pu
                 });
             }
         }
+        Logger->log<log::Level::Warning>("Exiting process unit...", _st.stop_requested());
     }
 }

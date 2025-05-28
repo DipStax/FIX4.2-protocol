@@ -25,13 +25,15 @@ bool Core::start()
 {
     Logger->log<log::Level::Info>("Starting server...");
     m_running = true;
-    if (internal_start())
+    if (internal_start()) {
+        m_running = false;
         return false;
+    }
     while (m_running)
     {
         try {
             m_udp_output.status();
-            m_tcp_output.status();
+            // m_tcp_output.status();
             m_logon.status();
             m_logout.status();
             m_heartbeat.status();
@@ -58,13 +60,13 @@ void Core::stop()
         Logger->log<log::Level::Info>("Stoping...");
         m_tcp_input.stop();
         m_router.stop();
-        m_logon.stop();
-        m_logout.stop();
+        // m_logon.stop();
+        // m_logout.stop();
         m_heartbeat.stop();
-        for (auto &[_name, _pip] : m_markets)
-            _pip.stop();
+        // for (auto &[_name, _pip] : m_markets)
+        //     _pip.stop();
         m_tcp_output.stop();
-        m_udp_output.stop();
+        // m_udp_output.stop();
         Logger->log<log::Level::Info>("All process unit are stoped");
     }
 }
@@ -72,15 +74,15 @@ void Core::stop()
 bool Core::internal_start()
 {
     Logger->log<log::Level::Info>("Starting pipeline...");
-    m_udp_output.start();
+    // m_udp_output.start();
     m_tcp_output.start();
 
-    m_logon.start();
-    m_logout.start();
+    // m_logon.start();
+    // m_logout.start();
     m_heartbeat.start();
 
-    for (auto &[_name, _pip] : m_markets)
-        _pip.start();
+    // for (auto &[_name, _pip] : m_markets)
+    //     _pip.start();
 
     m_router.start();
     m_tcp_input.start();
@@ -89,14 +91,14 @@ bool Core::internal_start()
 
 void Core::market_init()
 {
-    std::vector<std::string> name{ MARKET_NAME };
+    // std::vector<std::string> name{ MARKET_NAME };
 
 
-    for (std::string &_name : name) {
-        m_markets.emplace(std::piecewise_construct,
-            std::forward_as_tuple(_name),
-            std::forward_as_tuple(_name, m_udp_output.getInput(), m_tcp_output.getInput()));
+    // for (std::string &_name : name) {
+    //     m_markets.emplace(std::piecewise_construct,
+    //         std::forward_as_tuple(_name),
+    //         std::forward_as_tuple(_name, m_udp_output.getInput(), m_tcp_output.getInput()));
 
-        m_router.registerMarket(_name, m_markets.at(_name).getInput());
-    }
+    //     m_router.registerMarket(_name, m_markets.at(_name).getInput());
+    // }
 }

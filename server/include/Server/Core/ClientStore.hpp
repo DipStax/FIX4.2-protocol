@@ -38,10 +38,12 @@ class ClientStore
         void Apply(ForEachCallback<void> _callback);
 
     private:
-        ClientStore() = default;
+        ClientStore();
 
         std::shared_mutex m_client_mutex{};
         std::vector<Client> m_clients{};
+
+        std::unique_ptr<log::ILogger> Logger = nullptr;
 
         static inline std::shared_mutex m_onnew_mutex{};
         static inline std::vector<OnClientCallback> m_onnew{};

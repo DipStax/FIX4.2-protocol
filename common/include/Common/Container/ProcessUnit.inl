@@ -1,4 +1,5 @@
 #include <functional>
+#include <iostream>
 
 #include "Common/Container/ProcessUnit.hpp"
 
@@ -22,6 +23,7 @@ PUStatus ProcessUnit<T>::status(float _to)
     switch (m_future.wait_for(std::chrono::duration<float>(_to)))
     {
         case std::future_status::ready:
+            std::cerr << "futur is ready" << std::endl;
             m_future.get();
             return PUStatus::Stop;
         case std::future_status::timeout:

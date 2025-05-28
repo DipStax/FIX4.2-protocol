@@ -99,6 +99,59 @@ namespace net::c
     {
         int bc_cast = static_cast<int>(_bc);
 
-        return setsockopt(_fd, SOL_SOCKET, SO_BROADCAST, &bc_cast, sizeof(int)) == 0;
+        addr.sin_family = m_dom;
+        addr.sin_port = htons(_port);
+        if (inet_pton(m_dom, _ip, &addr.sin_addr) <= 0)
+            return false;
+        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+            return false;
+        return true;
+    }
+
+    int Socket::c_accept()
+    {
+        return accept(m_fd);
+    }
+
+    size_t Socket::c_send(const std::string &_data)
+    {
+        return c_send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+    }
+
+    size_t Socket::c_send(const uint8_t *_data, size_t _size)
+    {
+        return send(m_fd, _data, _size);
+    }
+
+    const uint8_t *Socket::c_receive(size_t _size, int &_error)
+    {
+        return receive(m_fd, _size, _error);
+    }
+
+    const uint8_t *Socket::c_receiveUDP(size_t _size, int &_error)
+    {
+        return receiveUDP(m_fd, _size, _error);
+    }
+
+    bool Socket::c_blocking(bool _block)
+    {
+        return blocking(m_fd, _block);
+    }
+
+    bool Socket::c_close()
+    {
+        // if (!is_open())
+        //     return true;
+        return close(m_fd);
+    }
+
+    void Socket::raw(int _fd)
+    {
+        m_fd = _fd;
+    }
+
+    int Socket::raw() const
+    {
+        return m_fd;
     }
 }
