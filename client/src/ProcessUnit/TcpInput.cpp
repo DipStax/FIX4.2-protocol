@@ -30,6 +30,7 @@ namespace pu
                     // todo
                     continue;
                 }
+                Logger->log<log::Level::Info>("New message received: ", data);
                 if (fix::Serializer::run(data, msg) != fix::Serializer::Error::None) {
                     fix::Reject reject;
 
@@ -37,7 +38,6 @@ namespace pu
                     // m_error.append(_client, std::chrono::system_clock::now(), std::move(reject));
                     Logger->log<log::Level::Error>("Message deserialization failed");
                 } else {
-                    Logger->log<log::Level::Info>("New serialized message received");
                     m_output.push(std::move(msg));
                 }
             }
