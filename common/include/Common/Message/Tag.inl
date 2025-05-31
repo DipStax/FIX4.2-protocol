@@ -99,9 +99,10 @@ namespace fix
             OrderCancelRequest::cMsgType,
             OrderCancelReplaceRequest::cMsgType,
             MarketDataRequest::cMsgType,
-            Logout::cMsgType
+            Logout::cMsgType,
+            TestRequest::cMsgType
         };
-        constexpr const size_t size_type = 7;
+        constexpr const size_t size_type = 8;
         std::pair<bool, fix::Reject> reject = { false, {} };
 
         for (size_t i = 0; i < size_type; i++)

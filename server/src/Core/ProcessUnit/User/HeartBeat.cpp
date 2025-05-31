@@ -105,7 +105,7 @@ namespace pu::user
             ClientStore::Instance().Apply([this, now] (ClientStore::Client _client) {
                 InternalClient::HeartBeatInfo &hb_info = _client->getHeartBeatInfo();
 
-                if (_client->shouldDisconnect())
+                if (_client->shouldDisconnect() || !_client->isLoggedin())
                     return;
                 if (std::chrono::duration<double>(now - hb_info.Since).count() > PU_HEARTBEAT_TO) {
                     if (!hb_info.TestRequest) {

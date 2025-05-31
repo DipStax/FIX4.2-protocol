@@ -24,6 +24,7 @@ bool Core::start()
     Logger->log<log::Level::Info>("Starting client backend...");
 
     m_router.start();
+    m_heartbeat.start();
     m_tcp_input.start();
     while (m_running)
     {

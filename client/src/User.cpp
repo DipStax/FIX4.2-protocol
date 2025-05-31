@@ -1,7 +1,9 @@
 #include <sstream>
 #include <format>
 #include <iomanip>
-#include <ctime>
+#include <chrono>
+
+
 
 #include "Client/User.hpp"
 
@@ -14,9 +16,22 @@ User &User::Instance()
     return instance;
 }
 
-const std::string &User::getName() const
+const std::string &User::getUserId() const
 {
-    return m_name;
+    return m_userid;
+}
+
+void User::setSeqNumber(size_t _seq_num)
+{
+    m_seqnum = _seq_num;
+}
+
+size_t User::nextSeqNumber()
+{
+    size_t tmp = m_seqnum;
+
+    m_seqnum++;
+    return tmp;
 }
 
 size_t User::getSeqNumber() const
@@ -24,21 +39,13 @@ size_t User::getSeqNumber() const
     return m_seqnum;
 }
 
-std::chrono::system_clock::time_point User::getSinceHeartBeat() const
+bool User::isLogin() const
 {
-    return m_since_heartbeat;
+    return m_login;
 }
 
-std::chrono::system_clock::time_point User::setSinceHeartBeat(const std::string &_time, const std::string &_format)
+std::chrono::system_clock::time_point User::getSinceHeartBeat() const
 {
-    std::istringstream stream(_time);
-    std::tm tm{};
-
-    stream >> std::get_time(&tm, _format.c_str());
-    if (!stream.fail())
-        Logger->log<log::Level::Error>("Couldn't convert time for HeartBeat Since");
-    m_since_heartbeat = std::chrono::system_clock::from_time_t(std::mktime(&tm));
-    Logger->log<log::Level::Debug>("Using HeartBeat Since at: ", std::format("%Y%m%d-%H:%M:%S", m_since_heartbeat));
     return m_since_heartbeat;
 }
 

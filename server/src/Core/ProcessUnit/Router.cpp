@@ -6,6 +6,7 @@
 
 #include "Common/Utils.hpp"
 #include "Common/Message/Message.hpp"
+#include "Common/Message/Tag.hpp"
 #include "Common/Log/Manager.hpp"
 
 namespace pu

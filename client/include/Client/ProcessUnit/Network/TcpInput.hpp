@@ -20,7 +20,7 @@ namespace pu
             virtual ~TcpInputNetwork() = default;
 
         protected:
-            void runtime(std::stop_token _st)  final override;
+            void runtime(std::stop_token _st)  final;
 
         private:
             Socket m_server;

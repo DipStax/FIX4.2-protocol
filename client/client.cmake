@@ -1,5 +1,5 @@
 # Client
-
+set(CMAKE_CXX_STANDARD 20)
 
 file(GLOB_RECURSE SRC_CLIENT
     client/include/**.hpp
@@ -16,5 +16,6 @@ target_link_libraries(MarketClient PRIVATE LibCommon)
 target_include_directories(MarketClient PRIVATE common/include)
 target_include_directories(MarketClient PRIVATE client/include)
 
+target_compile_definitions(MarketClient PRIVATE PU_HEARTBEAT_TO=5)
 target_compile_definitions(MarketClient PRIVATE PROVIDER_NAME="MyMarket")
 target_compile_definitions(MarketClient PRIVATE MARKET_NAME="GOLD","EURO","USD")
