@@ -55,4 +55,14 @@ namespace fix
         formated_checksum += std::to_string(sum);
         return formated_checksum;
     }
+
+    bool Message::contains(const std::string &_key) const
+    {
+        return m_params.contains(_key);
+    }
+
+    const std::string &Message::get(const std::string &_key) const
+    {
+        return m_params.at(_key);
+    }
 }

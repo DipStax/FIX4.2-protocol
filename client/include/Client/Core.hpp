@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Client/ProcessUnit/Router.hpp"
-#include "Client/ProcessUnit/TransitName.hpp"
-#include "Client/ProcessUnit/TcpInput.hpp"
+#include "Client/ProcessUnit/Network/TcpInput.hpp"
 #include "Client/ProcessUnit/User/HeartBeat.hpp"
+#include "Client/ProcessUnit/Router.hpp"
 
 #include "Common/Container/ProcessUnit.hpp"
 #include "Common/Log/ILogger.hpp"

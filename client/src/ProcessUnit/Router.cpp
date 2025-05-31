@@ -3,6 +3,7 @@
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Message/Message.hpp"
+#include "Common/Message/Tag.hpp"
 
 namespace pu
 {
@@ -25,14 +26,18 @@ namespace pu
         while (!_st.stop_requested()) {
             while (!m_input.empty()) {
                 input = m_input.pop_front();
-                reject = fix::Header::Verify(input, User::Instance().getName(), PROVIDER_NAME, User::Instance().getSeqNumber());
+                reject = fix::Header::Verify(input, PROVIDER_NAME, User::Instance().getUserId(), User::Instance().getSeqNumber());
                 if (reject.first) {
-                    Logger->log<log::Level::Info>("Header verification failed");
+                    if (reject.second.contains(fix::Tag::Text))
+                        Logger->log<log::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                    else
+                        Logger->log<log::Level::Warning>("Header verification failed for unknown reason");
                     // m_tcp_output.append(std::move(reject.second));
                     continue;
                 }
                 Logger->log<log::Level::Debug>("Header verification validated");
-                switch (input.at("35")[0])
+
+                switch (input.at(fix::Tag::MsgType)[0])
                 {
                     // case fix::Logon::cMsgType:
                     // case fix::Logout::cMsgType:
@@ -50,15 +55,14 @@ namespace pu
 
     bool Router::unknownMessage(InputType &_input)
     {
-        Logger->log<log::Level::Info>("(Unknown) Processing message...");
         fix::Reject reject;
 
-        Logger->log<log::Level::Info>("(New Order Single) Rejecting request from server with request type: ", _input.at(fix::Tag::MsgType));
+        Logger->log<log::Level::Info>("Rejecting request from server with request type: ", _input.at(fix::Tag::MsgType));
         reject.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
         reject.set371_refTagId(fix::Tag::MsgType);
         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
         reject.set58_text("Unknown message type");
-        Logger->log<log::Level::Debug>("(Unknown) Moving Reject Unknown from server to TCP Output");
+        Logger->log<log::Level::Debug>("Moving Reject Unknown from server to TCP Output");
         // m_tcp_output.append(std::move(reject));
         return true;
     }

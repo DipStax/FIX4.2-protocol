@@ -1,4 +1,4 @@
-#include "Client/ProcessUnit/TcpInput.hpp"
+#include "Client/ProcessUnit/Network/TcpInput.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Message/Reject.hpp"

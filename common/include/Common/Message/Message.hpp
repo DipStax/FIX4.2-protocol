@@ -14,5 +14,4 @@
 #include "Common/Message/OrderStatusRequest.hpp"
 #include "Common/Message/Reject.hpp"
 #include "Common/Message/Serializer.hpp"
-#include "Common/Message/Tag.hpp"
 #include "Common/Message/TestRequest.hpp"
