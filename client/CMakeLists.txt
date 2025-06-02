@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(FIX_Client)
 
+include(FetchContent)
+include(ExternalProject)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
@@ -16,6 +19,12 @@ include_directories(common/include/)
 #   GUI
 ###################################
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+
 file(GLOB_RECURSE SRC_FIXClient_GUI
     "${CR}/GUI/include/Client/GUI/**.hpp"
     "${CR}/GUI/include/Client/GUI/**.inl"
@@ -26,14 +35,21 @@ add_executable(FIX_Client_GUI
     ${SRC_FIXClient_GUI}
 )
 
-target_link_libraries(FIX_Client_GUI PUBLIC LibCommon)
+target_link_libraries(FIX_Client_GUI PRIVATE LibCommon)
+target_link_libraries(FIX_Client_GUI PRIVATE Qt6::Core Qt6::Widgets)
 
 target_include_directories(FIX_Client_GUI PUBLIC "${CR}/GUI/include")
 target_compile_definitions(FIX_Client_GUI PUBLIC PROVIDER_NAME="MyMarket")
 
+set(CMAKE_AUTOMOC OFF)
+set(CMAKE_AUTOUIC OFF)
+set(CMAKE_AUTORCC OFF)
+
 ###################################
 #   Backend
 ###################################
+
+
 
 file(GLOB_RECURSE SRC_FIXClient_Back
     "${CR}/Back/include/Client/Back/**.hpp"
@@ -45,7 +61,8 @@ add_executable(FIX_Client_Back
     ${SRC_FIXClient_Back}
 )
 
-target_link_libraries(FIX_Client_Back PUBLIC LibCommon)
-
 target_include_directories(FIX_Client_Back PUBLIC "${CR}/Back/include")
+
 target_compile_definitions(FIX_Client_Back PUBLIC PROVIDER_NAME="MyMarket")
+
+target_link_libraries(FIX_Client_Back PRIVATE LibCommon)
