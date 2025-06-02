@@ -1,5 +1,5 @@
-#include "Client/ProcessUnit/Router.hpp"
-#include "Client/User.hpp"
+#include "Client/Back/ProcessUnit/Router.hpp"
+#include "Client/Back/User.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Message/Message.hpp"
@@ -7,8 +7,9 @@
 
 namespace pu
 {
-    Router::Router(QueueTransit &_heartbeat)
-        : m_heartbeat(_heartbeat), Logger(log::Manager::newLogger("Router"))
+    Router::Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth)
+        : m_tcp_output(_tcp_output), m_heartbeat(_heartbeat), m_auth(_auth),
+        Logger(log::Manager::newLogger("Router"))
     {
     }
 

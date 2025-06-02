@@ -12,10 +12,6 @@
     #define MAX_EVENT_EPOLL 30
 #endif
 
-#ifndef MAX_SOCKET
-    #define MAX_SOCKET 30
-#endif
-
 namespace net
 {
     /// @brief Class implementing the c::EPoll to select socket with pending event.

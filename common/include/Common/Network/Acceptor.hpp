@@ -2,6 +2,10 @@
 
 #include "Common/Network/Socket.hpp"
 
+#ifndef MAX_SOCKET
+    #define MAX_SOCKET 30
+#endif
+
 namespace net
 {
     template<class T>

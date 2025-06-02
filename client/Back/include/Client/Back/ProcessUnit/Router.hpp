@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Client/ProcessUnit/TransitName.hpp"
+#include "Client/Back/ProcessUnit/TransitName.hpp"
 
 #include "Common/Container/IProcessUnit.hpp"
 #include "Common/Log/ILogger.hpp"
@@ -10,7 +10,7 @@ namespace pu
     class Router : public IProcessUnit<TransitMessage>
     {
         public:
-            Router(QueueTransit &_heartbeat);
+            Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth);
 
             QueueTransit &getInput() override;
 
@@ -22,7 +22,9 @@ namespace pu
 
             QueueTransit m_input;
 
+            QueueMessage &m_tcp_output;
             QueueTransit &m_heartbeat;
+            QueueTransit &m_auth;
 
             std::unique_ptr<log::ILogger> Logger;
     };

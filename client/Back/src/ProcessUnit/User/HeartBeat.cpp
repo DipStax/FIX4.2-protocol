@@ -1,7 +1,7 @@
 #include <chrono>
 
-#include "Client/ProcessUnit/User/HeartBeat.hpp"
-#include "Client/User.hpp"
+#include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
+#include "Client/Back/User.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Message/Message.hpp"
@@ -83,7 +83,7 @@ namespace pu
             return false;
         }
 
-        User::Instance().setSinceHeartBeat(_input.at(fix::Tag::SendingTime));
+        User::Instance().setSinceHeartBeat(std::chrono::system_clock::now());
         Logger->log<log::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
         return true;
     }

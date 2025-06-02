@@ -3,6 +3,7 @@
 #include "Common/Container/IProcessUnit.hpp"
 #include "Common/Message/Fix.hpp"
 #include "Common/Log/ILogger.hpp"
+#include "Common/Network/Socket.hpp"
 
 namespace pu
 {

@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Client/ProcessUnit/Network/TcpInput.hpp"
-#include "Client/ProcessUnit/User/HeartBeat.hpp"
-#include "Client/ProcessUnit/Router.hpp"
+#include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
+#include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
+#include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
+#include "Client/Back/ProcessUnit/User/Auth.hpp"
+#include "Client/Back/ProcessUnit/Router.hpp"
 
 #include "Common/Container/ProcessUnit.hpp"
 #include "Common/Log/ILogger.hpp"
@@ -21,15 +23,16 @@ class Core
 
         std::shared_ptr<net::tcp::Socket> m_server;
 
+        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
+
         ProcessUnit<pu::HeartBeatHandler> m_heartbeat;
+        ProcessUnit<pu::AuthHandler> m_auth;
 
         ProcessUnit<pu::Router> m_router;
 
         ProcessUnit<pu::TcpInputNetwork> m_tcp_input;
 
         QueueMessage m_tmp;
-        // ProcessUnit<pu::Router> m_router;
-        // ProcessUnit<pu::User> m_user_handler;
 
         std::unique_ptr<log::ILogger> Logger = nullptr;
 };

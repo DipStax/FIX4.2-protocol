@@ -11,13 +11,20 @@ class User
     public:
         static User &Instance();
 
-        [[nodiscard]] const std::string &getUserId() const;
-
         void setSeqNumber(size_t _seqnum);
         [[nodiscard]] size_t nextSeqNumber();
         [[nodiscard]] size_t getSeqNumber() const;
 
+        void login(const std::string &_userid);
         [[nodiscard]] bool isLogin() const;
+        [[nodiscard]] const std::string &getUserId() const;
+
+        void logoutRequested(bool _logout);
+        [[nodiscard]] bool logoutRequested() const;
+
+        void shouldDisconnect(bool _dc);
+        [[nodiscard]] bool shouldDisconnect() const;
+        void disconnect();
 
         [[nodiscard]] std::chrono::system_clock::time_point getSinceHeartBeat() const;
         void setSinceHeartBeat(std::chrono::system_clock::time_point _time);
@@ -25,14 +32,15 @@ class User
     private:
         User();
 
-        const std::string m_name;
-
         std::chrono::system_clock::time_point m_since_heartbeat = std::chrono::system_clock::now();
 
-        std::string m_userid;
         size_t m_seqnum = 1;
 
         bool m_login = false;
+        std::string m_userid;
+
+        bool m_dc_req = false;
+        bool m_logout_req = false;
 
         std::unique_ptr<log::ILogger> Logger = nullptr;
 };
