@@ -14,6 +14,9 @@ namespace net
     template<IsSocketDomain T>
     bool Selector<T>::client(Client _client)
     {
+        if (_client == nullptr)
+            return false;
+
         Event event;
         int fd = _client->FD();
 
@@ -29,8 +32,10 @@ namespace net
     template<IsSocketDomain T>
     void Selector<T>::erase(Client _client)
     {
+        if (_client == nullptr)
+            return;
         std::erase_if(m_clients, [_client] (const std::pair<int, Client> &_lclient) {
-            return _client->raw() == _lclient.second->raw();
+            return _client->FD() == _lclient.second->FD();
         });
     }
 

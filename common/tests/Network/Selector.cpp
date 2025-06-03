@@ -13,21 +13,12 @@
 class Selector_empty : public testing::Test
 {
     protected:
-        Selector_empty()
-            : Logger(log::Manager::newLogger("Selector/Empty"))
-        {
-        }
-
         void SetUp() override
         {
-            Logger->log<log::Level::Info>("--- Setup start...");
             selector.timeout((float)TEST_TO_SELECTOR);
-            Logger->log<log::Level::Info>("--- Setup done");
         }
 
         net::Selector<net::StreamTcp> selector;
-
-        std::unique_ptr<log::ILogger> Logger = nullptr;
 };
 
 TEST_F(Selector_empty, timout_check)
@@ -35,6 +26,16 @@ TEST_F(Selector_empty, timout_check)
     ASSERT_EQ(selector.timeout(), TEST_TO_SELECTOR);
 }
 
+
+TEST_F(Selector_empty, no_client)
+{
+    ASSERT_EQ(selector.size(), 0);
+}
+
+TEST_F(Selector_empty, null_client)
+{
+    ASSERT_FALSE(selector.client(nullptr));
+}
 
 class Selector_single : public testing::Test
 {
@@ -47,6 +48,7 @@ class Selector_single : public testing::Test
             if (!socket.connect(TEST_IP_TCP, acceptor.getPort()))
                 FAIL() << "Failed to connect to the endpoint: " << strerror(errno);
             client = acceptor.accept();
+            selector.client(client);
         }
 
         net::StreamTcp socket;
@@ -57,8 +59,6 @@ class Selector_single : public testing::Test
 
 TEST_F(Selector_single, pull_to)
 {
-    ASSERT_TRUE(selector.client(client));
-
     auto start = std::chrono::high_resolution_clock::now();
     std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
     auto end = std::chrono::high_resolution_clock::now();
@@ -70,30 +70,32 @@ TEST_F(Selector_single, pull_to)
     ASSERT_EQ(clients.size(), 0);
 }
 
-TEST_F(Selector_single, no_client)
-{
-    ASSERT_EQ(selector.size(), 0);
-}
-
 TEST_F(Selector_single, unique_client)
 {
-    ASSERT_TRUE(selector.client(client));
     ASSERT_EQ(selector.size(), 1);
 }
 
 TEST_F(Selector_single, same_client)
 {
-    ASSERT_TRUE(selector.client(client));
-    ASSERT_EQ(selector.size(), 1);
     ASSERT_FALSE(selector.client(client));
+    ASSERT_EQ(selector.size(), 1);
+}
+
+TEST_F(Selector_single, erase_client)
+{
+    selector.erase(client);
+    ASSERT_EQ(selector.size(), 0);
+}
+
+TEST_F(Selector_single, erase_nullptr)
+{
+    selector.erase(nullptr);
     ASSERT_EQ(selector.size(), 1);
 }
 
 TEST_F(Selector_single, pull_client)
 {
     const std::string msg = "this is a test";
-    ASSERT_TRUE(selector.client(client));
-
     ASSERT_EQ(socket.send(msg), msg.size());
 
     std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
@@ -126,6 +128,11 @@ class Selector_multi : public testing::Test
         net::Selector<net::StreamTcp> selector;
         net::Acceptor<net::StreamTcp> acceptor;
 };
+
+TEST_F(Selector_multi, erase_random)
+{
+    ASSERT_TRUE(selector.client(client1));
+}
 
 TEST_F(Selector_multi, add_client_diff)
 {

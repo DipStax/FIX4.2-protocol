@@ -47,9 +47,9 @@ TEST_F(Socket_ConnectClose, connect_close_client) {
 
     ASSERT_NE(client, nullptr);
 
-    ASSERT_TRUE(client->close());
-    ASSERT_FALSE(socket.isOpen());
-    ASSERT_FALSE(client->isOpen());
+    EXPECT_TRUE(client->close());
+    EXPECT_FALSE(socket.isOpen());
+    EXPECT_FALSE(client->isOpen());
 }
 
 class Socket_SendRecv : public testing::Test
