@@ -1,40 +1,21 @@
-#include <cstring>
-
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <arpa/inet.h>
-
 #include "Common/Network/Socket.hpp"
+#include "Common/Network/CSocket.hpp"
 
-namespace net
+namespace net::type
 {
-    void Socket::blocking(bool _block)
+    size_t Tcp::send(const std::string &_data)
     {
-        (void)c_blocking(_block);
+        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
     }
 
-    bool Socket::connect(const Ip &_ip, uint32_t _port)
+    size_t Tcp::send(const uint8_t *_data, size_t _size)
     {
-        if (!c_create())
-            return false;
-        return c_connect(_ip.c_str(), _port);
+        return c::Socket::send(m_fd, _data, _size);
     }
 
-    size_t Socket::send(const std::string &_data)
+    [[nodiscard]] std::string Tcp::receive(size_t _size, int &_error)
     {
-        return c_send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
-    }
-
-    size_t Socket::send(const uint8_t *_data, size_t _size)
-    {
-        return c_send(_data, _size);
-    }
-
-    std::string Socket::receive(size_t _size, int &_error)
-    {
-        const uint8_t *data = c_receive(_size, _error);
+        const uint8_t *data = c::Socket::receive(m_fd, _size, _error);
         std::string str = "";
 
         if (_error == -1) {
@@ -47,96 +28,15 @@ namespace net
         return str;
     }
 
-    std::string Socket::receiveUDP(size_t _size, int &_error)
+    Tcp::Tcp(int _type, bool _is_dom)
+        : BaseSocket(_type, SOCK_STREAM, 0)
     {
-        const uint8_t *data = c_receiveUDP(_size, _error);
-        std::string str = "";
-
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
+        std::ignore = _is_dom;
     }
 
-    bool Socket::close()
+    Tcp::Tcp(int _fd)
+        : BaseSocket(_fd)
     {
-        return c_close();
-    }
-
-    Socket::operator bool()
-    {
-        return is_open();
-    }
-
-    bool Socket::operator==(const Socket &_socket)
-    {
-        return raw() == _socket.raw();
-    }
-
-
-    Socket::Socket(int _type)
-        : c::Socket(AF_INET, _type, 0)
-    {
-    }
-
-    namespace tcp
-    {
-        Socket::Socket()
-            : ::net::Socket(SOCK_STREAM)
-        {
-        }
-
-    }
-
-    namespace udp
-    {
-        Socket::Socket()
-            : ::net::Socket(SOCK_DGRAM)
-        {
-        }
-
-        bool Socket::broadcasting() const
-        {
-            return m_broadcast;
-        }
-
-        bool Socket::broadcastOn(uint32_t _port)
-        {
-            int enable = 1;
-
-            if (is_open()) {
-                close();
-            }
-            if (!c_create())
-                return false;
-            if (setsockopt(raw(), SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable)) == -1) {
-                close();
-                return false;
-            }
-
-            std::memset(&m_broad_addr, 0, sizeof(m_broad_addr));
-            m_broad_addr.sin_family = AF_INET;
-            m_broad_addr.sin_port = htons(8081);
-            m_broad_addr.sin_addr.s_addr =  htonl(INADDR_LOOPBACK);
-            m_broadcast = true;
-
-            return true;
-        }
-
-        bool Socket::broadcast(const uint8_t *_data, size_t _size)
-        {
-            return sendto(raw(), _data, _size, 0, (struct sockaddr*)&m_broad_addr, sizeof(sockaddr_in)) != -1;
-        }
-
-        bool Socket::bind() {
-
-            // struct sockaddr_in addr_client = getAddr();
-
-            return c_bind((struct sockaddr *)&m_broad_addr);
-        }
+        // verify the correct type
     }
 }
