@@ -13,7 +13,7 @@ namespace net::type
         return c::Socket::send(m_fd, _data, _size);
     }
 
-    [[nodiscard]] std::string Tcp::receive(size_t _size, int &_error)
+    std::string Tcp::receive(size_t _size, int &_error)
     {
         const uint8_t *data = c::Socket::receive(m_fd, _size, _error);
         std::string str = "";

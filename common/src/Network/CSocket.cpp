@@ -83,4 +83,21 @@ namespace net::c
             return true;
         return false;
     }
+
+    bool Socket::bind(int _fd, struct sockaddr *_addr)
+    {
+        int reuse = 1;
+
+        if (setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) != 0)
+            return false;
+        if (::bind(_fd, _addr, sizeof(struct sockaddr_in)) == -1)
+            return false;
+        return true;
+    }
+
+     bool Socket::listen(int _fd, int _max)
+    {
+        return ::listen(_fd, _max) == 0;
+    }
+
 }

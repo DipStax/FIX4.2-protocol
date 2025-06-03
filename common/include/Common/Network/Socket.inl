@@ -1,68 +1,74 @@
+#include <arpa/inet.h>
+#include <sys/un.h>
+#include <cstring>
+
 #include "Common/Network/CSocket.hpp"
 
 namespace net::dom
 {
     template<IsSocketType T>
-    INet::INet()
+    INet<T>::INet()
         : T(Domain, true)
     {
     }
 
     template<IsSocketType T>
-    INet::INet(int _fd)
+    INet<T>::INet(int _fd)
         : T(_fd)
     {
         // verify correct domain
     }
 
     template<IsSocketType T>
-    bool INet::connect(const Ip &_ip, uint32_t _port)
+    bool INet<T>::connect(const Ip &_ip, uint32_t _port)
     {
         struct sockaddr_in addr;
 
-        addr.sin_family = m_dom;
+        addr.sin_family = Domain;
         addr.sin_port = htons(_port);
-        if (inet_pton(m_dom, _ip.c_str(), &addr.sin_addr) <= 0)
+        if (this->isOpen())
+            this->close();
+        this->create();
+        if (inet_pton(Domain, _ip.c_str(), &addr.sin_addr) <= 0)
             return false;
-        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+        if (::connect(this->m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
             return false;
         return true;
     }
 
     template<IsSocketType T>
-    bool INet::connect(uint32_t _ip, uint32_t _port)
+    bool INet<T>::connect(uint32_t _ip, uint32_t _port)
     {
         struct sockaddr_in addr;
 
-        addr.sin_family = m_dom;
+        std::memset(&addr, 0, sizeof(addr));
+        addr.sin_family = Domain;
         addr.sin_port = htons(_port);
         addr.sin_addr.s_addr = htonl(_ip);
-        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-            return false;
-        return true;
+        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == 0;
     }
 
     template<IsSocketType T>
-    Unix::Unix()
+    Unix<T>::Unix()
         : T(Domain, true)
     {
     }
 
     template<IsSocketType T>
-    Unix::Unix(int _fd)
+    Unix<T>::Unix(int _fd)
         : T(_fd)
     {
         // verify correct domain
     }
 
     template<IsSocketType T>
-    bool Unix::connect(const std::string &_path)
+    bool Unix<T>::connect(const std::string &_path)
     {
         sockaddr_un addr{};
         addr.sun_family = AF_UNIX;
         std::strncpy(addr.sun_path, _path.c_str(), sizeof(addr.sun_path) - 1);
 
-        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+        if (connect(this->m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
             return false;
         return true;
     }

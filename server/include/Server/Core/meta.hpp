@@ -82,10 +82,10 @@ concept IsBook = IsBookOf<T, OrderList>;
 template<class T>
 concept IsBookCache = IsBookOf<T, Quantity>;
 
-template<class T, class _T>
-concept SocketClient = IsSocket<_T> && (std::is_same_v<std::shared_ptr<_T>, T> || requires (std::shared_ptr<_T> _s) {
-    { T(_s) };
-});
+// template<class T, class _T>
+// concept SocketClient = IsSocket<_T> && (std::is_same_v<std::shared_ptr<_T>, T> || requires (std::shared_ptr<_T> _s) {
+//     { T(_s) };
+// });
 
 template<class T, class ...Ts>
 concept IsProcessor = requires (Ts... _args) {

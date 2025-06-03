@@ -12,7 +12,6 @@ class Socket_ConnectClose : public testing::Test
     protected:
         void SetUp() override
         {
-            Logger::SetThreadName(THIS_THREAD_ID, "test::Socket_ConnectClose");
             acceptor.listen(0);
             port = acceptor.getPort();
         }
@@ -22,35 +21,35 @@ class Socket_ConnectClose : public testing::Test
             (void)acceptor.close();
         }
 
-        net::Acceptor<net::tcp::Socket> acceptor;
+        net::Acceptor<net::StreamTcp> acceptor;
         uint32_t port = 0;
 };
 
 TEST_F(Socket_ConnectClose, connect_close_server) {
-    net::tcp::Socket socket;
+    net::StreamTcp socket;
 
     ASSERT_TRUE(socket.connect(TEST_IP_TCP, port));
 
-    net::Acceptor<net::tcp::Socket>::Client client = acceptor.accept();
+    net::Acceptor<net::StreamTcp>::Client client = acceptor.accept();
 
     ASSERT_NE(client, nullptr);
     EXPECT_TRUE(client->close());
-    EXPECT_FALSE(client->is_open());
-    EXPECT_FALSE(socket.is_open());
+    EXPECT_FALSE(client->isOpen());
+    EXPECT_FALSE(socket.isOpen());
 }
 
 TEST_F(Socket_ConnectClose, connect_close_client) {
-    net::tcp::Socket socket;
+    net::StreamTcp socket;
 
     ASSERT_TRUE(socket.connect(TEST_IP_TCP, port));
 
-    net::Acceptor<net::tcp::Socket>::Client client = acceptor.accept();
+    net::Acceptor<net::StreamTcp>::Client client = acceptor.accept();
 
     ASSERT_NE(client, nullptr);
 
     ASSERT_TRUE(client->close());
-    ASSERT_FALSE(socket.is_open());
-    ASSERT_FALSE(client->is_open());
+    ASSERT_FALSE(socket.isOpen());
+    ASSERT_FALSE(client->isOpen());
 }
 
 class Socket_SendRecv : public testing::Test
@@ -58,7 +57,6 @@ class Socket_SendRecv : public testing::Test
     protected:
         void SetUp() override
         {
-            Logger::SetThreadName(THIS_THREAD_ID, "test::Socket_SendRecv");
             acceptor.listen(0);
             socket.connect(TEST_IP_TCP, acceptor.getPort());
             client = acceptor.accept();
@@ -71,9 +69,9 @@ class Socket_SendRecv : public testing::Test
             client = nullptr;
         }
 
-        net::tcp::Socket socket;
-        net::Acceptor<net::tcp::Socket> acceptor;
-        net::Acceptor<net::tcp::Socket>::Client client;
+        net::StreamTcp socket;
+        net::Acceptor<net::StreamTcp> acceptor;
+        net::Acceptor<net::StreamTcp>::Client client;
 };
 
 TEST_F(Socket_SendRecv, single_send_single_recv)

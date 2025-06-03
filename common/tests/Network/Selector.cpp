@@ -2,42 +2,57 @@
 
 #include <gtest/gtest.h>
 
-#include "Common/Network/Selector.hpp"
+#include <errno.h>
 
-#define TEST_TO_SELECTOR 1
+#include "Common/Network/Selector.hpp"
+#include "Common/Log/Manager.hpp"
+
+#define TEST_TO_SELECTOR 1000
 #define TEST_IP_TCP "127.0.0.1"
 
 class Selector_empty : public testing::Test
 {
     protected:
-        void SetUp() override
+        Selector_empty()
+            : Logger(log::Manager::newLogger("Selector/Empty"))
         {
-            selector.timeout((float)TEST_TO_SELECTOR);
         }
 
-        net::Selector<net::tcp::Socket> selector;
+        void SetUp() override
+        {
+            Logger->log<log::Level::Info>("--- Setup start...");
+            selector.timeout((float)TEST_TO_SELECTOR);
+            Logger->log<log::Level::Info>("--- Setup done");
+        }
+
+        net::Selector<net::StreamTcp> selector;
+
+        std::unique_ptr<log::ILogger> Logger = nullptr;
 };
 
 TEST_F(Selector_empty, timout_check)
 {
-    ASSERT_EQ(selector.timeout(), 1.f);
+    ASSERT_EQ(selector.timeout(), TEST_TO_SELECTOR);
 }
+
 
 class Selector_single : public testing::Test
 {
     protected:
         void SetUp() override
         {
-            acceptor.listen(0);
+            if (!acceptor.listen(8080))
+                FAIL() << "Failed to bind and listen: " << strerror(errno);
             selector.timeout((float)TEST_TO_SELECTOR);
-            socket.connect(TEST_IP_TCP, acceptor.getPort());
+            if (!socket.connect(TEST_IP_TCP, acceptor.getPort()))
+                FAIL() << "Failed to connect to the endpoint: " << strerror(errno);
             client = acceptor.accept();
         }
 
-        net::tcp::Socket socket;
-        net::Acceptor<net::tcp::Socket>::Client client;
-        net::Selector<net::tcp::Socket> selector;
-        net::Acceptor<net::tcp::Socket> acceptor;
+        net::StreamTcp socket;
+        net::Acceptor<net::StreamTcp>::Client client;
+        net::Selector<net::StreamTcp> selector;
+        net::Acceptor<net::StreamTcp> acceptor;
 };
 
 TEST_F(Selector_single, pull_to)
@@ -45,7 +60,7 @@ TEST_F(Selector_single, pull_to)
     ASSERT_TRUE(selector.client(client));
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<net::Selector<net::tcp::Socket>::Client> clients = selector.pull();
+    std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
     auto end = std::chrono::high_resolution_clock::now();
 
     auto elapsed = std::chrono::duration<double>(end - start);
@@ -81,7 +96,7 @@ TEST_F(Selector_single, pull_client)
 
     ASSERT_EQ(socket.send(msg), msg.size());
 
-    std::vector<net::Selector<net::tcp::Socket>::Client> clients = selector.pull();
+    std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
     ASSERT_EQ(clients.size(), 1);
 
     int error = 0;
@@ -104,12 +119,12 @@ class Selector_multi : public testing::Test
             client2 = acceptor.accept();
         }
 
-        net::tcp::Socket socket1;
-        net::tcp::Socket socket2;
-        net::Acceptor<net::tcp::Socket>::Client client1;
-        net::Acceptor<net::tcp::Socket>::Client client2;
-        net::Selector<net::tcp::Socket> selector;
-        net::Acceptor<net::tcp::Socket> acceptor;
+        net::StreamTcp socket1;
+        net::StreamTcp socket2;
+        net::Acceptor<net::StreamTcp>::Client client1;
+        net::Acceptor<net::StreamTcp>::Client client2;
+        net::Selector<net::StreamTcp> selector;
+        net::Acceptor<net::StreamTcp> acceptor;
 };
 
 TEST_F(Selector_multi, add_client_diff)
@@ -128,7 +143,7 @@ TEST_F(Selector_multi, pull_multiple)
     ASSERT_EQ(socket2.send(msg), msg.size());
     ASSERT_EQ(socket1.send(msg), msg.size());
 
-    std::vector<net::Selector<net::tcp::Socket>::Client> clients = selector.pull();
+    std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
     ASSERT_EQ(clients.size(), 2);
 
     int error = 0;

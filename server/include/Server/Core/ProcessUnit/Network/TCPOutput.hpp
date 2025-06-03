@@ -16,7 +16,7 @@ namespace pu
     class TcpOutputNetwork : public IProcessUnit<Context<data::OutNetworkInput>>
     {
         public:
-            using Client = net::Acceptor<net::tcp::Socket>::Client;
+            using Client = net::Acceptor<net::StreamTcp>::Client;
 
             TcpOutputNetwork();
             virtual ~TcpOutputNetwork() = default;

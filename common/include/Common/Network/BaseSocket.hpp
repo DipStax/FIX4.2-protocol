@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <type_traits>
 
 namespace net
@@ -7,7 +8,7 @@ namespace net
     class BaseSocket
     {
         public:
-            ~BaseSocket();
+            virtual ~BaseSocket();
 
             bool setBlocking(bool _flag);
             bool isBlocking() const;
@@ -15,13 +16,17 @@ namespace net
             bool isOpen() const;
             operator bool() const;
 
+            [[nodiscard]] uint32_t getPort() const;
+
             bool close();
+
+            [[nodiscard]] int FD() const;
 
         protected:
             BaseSocket(int _dom, int _type, int _proto);
             BaseSocket(int _fd);
 
-            int recreate();
+            bool create();
 
             int m_fd = -1;
 

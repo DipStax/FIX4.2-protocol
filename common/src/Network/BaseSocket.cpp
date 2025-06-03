@@ -32,15 +32,24 @@ namespace net
         return isOpen();
     }
 
+    uint32_t BaseSocket::getPort() const
+    {
+        return c::Socket::getPort(m_fd);
+    }
+
     bool BaseSocket::close()
     {
         return c::Socket::close(m_fd);
     }
 
+    int BaseSocket::FD() const
+    {
+        return m_fd;
+    }
+
     BaseSocket::BaseSocket(int _dom, int _type, int _proto)
         : m_dom(_dom), m_type(_type), m_proto(_proto)
     {
-        recreate();
     }
 
     BaseSocket::BaseSocket(int _fd)
@@ -48,8 +57,9 @@ namespace net
     {
     }
 
-    int BaseSocket::recreate()
+    bool BaseSocket::create()
     {
         m_fd = c::Socket::create(m_dom, m_type, m_proto);
+        return m_fd == -1;
     }
 }
