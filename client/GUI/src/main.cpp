@@ -1,12 +1,12 @@
 #include <QApplication>
-#include <QMainWindow>
+
+#include "Client/GUI/LoginForm.hpp"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QMainWindow window;
+    ui::LoginForm form;
 
-    window.setWindowTitle("My Qt App");
-    window.show();
+    form.show();
     return app.exec();
 }
