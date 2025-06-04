@@ -21,16 +21,16 @@ class Socket_ConnectClose : public testing::Test
             (void)acceptor.close();
         }
 
-        net::Acceptor<net::StreamTcp> acceptor;
+        net::Acceptor<net::INetTcp> acceptor;
         uint32_t port = 0;
 };
 
 TEST_F(Socket_ConnectClose, connect_close_server) {
-    net::StreamTcp socket;
+    net::INetTcp socket;
 
     ASSERT_TRUE(socket.connect(TEST_IP_TCP, port));
 
-    net::Acceptor<net::StreamTcp>::Client client = acceptor.accept();
+    net::Acceptor<net::INetTcp>::Client client = acceptor.accept();
 
     ASSERT_NE(client, nullptr);
     EXPECT_TRUE(client->close());
@@ -39,11 +39,11 @@ TEST_F(Socket_ConnectClose, connect_close_server) {
 }
 
 TEST_F(Socket_ConnectClose, connect_close_client) {
-    net::StreamTcp socket;
+    net::INetTcp socket;
 
     ASSERT_TRUE(socket.connect(TEST_IP_TCP, port));
 
-    net::Acceptor<net::StreamTcp>::Client client = acceptor.accept();
+    net::Acceptor<net::INetTcp>::Client client = acceptor.accept();
 
     ASSERT_NE(client, nullptr);
 
@@ -69,9 +69,9 @@ class Socket_SendRecv : public testing::Test
             client = nullptr;
         }
 
-        net::StreamTcp socket;
-        net::Acceptor<net::StreamTcp> acceptor;
-        net::Acceptor<net::StreamTcp>::Client client;
+        net::INetTcp socket;
+        net::Acceptor<net::INetTcp> acceptor;
+        net::Acceptor<net::INetTcp>::Client client;
 };
 
 TEST_F(Socket_SendRecv, single_send_single_recv)

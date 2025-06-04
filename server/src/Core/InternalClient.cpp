@@ -1,6 +1,6 @@
 #include "Server/Core/InternalClient.hpp"
 
-InternalClient::InternalClient(std::shared_ptr<net::StreamTcp> _socket)
+InternalClient::InternalClient(std::shared_ptr<net::INetTcp> _socket)
     : m_socket(_socket)
 {
 }
@@ -58,7 +58,7 @@ size_t InternalClient::getSeqNumber() const
     return m_seq_num;
 }
 
-std::shared_ptr<net::StreamTcp> InternalClient::getSocket() const
+std::shared_ptr<net::INetTcp> InternalClient::getSocket() const
 {
     return m_socket;
 }

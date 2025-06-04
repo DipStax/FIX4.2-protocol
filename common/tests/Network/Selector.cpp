@@ -11,14 +11,14 @@
 #define TEST_IP_TCP "127.0.0.1"
 #define TEST_UNIX_ADDR "/tmp/UT.socket"
 
-using SocketTypeList = testing::Types<net::UnixTcp, net::StreamTcp>;
+using SocketTypeList = testing::Types<net::UnixTcp, net::INetTcp>;
 
 class SocketTypeName {
     public:
         template <IsSocketDomain SocketType>
         static std::string GetName(int) {
             if constexpr (std::is_same_v<SocketType, net::UnixTcp>) return "Unix TCP";
-            if constexpr (std::is_same_v<SocketType, net::StreamTcp>) return "Stream TCP";
+            if constexpr (std::is_same_v<SocketType, net::INetTcp>) return "Stream TCP";
         }
 };
 
@@ -123,6 +123,25 @@ TYPED_TEST(SingleClientSelector, same_client)
     ASSERT_EQ(this->selector.size(), 1);
 }
 
+TYPED_TEST(SingleClientSelector, new_client)
+{
+    TypeParam socket2;
+
+    if constexpr (TypeParam::Domain == AF_INET) {
+        if (!socket2.connect(TEST_IP_TCP, this->acceptor.getPort()))
+            FAIL() << "Failed to connect to the endpoint inet: " << strerror(errno);
+    } else if constexpr (TypeParam::Domain == AF_UNIX) {
+        if (!socket2.connect(TEST_UNIX_ADDR))
+            FAIL() << "Failed to connect to the endpoint unix: " << strerror(errno);
+    } else {
+        static_assert(false, "Not supported domain type");
+    }
+    typename net::Selector<TypeParam>::Client client2 = this->acceptor.accept();
+
+    ASSERT_TRUE(this->selector.client(client2));
+    ASSERT_EQ(this->selector.size(), 2);
+}
+
 TYPED_TEST(SingleClientSelector, erase_client)
 {
     this->selector.erase(this->client);
@@ -150,49 +169,61 @@ TYPED_TEST(SingleClientSelector, pull_client)
     ASSERT_EQ(str, msg);
 }
 
-class Selector_multi : public testing::Test
+template<IsSocketDomain SocketType>
+class MultiClientSelector : public testing::Test
 {
     protected:
         void SetUp() override
         {
-            acceptor.listen(0);
+            if constexpr (SocketType::Domain == AF_INET) {
+                if (!acceptor.listen(0))
+                    FAIL() << "Failed to bind and listen inet: " << strerror(errno);
+            } else if constexpr (SocketType::Domain == AF_UNIX) {
+                if (!acceptor.listen(TEST_UNIX_ADDR))
+                    FAIL() << "Failed to bind and listen unix: " << strerror(errno);
+            } else {
+                static_assert(false, "Not supported domain type");
+            }
+
             selector.timeout((float)TEST_TO_SELECTOR);
-            socket1.connect(TEST_IP_TCP, acceptor.getPort());
-            socket2.connect(TEST_IP_TCP, acceptor.getPort());
+
+            if constexpr (SocketType::Domain == AF_INET) {
+                if (!socket1.connect(TEST_IP_TCP, this->acceptor.getPort()))
+                    FAIL() << "Failed to connect to the endpoint inet (1): " << strerror(errno);
+                if (!socket2.connect(TEST_IP_TCP, this->acceptor.getPort()))
+                    FAIL() << "Failed to connect to the endpoint inet (2): " << strerror(errno);
+            } else if constexpr (SocketType::Domain == AF_UNIX) {
+                if (!socket1.connect(TEST_UNIX_ADDR))
+                    FAIL() << "Failed to connect to the endpoint unix (1): " << strerror(errno);
+                if (!socket2.connect(TEST_UNIX_ADDR))
+                    FAIL() << "Failed to connect to the endpoint unix (2): " << strerror(errno);
+            } else {
+                static_assert(false, "Not supported domain type");
+            }
             client1 = acceptor.accept();
+            selector.client(client1);
             client2 = acceptor.accept();
+            selector.client(client2);
         }
 
-        net::StreamTcp socket1;
-        net::StreamTcp socket2;
-        net::Acceptor<net::StreamTcp>::Client client1;
-        net::Acceptor<net::StreamTcp>::Client client2;
-        net::Selector<net::StreamTcp> selector;
-        net::Acceptor<net::StreamTcp> acceptor;
+        SocketType socket1;
+        SocketType socket2;
+        net::Acceptor<SocketType>::Client client1;
+        net::Acceptor<SocketType>::Client client2;
+        net::Selector<SocketType> selector;
+        net::Acceptor<SocketType> acceptor;
 };
 
-TEST_F(Selector_multi, erase_random)
-{
-    ASSERT_TRUE(selector.client(client1));
-}
+TYPED_TEST_SUITE(MultiClientSelector, SocketTypeList, SocketTypeName);
 
-TEST_F(Selector_multi, add_client_diff)
-{
-    ASSERT_TRUE(selector.client(client1));
-    ASSERT_TRUE(selector.client(client2));
-    ASSERT_EQ(selector.size(), 2);
-}
-
-TEST_F(Selector_multi, pull_multiple)
+TYPED_TEST(MultiClientSelector, pull_multiple)
 {
     const std::string msg = "this is a test";
 
-    ASSERT_TRUE(selector.client(client1));
-    ASSERT_TRUE(selector.client(client2));
-    ASSERT_EQ(socket2.send(msg), msg.size());
-    ASSERT_EQ(socket1.send(msg), msg.size());
+    ASSERT_EQ(this->socket2.send(msg), msg.size());
+    ASSERT_EQ(this->socket1.send(msg), msg.size());
 
-    std::vector<net::Selector<net::StreamTcp>::Client> clients = selector.pull();
+    std::vector<typename net::Selector<TypeParam>::Client> clients = this->selector.pull();
     ASSERT_EQ(clients.size(), 2);
 
     int error = 0;

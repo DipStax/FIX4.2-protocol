@@ -12,7 +12,7 @@
 class ClientStore
 {
     public:
-        using ClientSocket = net::Acceptor<net::StreamTcp>::Client;
+        using ClientSocket = net::Acceptor<net::INetTcp>::Client;
         using Client = std::shared_ptr<InternalClient>;
 
         template<class T>

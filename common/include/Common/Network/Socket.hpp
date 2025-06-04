@@ -62,7 +62,7 @@ namespace net
         };
     }
 
-    using StreamTcp = dom::INet<type::Tcp>;
+    using INetTcp = dom::INet<type::Tcp>;
     using UnixTcp = dom::Unix<type::Tcp>;
 }
 

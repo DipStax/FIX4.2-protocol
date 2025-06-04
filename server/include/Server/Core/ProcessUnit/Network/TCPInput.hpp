@@ -30,8 +30,8 @@ namespace pu
             InputRouter &m_output;
             InputNetworkOutput &m_error;
 
-            net::Acceptor<net::StreamTcp> m_acceptor{};
-            net::Selector<net::StreamTcp> m_selector{};
+            net::Acceptor<net::INetTcp> m_acceptor{};
+            net::Selector<net::INetTcp> m_selector{};
 
             std::unique_ptr<log::ILogger> Logger = nullptr;
     };
