@@ -26,14 +26,10 @@ namespace net::dom
 
         addr.sin_family = Domain;
         addr.sin_port = htons(_port);
-        if (this->isOpen())
-            this->close();
-        this->create();
+        this->recreate();
         if (inet_pton(Domain, _ip.c_str(), &addr.sin_addr) <= 0)
             return false;
-        if (::connect(this->m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-            return false;
-        return true;
+        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_in));
     }
 
     template<IsSocketType T>
@@ -45,7 +41,9 @@ namespace net::dom
         addr.sin_family = Domain;
         addr.sin_port = htons(_port);
         addr.sin_addr.s_addr = htonl(_ip);
-        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == 0;
+
+        this->recreate();
+        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_in));
     }
 
     template<IsSocketType T>
@@ -65,11 +63,12 @@ namespace net::dom
     bool Unix<T>::connect(const std::string &_path)
     {
         sockaddr_un addr{};
-        addr.sun_family = AF_UNIX;
-        std::strncpy(addr.sun_path, _path.c_str(), sizeof(addr.sun_path) - 1);
 
-        if (connect(this->m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-            return false;
-        return true;
+        m_path = _path;
+        addr.sun_family = AF_UNIX;
+        std::strncpy(addr.sun_path, m_path.c_str(), sizeof(addr.sun_path) - 1);
+
+        this->recreate();
+        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(sockaddr_un));
     }
 }

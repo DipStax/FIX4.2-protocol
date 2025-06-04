@@ -85,5 +85,7 @@ namespace net::c
             static bool listen(int _fd, int _max);
 
             static bool connect(int _fd, struct sockaddr *_addr, size_t _size);
+
+            static bool reusePort(int _fd, bool _flag);
     };
 }

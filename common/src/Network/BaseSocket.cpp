@@ -39,7 +39,13 @@ namespace net
 
     bool BaseSocket::close()
     {
-        return c::Socket::close(m_fd);
+        if (!isOpen())
+            return true;
+        if (c::Socket::close(m_fd)) {
+            m_fd = -1;
+            return true;
+        }
+        return false;
     }
 
     int BaseSocket::FD() const
@@ -57,9 +63,17 @@ namespace net
     {
     }
 
+    bool BaseSocket::recreate()
+    {
+        if (isOpen())
+            if (!close())
+                return false;
+        return create();
+    }
+
     bool BaseSocket::create()
     {
         m_fd = c::Socket::create(m_dom, m_type, m_proto);
-        return m_fd == -1;
+        return m_fd != -1;
     }
 }

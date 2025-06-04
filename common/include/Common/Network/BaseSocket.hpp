@@ -26,6 +26,7 @@ namespace net
             BaseSocket(int _dom, int _type, int _proto);
             BaseSocket(int _fd);
 
+            bool recreate();
             bool create();
 
             int m_fd = -1;

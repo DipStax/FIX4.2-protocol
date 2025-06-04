@@ -86,13 +86,7 @@ namespace net::c
 
     bool Socket::bind(int _fd, struct sockaddr *_addr)
     {
-        int reuse = 1;
-
-        if (setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) != 0)
-            return false;
-        if (::bind(_fd, _addr, sizeof(struct sockaddr_in)) == -1)
-            return false;
-        return true;
+        return ::bind(_fd, _addr, sizeof(struct sockaddr_in)) == 0;
     }
 
      bool Socket::listen(int _fd, int _max)
@@ -100,4 +94,13 @@ namespace net::c
         return ::listen(_fd, _max) == 0;
     }
 
+    bool Socket::connect(int _fd, struct sockaddr *_addr, size_t _size)
+    {
+        return ::connect(_fd, _addr, _size) == 0;
+    }
+
+    bool Socket::reusePort(int _fd, bool _flag)
+    {
+        return setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &_flag, sizeof(bool)) == 0;
+    }
 }

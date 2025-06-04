@@ -34,6 +34,11 @@ namespace net
                 ~Unix() = default;
 
                 bool connect(const std::string &_path);
+
+                bool unlink();
+
+            private:
+                std::string m_path;
         };
     }
 
