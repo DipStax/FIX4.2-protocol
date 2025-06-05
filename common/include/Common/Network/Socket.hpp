@@ -41,7 +41,7 @@ namespace net
             public:
                 static constexpr const uint32_t Domain = AF_INET;
 
-                ~INet() = default;
+                virtual ~INet() = default;
 
                 bool connect(const Ip &_ip, uint32_t _port);
                 bool connect(uint32_t _ip, uint32_t _port);
@@ -50,7 +50,6 @@ namespace net
                 INet(int _type, int _proto);
                 INet(int _fd);
 
-            private:
                 struct sockaddr_in m_addr;
         };
 
@@ -59,7 +58,7 @@ namespace net
             public:
                 static constexpr const uint32_t Domain = AF_UNIX;
 
-                ~Unix() = default;
+                virtual ~Unix() = default;
 
                 bool connect(const std::string &_path);
 
@@ -69,7 +68,6 @@ namespace net
                 Unix(int _type, int _proto);
                 Unix(int _fd);
 
-            private:
                 sockaddr_un m_addr{};
         };
     }
@@ -84,7 +82,7 @@ namespace net
 
                 Stream();
                 Stream(int _fd);
-                virtual ~Stream() = default;
+                ~Stream() = default;
 
                 size_t send(const std::string &_data);
                 size_t send(const uint8_t *_data, size_t _size);
@@ -93,10 +91,36 @@ namespace net
 
             protected:
         };
+
+        template<IsSocketDomain T>
+        class DGram : public T
+        {
+            public:
+                static constexpr const uint32_t Type = SOCK_DGRAM;
+
+                DGram();
+                DGram(int _fd);
+                ~DGram() = default;
+
+                size_t send(const std::string &_data);
+                size_t send(const uint8_t *_data, size_t _size);
+
+                [[nodiscard]] std::string receive(size_t _size, int &_error);
+
+                bool setBroadcast(bool _bc)
+                    requires IsINetSocketDomain<T>;
+                [[nodiscard]] bool isBroadcast() const
+                    requires IsINetSocketDomain<T>;
+
+            private:
+                bool m_broadcast;
+        };
     }
 
     using INetTcp = type::Stream<dom::INet>;
-    using UnixTcp = type::Stream<dom::Unix >;
+    using INetUdp = type::DGram<dom::INet>;
+    using UnixStream = type::Stream<dom::Unix>;
+    using UnixDGram = type::DGram<dom::Unix>;
 }
 
 

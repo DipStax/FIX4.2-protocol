@@ -86,6 +86,8 @@ namespace net::c
 
             static bool connect(int _fd, struct sockaddr *_addr, size_t _size);
 
-            static bool reusePort(int _fd, bool _flag);
+            static bool setReusePort(int _fd, bool _flag);
+
+            static bool setBroadcast(int _fd, bool _bc);
     };
 }

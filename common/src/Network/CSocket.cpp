@@ -99,8 +99,15 @@ namespace net::c
         return ::connect(_fd, _addr, _size) == 0;
     }
 
-    bool Socket::reusePort(int _fd, bool _flag)
+    bool Socket::setReusePort(int _fd, bool _flag)
     {
         return setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &_flag, sizeof(bool)) == 0;
+    }
+
+    bool Socket::setBroadcast(int _fd, bool _bc)
+    {
+        int bc_cast = static_cast<int>(_bc);
+
+        return setsockopt(_fd, SOL_SOCKET, SO_BROADCAST, &bc_cast, sizeof(int)) == 0;
     }
 }

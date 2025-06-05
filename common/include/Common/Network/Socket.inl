@@ -5,6 +5,19 @@
 namespace net::type
 {
     template<IsSocketDomain T>
+    Stream<T>::Stream()
+        : T(Type, 0)
+    {
+    }
+
+    template<IsSocketDomain T>
+    Stream<T>::Stream(int _fd)
+        : T(_fd)
+    {
+        // verify the correct type
+    }
+
+    template<IsSocketDomain T>
     size_t Stream<T>::send(const std::string &_data)
     {
         return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
@@ -32,16 +45,50 @@ namespace net::type
         return str;
     }
 
+
     template<IsSocketDomain T>
-    Stream<T>::Stream()
+    DGram<T>::DGram()
         : T(Type, 0)
     {
     }
 
     template<IsSocketDomain T>
-    Stream<T>::Stream(int _fd)
+    DGram<T>::DGram(int _fd)
         : T(_fd)
     {
         // verify the correct type
+    }
+
+    template<IsSocketDomain T>
+    size_t DGram<T>::send(const std::string &_data)
+    {
+        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+    }
+
+    template<IsSocketDomain T>
+    size_t DGram<T>::send(const uint8_t *_data, size_t _size)
+    {
+        return sendto(this->FD(), _data, _size, 0, reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(this->m_addr));
+    }
+
+    template<IsSocketDomain T>
+    std::string DGram<T>::receive(size_t _size, int &_error)
+    {
+        // todo
+    }
+
+    template<IsSocketDomain T>
+    bool DGram<T>::setBroadcast(bool _bc)
+        requires IsINetSocketDomain<T>
+    {
+        m_broadcast = _bc;
+        return c::Socket::setBroadcast(this->FD(), m_broadcast);
+    }
+
+    template<IsSocketDomain T>
+    bool DGram<T>::isBroadcast() const
+        requires IsINetSocketDomain<T>
+    {
+        return m_broadcast;
     }
 }

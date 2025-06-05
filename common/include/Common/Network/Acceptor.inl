@@ -41,7 +41,7 @@ namespace net
             close();
             return false;
         }
-        c::Socket::reusePort(this->FD(), true);
+        c::Socket::setReusePort(this->FD(), true);
         if (!c::Socket::listen(this->FD(), MAX_SOCKET)) {
             close();
             return false;
