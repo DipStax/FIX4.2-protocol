@@ -1,74 +1,47 @@
-#include <arpa/inet.h>
-#include <sys/un.h>
-#include <cstring>
 
+#include "Common/Network/Socket.hpp"
 #include "Common/Network/CSocket.hpp"
 
-namespace net::dom
+namespace net::type
 {
-    template<IsSocketType T>
-    INet<T>::INet()
-        : T(Domain, true)
+    template<IsSocketDomain T>
+    size_t Stream<T>::send(const std::string &_data)
+    {
+        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+    }
+
+    template<IsSocketDomain T>
+    size_t Stream<T>::send(const uint8_t *_data, size_t _size)
+    {
+        return c::Socket::send(this->FD(), _data, _size);
+    }
+
+    template<IsSocketDomain T>
+    std::string Stream<T>::receive(size_t _size, int &_error)
+    {
+        const uint8_t *data = c::Socket::receive(this->FD(), _size, _error);
+        std::string str = "";
+
+        if (_error == -1) {
+            if (data != nullptr)
+                delete[] data;
+            return str;
+        }
+        str.assign(data, data + _error);
+        delete[] data;
+        return str;
+    }
+
+    template<IsSocketDomain T>
+    Stream<T>::Stream()
+        : T(Type, 0)
     {
     }
 
-    template<IsSocketType T>
-    INet<T>::INet(int _fd)
+    template<IsSocketDomain T>
+    Stream<T>::Stream(int _fd)
         : T(_fd)
     {
-        // verify correct domain
-    }
-
-    template<IsSocketType T>
-    bool INet<T>::connect(const Ip &_ip, uint32_t _port)
-    {
-        struct sockaddr_in addr;
-
-        addr.sin_family = Domain;
-        addr.sin_port = htons(_port);
-        this->recreate();
-        if (inet_pton(Domain, _ip.c_str(), &addr.sin_addr) <= 0)
-            return false;
-        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_in));
-    }
-
-    template<IsSocketType T>
-    bool INet<T>::connect(uint32_t _ip, uint32_t _port)
-    {
-        struct sockaddr_in addr;
-
-        std::memset(&addr, 0, sizeof(addr));
-        addr.sin_family = Domain;
-        addr.sin_port = htons(_port);
-        addr.sin_addr.s_addr = htonl(_ip);
-
-        this->recreate();
-        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_in));
-    }
-
-    template<IsSocketType T>
-    Unix<T>::Unix()
-        : T(Domain, true)
-    {
-    }
-
-    template<IsSocketType T>
-    Unix<T>::Unix(int _fd)
-        : T(_fd)
-    {
-        // verify correct domain
-    }
-
-    template<IsSocketType T>
-    bool Unix<T>::connect(const std::string &_path)
-    {
-        sockaddr_un addr{};
-
-        m_path = _path;
-        addr.sun_family = AF_UNIX;
-        std::strncpy(addr.sun_path, m_path.c_str(), sizeof(addr.sun_path) - 1);
-
-        this->recreate();
-        return c::Socket::connect(this->m_fd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(sockaddr_un));
+        // verify the correct type
     }
 }

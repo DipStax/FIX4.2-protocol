@@ -8,7 +8,7 @@
 #include "Common/Log/Manager.hpp"
 
 #define TEST_TO_SELECTOR 1000
-#define TEST_IP_TCP "127.0.0.1"
+#define TEST_IP_TCP (127 << 24 | 1)
 #define TEST_UNIX_ADDR "/tmp/UT.socket"
 
 using SocketTypeList = testing::Types<net::UnixTcp, net::INetTcp>;

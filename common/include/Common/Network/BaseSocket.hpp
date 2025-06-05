@@ -29,9 +29,9 @@ namespace net
             bool recreate();
             bool create();
 
+        private:
             int m_fd = -1;
 
-        private:
             int m_dom = -1;
             int m_type = -1;
             int m_proto = -1;
@@ -39,4 +39,4 @@ namespace net
 }
 
 template<class T>
-concept IsSocketType = std::is_base_of_v<net::BaseSocket, T>;
+concept IsBaseSocket = std::is_base_of_v<net::BaseSocket, T>;

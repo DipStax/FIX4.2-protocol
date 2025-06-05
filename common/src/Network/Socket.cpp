@@ -1,42 +1,69 @@
+#include <cstring>
+
+#include <arpa/inet.h>
+
 #include "Common/Network/Socket.hpp"
 #include "Common/Network/CSocket.hpp"
 
-namespace net::type
+namespace net::dom
 {
-    size_t Tcp::send(const std::string &_data)
+    bool INet::connect(const Ip &_ip, uint32_t _port)
     {
-        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+        std::memset(&m_addr, 0, sizeof(struct sockaddr_in));
+        m_addr.sin_family = Domain;
+        m_addr.sin_port = htons(_port);
+        this->recreate();
+        if (inet_pton(Domain, _ip.c_str(), &m_addr.sin_addr) <= 0)
+            return false;
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&m_addr), sizeof(struct sockaddr_in));
     }
 
-    size_t Tcp::send(const uint8_t *_data, size_t _size)
+    bool INet::connect(uint32_t _ip, uint32_t _port)
     {
-        return c::Socket::send(m_fd, _data, _size);
+        std::memset(&m_addr, 0, sizeof(struct sockaddr_in));
+        m_addr.sin_family = Domain;
+        m_addr.sin_port = htons(_port);
+        m_addr.sin_addr.s_addr = htonl(_ip);
+
+        this->recreate();
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&m_addr), sizeof(struct sockaddr_in));
     }
 
-    std::string Tcp::receive(size_t _size, int &_error)
+    INet::INet(int _type, int _proto)
+        : BaseSocket(Domain, _type, _proto)
     {
-        const uint8_t *data = c::Socket::receive(m_fd, _size, _error);
-        std::string str = "";
-
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
     }
 
-    Tcp::Tcp(int _type, bool _is_dom)
-        : BaseSocket(_type, SOCK_STREAM, 0)
-    {
-        std::ignore = _is_dom;
-    }
-
-    Tcp::Tcp(int _fd)
+    INet::INet(int _fd)
         : BaseSocket(_fd)
     {
-        // verify the correct type
+        // verify correct domain
+    }
+
+    bool Unix::connect(const std::string &_path)
+    {
+        this->m_addr.sun_family = AF_UNIX;
+        std::strncpy(this->m_addr.sun_path, _path.c_str(), sizeof(this->m_addr.sun_path) - 1);
+
+        this->recreate();
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(sockaddr_un));
+    }
+
+    bool Unix::unlink()
+    {
+        if (std::strlen(this->m_addr.sun_path) != 0)
+            return ::unlink(this->m_addr.sun_path);
+        return false;
+    }
+
+    Unix::Unix(int _type, int _proto)
+        : BaseSocket(Domain, _type, _proto)
+    {
+    }
+
+    Unix::Unix(int _fd)
+        : BaseSocket(_fd)
+    {
+        // verify correct domain
     }
 }

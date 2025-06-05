@@ -19,14 +19,14 @@ namespace net
     template<IsSocketDomain T>
     Acceptor<T>::~Acceptor()
     {
-        if constexpr (T::Domain == AF_UNIX) {
+        if constexpr (IsUnixSocketDomain<T>) {
             unlink();
         }
     }
 
     template<IsSocketDomain T>
     bool Acceptor<T>::listen(uint32_t _port)
-        requires (T::Domain == AF_INET)
+        requires IsINetSocketDomain<T>
     {
         struct sockaddr_in addr;
 
@@ -37,12 +37,12 @@ namespace net
 
         if (!recreate())
             return false;
-        if (!c::Socket::bind(m_fd, reinterpret_cast<struct sockaddr *>(&addr))) {
+        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr))) {
             close();
             return false;
         }
-        c::Socket::reusePort(m_fd, true);
-        if (!c::Socket::listen(m_fd, MAX_SOCKET)) {
+        c::Socket::reusePort(this->FD(), true);
+        if (!c::Socket::listen(this->FD(), MAX_SOCKET)) {
             close();
             return false;
         }
@@ -51,7 +51,7 @@ namespace net
 
     template<IsSocketDomain T>
     bool Acceptor<T>::listen(const std::string &_path)
-        requires (T::Domain == AF_UNIX)
+        requires IsUnixSocketDomain<T>
     {
         struct sockaddr_un addr;
 
@@ -63,14 +63,14 @@ namespace net
         addr.sun_family = T::Domain;
         std::strncpy(addr.sun_path, this->m_path.c_str(), sizeof(addr.sun_path) - 1);
 
+        ::unlink(this->m_path.c_str());
         if (!recreate())
             return false;
-        if (!c::Socket::bind(m_fd, reinterpret_cast<struct sockaddr *>(&addr))) {
+        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr))) {
             close();
             return false;
         }
-        c::Socket::reusePort(m_fd, true);
-        if (!c::Socket::listen(m_fd, MAX_SOCKET)) {
+        if (!c::Socket::listen(this->FD(), MAX_SOCKET)) {
             close();
             return false;
         }
@@ -80,7 +80,7 @@ namespace net
     template<IsSocketDomain T>
     Acceptor<T>::Client Acceptor<T>::accept()
     {
-        int fd = c::Socket::accept(m_fd);
+        int fd = c::Socket::accept(this->FD());
         Client socket = nullptr;
 
         if (fd == -1)
@@ -91,7 +91,7 @@ namespace net
 
     template<IsSocketDomain T>
     bool Acceptor<T>::unlink()
-        requires (T::Domain == AF_UNIX)
+        requires IsUnixSocketDomain<T>
     {
         if (this->m_path.empty())
             return false;

@@ -1,17 +1,22 @@
 #pragma once
 
-#include "Common/Network/BaseSocket.hpp"
 #include "Common/Network/Socket.hpp"
 
 namespace net
 {
-    template<IsSocketDomain T, bool Enable = (T::Domain == AF_UNIX)>
+    template<class T>
     class UnixPathHolder
+    {
+        static_assert(false, "UnixPathHolder<T>: unsupported socket domain");
+    };
+
+    template<IsINetSocketDomain T>
+    class UnixPathHolder<T>
     {
     };
 
-    template<IsSocketDomain T>
-    class UnixPathHolder<T, true>
+    template<IsUnixSocketDomain T>
+    class UnixPathHolder<T>
     {
         protected:
             std::string m_path = "";
@@ -27,15 +32,15 @@ namespace net
             ~Acceptor();
 
             bool listen(uint32_t _port)
-                requires (T::Domain == AF_INET);
+                requires IsINetSocketDomain<T>;
 
             bool listen(const std::string &_path)
-                requires (T::Domain == AF_UNIX);
+                requires IsUnixSocketDomain<T>;
 
             Client accept();
 
             bool unlink()
-                requires (T::Domain == AF_UNIX);
+                requires IsUnixSocketDomain<T>;
     };
 }
 
