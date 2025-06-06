@@ -15,14 +15,14 @@ using SocketTypeList = testing::Types<net::UnixStream, net::INetTcp>;
 
 class SocketTypeName {
     public:
-        template <IsSocketDomain SocketType>
+        template <IsStreamSocketType SocketType>
         static std::string GetName(int) {
             if constexpr (std::is_same_v<SocketType, net::UnixStream>) return "Unix Stream";
             if constexpr (std::is_same_v<SocketType, net::INetTcp>) return "Stream TCP";
         }
 };
 
-template<IsSocketDomain SocketType>
+template<IsStreamSocketType SocketType>
 class EmptySelector : public testing::Test
 {
     protected:
@@ -52,7 +52,7 @@ TYPED_TEST(EmptySelector, null_client)
     ASSERT_FALSE(this->selector.client(nullptr));
 }
 
-template<IsSocketDomain SocketType>
+template<IsStreamSocketType SocketType>
 class SingleClientSelector : public testing::Test
 {
     protected:
@@ -162,7 +162,7 @@ TYPED_TEST(SingleClientSelector, pull_client)
     ASSERT_EQ(str, msg);
 }
 
-template<IsSocketDomain SocketType>
+template<IsStreamSocketType SocketType>
 class MultiClientSelector : public testing::Test
 {
     protected:
