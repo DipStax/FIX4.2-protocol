@@ -9,22 +9,21 @@
 
 namespace net
 {
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     Acceptor<T>::Acceptor()
         : BaseSocket(T::Domain, T::Type, 0) // change for TCP or UDP
     {
     }
 
 
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     Acceptor<T>::~Acceptor()
     {
-        if constexpr (IsUnixSocketDomain<T>) {
-            unlink();
-        }
+        if constexpr (IsUnixSocketDomain<T>)
+            this->unlink();
     }
 
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     bool Acceptor<T>::listen(uint32_t _port)
         requires IsINetSocketDomain<T>
     {
@@ -49,7 +48,7 @@ namespace net
         return true;
     }
 
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     bool Acceptor<T>::listen(const std::string &_path)
         requires IsUnixSocketDomain<T>
     {
@@ -58,12 +57,13 @@ namespace net
         if (_path.size() >= sizeof(addr.sun_path))
             return false;
 
+        if (!this->unlink())
+            return false;
         this->m_path = _path;
         std::memset(&addr, 0, sizeof(addr));
         addr.sun_family = T::Domain;
         std::strncpy(addr.sun_path, this->m_path.c_str(), sizeof(addr.sun_path) - 1);
 
-        ::unlink(this->m_path.c_str());
         if (!recreate())
             return false;
         if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr))) {
@@ -77,7 +77,7 @@ namespace net
         return true;
     }
 
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     Acceptor<T>::Client Acceptor<T>::accept()
     {
         int fd = c::Socket::accept(this->FD());
@@ -89,12 +89,12 @@ namespace net
         return socket;
     }
 
-    template<IsSocketDomain T>
+    template<IsAcceptorSocket T>
     bool Acceptor<T>::unlink()
         requires IsUnixSocketDomain<T>
     {
         if (this->m_path.empty())
-            return false;
+            return true;
         return ::unlink(this->m_path.c_str()) == 0;
     }
 }

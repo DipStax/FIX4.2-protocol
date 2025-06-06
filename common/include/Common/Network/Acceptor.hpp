@@ -22,7 +22,10 @@ namespace net
             std::string m_path = "";
     };
 
-    template<IsSocketDomain T>
+    template<class T>
+    concept IsAcceptorSocket = IsSocketDomain<T> && IsStreamSocketType<T>;
+
+    template<IsAcceptorSocket T>
     class Acceptor : public BaseSocket, UnixPathHolder<T>
     {
         public:

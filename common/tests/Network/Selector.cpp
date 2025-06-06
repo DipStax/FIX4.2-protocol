@@ -11,16 +11,14 @@
 #define TEST_IP_TCP (127 << 24 | 1)
 #define TEST_UNIX_ADDR "/tmp/UT.socket"
 
-using SocketTypeList = testing::Types<net::UnixStream, net::UnixDGram, net::INetTcp, net::INetUdp>;
+using SocketTypeList = testing::Types<net::UnixStream, net::INetTcp>;
 
 class SocketTypeName {
     public:
         template <IsSocketDomain SocketType>
         static std::string GetName(int) {
             if constexpr (std::is_same_v<SocketType, net::UnixStream>) return "Unix Stream";
-            if constexpr (std::is_same_v<SocketType, net::UnixDGram>) return "Unix DGram";
             if constexpr (std::is_same_v<SocketType, net::INetTcp>) return "Stream TCP";
-            if constexpr (std::is_same_v<SocketType, net::INetUdp>) return "Stream UDP";
         }
 };
 
@@ -84,13 +82,6 @@ class SingleClientSelector : public testing::Test
 
             client = acceptor.accept();
             selector.client(client);
-        }
-
-
-        void TearDown() override
-        {
-            if constexpr (SocketType::Domain == AF_UNIX)
-                acceptor.unlink();
         }
 
         SocketType socket;

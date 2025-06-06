@@ -8,9 +8,18 @@
 #include "Common/Network/Ip.hpp"
 
 template<class T>
-concept IsSocketType = requires () {
+concept IsSocketType = requires (T _sock, const uint8_t *_data1, size_t _size, std::string _data2, int &_err) {
     { T::Type } -> std::same_as<const uint32_t &>;
+    { _sock.send(_data1, _size) } -> std::same_as<size_t>;
+    { _sock.send(_data2) } -> std::same_as<size_t>;
+    { _sock.receive(_size, _err) } -> std::same_as<std::string>;
 };
+
+template<class T>
+concept IsDGramSocketType = IsSocketType<T> && T::Type == SOCK_DGRAM;
+
+template<class T>
+concept IsStreamSocketType = IsSocketType<T> && T::Type == SOCK_STREAM;
 
 template<class T>
 concept IsSocketDomain = IsBaseSocket<T> && requires () {
