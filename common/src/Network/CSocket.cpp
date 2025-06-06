@@ -73,15 +73,7 @@ namespace net::c
 
     bool Socket::is_open(int _fd)
     {
-        int error = 0;
-        char buffer = 0;
-
-        error = recv(_fd, &buffer, 1, MSG_PEEK);
-        if (error < 0)
-            return false;
-        if (error == 0 && (errno == EAGAIN || errno == EINTR))
-            return true;
-        return false;
+        return fcntl(_fd, F_GETFD) != -1;
     }
 
     bool Socket::bind(int _fd, struct sockaddr *_addr)

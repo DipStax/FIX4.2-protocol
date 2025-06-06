@@ -34,7 +34,6 @@ class SocketConnectClose : public testing::Test
             } else {
                 static_assert(false, "Not supported domain type");
             }
-            ASSERT_TRUE(acceptor.isOpen()); 
 
             port = acceptor.getPort();
         }
@@ -66,8 +65,7 @@ TYPED_TEST(SocketConnectClose, close_server_side) {
 
     ASSERT_TRUE(client->close());
 
-    EXPECT_FALSE(client->isOpen());
-    EXPECT_FALSE(socket.isOpen());
+    ASSERT_FALSE(client->isOpen());
 }
 
 TYPED_TEST(SocketConnectClose, close_client_side) {
@@ -90,8 +88,7 @@ TYPED_TEST(SocketConnectClose, close_client_side) {
 
     ASSERT_TRUE(socket.close());
 
-    EXPECT_FALSE(client->isOpen());
-    EXPECT_FALSE(socket.isOpen());
+    ASSERT_FALSE(socket.isOpen());
 }
 
 

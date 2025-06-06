@@ -20,11 +20,7 @@ namespace net
 
     bool BaseSocket::isOpen() const
     {
-        bool block = isBlocking();
-
-        if (!c::Socket::setBlocking(m_fd, false) || !c::Socket::is_open(m_fd))
-            return false;
-        return c::Socket::setBlocking(m_fd, block);
+        return c::Socket::is_open(m_fd);
     }
 
     BaseSocket::operator bool() const
