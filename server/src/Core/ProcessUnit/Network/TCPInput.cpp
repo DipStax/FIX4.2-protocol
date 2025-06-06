@@ -11,7 +11,7 @@ namespace pu
         : m_output(_output), m_error(_error), Logger(log::Manager::newLogger("TCP-Input"))
     {
         (void)m_acceptor.listen(_port);
-        (void)m_acceptor.blocking(false);
+        (void)m_acceptor.setBlocking(false);
         m_selector.timeout(100);
         Logger->log<log::Level::Info>("[InNetwork] listening to port: ", _port);
         ClientStore::OnRemoveClient([this] (const ClientStore::Client _client) {

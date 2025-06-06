@@ -22,13 +22,12 @@ namespace net::c
         return ::send(_fd, _data, _size, 0);
     }
 
-    const uint8_t *Socket::receiveUDP(int _fd, size_t _size, int &_error)
+    const uint8_t *Socket::receiveUDP(int _fd, size_t _size, struct sockaddr *_addr, int &_error)
     {
         std::unique_ptr<uint8_t []> data(new uint8_t[_size]);
-        struct sockaddr_in addr;
-        socklen_t addr_len = sizeof(addr);
+        socklen_t addr_len = sizeof(_addr);
 
-        _error = ::recvfrom(_fd, data.get(), _size, 0, (struct sockaddr*)&addr, &addr_len);
+        _error = ::recvfrom(_fd, data.get(), _size, 0, _addr, &addr_len);
         return data.release();
     }
 

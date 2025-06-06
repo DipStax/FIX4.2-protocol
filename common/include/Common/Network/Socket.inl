@@ -74,7 +74,17 @@ namespace net::type
     template<IsSocketDomain T>
     std::string DGram<T>::receive(size_t _size, int &_error)
     {
-        // todo
+        const uint8_t *data = c::Socket::receiveUDP(this->FD(), _size, reinterpret_cast<struct sockaddr *>(&this->m_addr), _error);
+        std::string str = "";
+
+        if (_error == -1) {
+            if (data != nullptr)
+                delete[] data;
+            return str;
+        }
+        str.assign(data, data + _error);
+        delete[] data;
+        return str;
     }
 
     template<IsSocketDomain T>

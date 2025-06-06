@@ -2,6 +2,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "Common/Network/Acceptor.hpp"
 #include "Common/Network/BaseSocket.hpp"

@@ -9,7 +9,8 @@ namespace pu
     UdpOutputNetwork::UdpOutputNetwork(uint32_t _port)
         : Logger(log::Manager::newLogger("UDP-Output"))
     {
-        if (!m_socket.broadcastOn(_port))
+        m_socket.connect("localhost", _port);
+        if (!m_socket.setBroadcast(true))
             Logger->log<log::Level::Error>("Failed to setup broadcast, crashing after first action");
     }
 
@@ -32,7 +33,7 @@ namespace pu
             if (m_message.size())
                 Logger->log<log::Level::Debug>("Broadcasting message number: ", m_message.size());
             for (const auto &[_, _val] : m_message) {
-                (void)m_socket.broadcast(reinterpret_cast<const uint8_t*>(&_val), sizeof(data::UDPPackage));
+                (void)m_socket.send(reinterpret_cast<const uint8_t*>(&_val), sizeof(data::UDPPackage));
             }
             clean();
             sleep(UDP_TICK);
