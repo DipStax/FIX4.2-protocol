@@ -2,8 +2,10 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "Common/Network/Acceptor.hpp"
+#include "Common/Network/BaseSocket.hpp"
 #include "Common/Network/CEPoll.hpp"
 
 #ifndef MAX_EVENT_EPOLL
@@ -18,7 +20,7 @@ namespace net
 {
     /// @brief Class implementing the c::EPoll to select socket with pending event.
     /// @tparam T is the of socket supported.
-    template<IsSocket T>
+    template<IsSocketDomain T>
     class Selector : public c::EPoll
     {
         public:

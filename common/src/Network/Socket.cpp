@@ -1,142 +1,69 @@
 #include <cstring>
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
 #include <arpa/inet.h>
 
 #include "Common/Network/Socket.hpp"
+#include "Common/Network/CSocket.hpp"
 
-namespace net
+namespace net::dom
 {
-    void Socket::blocking(bool _block)
+    bool INet::connect(const Ip &_ip, uint32_t _port)
     {
-        (void)c_blocking(_block);
-    }
-
-    bool Socket::connect(const Ip &_ip, uint32_t _port)
-    {
-        if (!c_create())
+        std::memset(&m_addr, 0, sizeof(struct sockaddr_in));
+        m_addr.sin_family = Domain;
+        m_addr.sin_port = htons(_port);
+        this->recreate();
+        if (inet_pton(Domain, _ip.c_str(), &m_addr.sin_addr) <= 0)
             return false;
-        return c_connect(_ip.c_str(), _port);
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&m_addr), sizeof(struct sockaddr_in));
     }
 
-    size_t Socket::send(const std::string &_data)
+    bool INet::connect(uint32_t _ip, uint32_t _port)
     {
-        return c_send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+        std::memset(&m_addr, 0, sizeof(struct sockaddr_in));
+        m_addr.sin_family = Domain;
+        m_addr.sin_port = htons(_port);
+        m_addr.sin_addr.s_addr = htonl(_ip);
+
+        this->recreate();
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&m_addr), sizeof(struct sockaddr_in));
     }
 
-    size_t Socket::send(const uint8_t *_data, size_t _size)
-    {
-        return c_send(_data, _size);
-    }
-
-    std::string Socket::receive(size_t _size, int &_error)
-    {
-        const uint8_t *data = c_receive(_size, _error);
-        std::string str = "";
-
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
-    }
-
-    std::string Socket::receiveUDP(size_t _size, int &_error)
-    {
-        const uint8_t *data = c_receiveUDP(_size, _error);
-        std::string str = "";
-
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
-    }
-
-    bool Socket::close()
-    {
-        return c_close();
-    }
-
-    Socket::operator bool()
-    {
-        return is_open();
-    }
-
-    bool Socket::operator==(const Socket &_socket)
-    {
-        return raw() == _socket.raw();
-    }
-
-
-    Socket::Socket(int _type)
-        : c::Socket(AF_INET, _type, 0)
+    INet::INet(int _type, int _proto)
+        : BaseSocket(Domain, _type, _proto)
     {
     }
 
-    namespace tcp
+    INet::INet(int _fd)
+        : BaseSocket(_fd)
     {
-        Socket::Socket()
-            : ::net::Socket(SOCK_STREAM)
-        {
-        }
-
+        // verify correct domain
     }
 
-    namespace udp
+    bool Unix::connect(const std::string &_path)
     {
-        Socket::Socket()
-            : ::net::Socket(SOCK_DGRAM)
-        {
-        }
+        this->m_addr.sun_family = AF_UNIX;
+        std::strncpy(this->m_addr.sun_path, _path.c_str(), sizeof(this->m_addr.sun_path) - 1);
 
-        bool Socket::broadcasting() const
-        {
-            return m_broadcast;
-        }
+        this->recreate();
+        return c::Socket::connect(this->FD(), reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(sockaddr_un));
+    }
 
-        bool Socket::broadcastOn(uint32_t _port)
-        {
-            int enable = 1;
+    bool Unix::unlink()
+    {
+        if (std::strlen(this->m_addr.sun_path) != 0)
+            return ::unlink(this->m_addr.sun_path);
+        return false;
+    }
 
-            if (is_open()) {
-                close();
-            }
-            if (!c_create())
-                return false;
-            if (setsockopt(raw(), SOL_SOCKET, SO_BROADCAST, &enable, sizeof(enable)) == -1) {
-                close();
-                return false;
-            }
+    Unix::Unix(int _type, int _proto)
+        : BaseSocket(Domain, _type, _proto)
+    {
+    }
 
-            std::memset(&m_broad_addr, 0, sizeof(m_broad_addr));
-            m_broad_addr.sin_family = AF_INET;
-            m_broad_addr.sin_port = htons(8081);
-            m_broad_addr.sin_addr.s_addr =  htonl(INADDR_LOOPBACK);
-            m_broadcast = true;
-
-            return true;
-        }
-
-        bool Socket::broadcast(const uint8_t *_data, size_t _size)
-        {
-            return sendto(raw(), _data, _size, 0, (struct sockaddr*)&m_broad_addr, sizeof(sockaddr_in)) != -1;
-        }
-
-        bool Socket::bind() {
-
-            // struct sockaddr_in addr_client = getAddr();
-
-            return c_bind((struct sockaddr *)&m_broad_addr);
-        }
+    Unix::Unix(int _fd)
+        : BaseSocket(_fd)
+    {
+        // verify correct domain
     }
 }

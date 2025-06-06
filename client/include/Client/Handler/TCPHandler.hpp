@@ -14,13 +14,13 @@ namespace io
             TCPHandler(const net::Ip &_ip, uint32_t _port);
             ~TCPHandler() = default;
 
-            using Client = std::shared_ptr<net::tcp::Socket>;
+            using Client = std::shared_ptr<net::INetTcp>;
 
         protected:
             virtual void loop() override final;
 
         private:
             Client m_socket;
-            net::Selector<net::tcp::Socket> m_selector;
+            net::Selector<net::INetTcp> m_selector;
     };
 }

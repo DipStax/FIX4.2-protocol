@@ -11,9 +11,6 @@ namespace net
 }
 
 template<class T>
-concept IsSocket = std::is_base_of_v<net::Socket, T>;
-
-template<class T>
 concept IsKey = requires (T _val) {
     _val == _val;
 };

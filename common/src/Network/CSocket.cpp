@@ -2,23 +2,11 @@
 
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <string.h>
 
 #include "Common/Network/CSocket.hpp"
 
 namespace net::c
 {
-    Socket::Socket(int _dom, int _type, int _proto)
-        : m_dom(_dom), m_type(_type), m_proto(_proto)
-    {
-        (void)c_create();
-    }
-
-    Socket::~Socket()
-    {
-        (void)c_close();
-    }
-
     int Socket::create(int _dom, int _type, int _proto)
     {
         return socket(_dom, _type, _proto);
@@ -34,13 +22,12 @@ namespace net::c
         return ::send(_fd, _data, _size, 0);
     }
 
-    const uint8_t *Socket::receiveUDP(int _fd, size_t _size, int &_error)
+    const uint8_t *Socket::receiveUDP(int _fd, size_t _size, struct sockaddr *_addr, int &_error)
     {
         std::unique_ptr<uint8_t []> data(new uint8_t[_size]);
-        struct sockaddr_in addr;
-        socklen_t addr_len = sizeof(addr);
+        socklen_t addr_len = sizeof(_addr);
 
-        _error = ::recvfrom(_fd, data.get(), _size, 0, (struct sockaddr*)&addr, &addr_len);
+        _error = ::recvfrom(_fd, data.get(), _size, 0, _addr, &addr_len);
         return data.release();
     }
 
@@ -52,7 +39,7 @@ namespace net::c
         return data.release();
     }
 
-    bool Socket::blocking(int _fd, bool _block)
+    bool Socket::setBlocking(int _fd, bool _block)
     {
         int flags = fcntl(_fd, F_GETFL, 0);
 
@@ -66,21 +53,11 @@ namespace net::c
         return fcntl(_fd, F_GETFL, 0) & O_NONBLOCK;
     }
 
-    bool Socket::isBlocking() const
-    {
-        return isBlocking(m_fd);
-    }
-
     bool Socket::close(int _fd)
     {
         if (::close(_fd) != 0)
             return false;
         return true;
-    }
-
-    uint32_t Socket::getPort() const
-    {
-        return getPort(m_fd);
     }
 
     uint32_t Socket::getPort(int _fd)
@@ -95,111 +72,33 @@ namespace net::c
 
     bool Socket::is_open(int _fd)
     {
-        int error = 0;
-        char buffer = 0;
-
-        error = recv(_fd, &buffer, 1, MSG_PEEK);
-        if (error < 0)
-            return false;
-        if (error == 0 && (errno == EAGAIN || errno == EINTR))
-            return true;
-        return false;
+        return fcntl(_fd, F_GETFD) != -1;
     }
 
-    bool Socket::is_open()
+    bool Socket::bind(int _fd, struct sockaddr *_addr)
     {
-        bool block = isBlocking();
-
-        if (!c_blocking(false) || !is_open(m_fd))
-            return false;
-        return c_blocking(block);
+        return ::bind(_fd, _addr, sizeof(struct sockaddr_in)) == 0;
     }
 
-    // non static function:
-
-    bool Socket::c_create()
+     bool Socket::listen(int _fd, int _max)
     {
-        m_fd = create(m_dom, m_type, m_proto);
-        if (m_fd < 0)
-            return false;
-        return true;
+        return ::listen(_fd, _max) == 0;
     }
 
-    bool Socket::c_bind(struct sockaddr *_addr)
+    bool Socket::connect(int _fd, struct sockaddr *_addr, size_t _size)
     {
-        int reuse = 1;
-
-        if (setsockopt(m_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(int)) != 0)
-            return false;
-        if (bind(m_fd, _addr, sizeof(struct sockaddr_in)) == -1)
-            return false;
-        return true;
+        return ::connect(_fd, _addr, _size) == 0;
     }
 
-    bool Socket::c_listen(int _max)
+    bool Socket::setReusePort(int _fd, bool _flag)
     {
-        if (listen(m_fd, _max) != 0)
-            return false;
-        return true;
+        return setsockopt(_fd, SOL_SOCKET, SO_REUSEPORT, &_flag, sizeof(bool)) == 0;
     }
 
-    bool Socket::c_connect(const char *_ip, uint32_t _port)
+    bool Socket::setBroadcast(int _fd, bool _bc)
     {
-        struct sockaddr_in addr;
+        int bc_cast = static_cast<int>(_bc);
 
-        addr.sin_family = m_dom;
-        addr.sin_port = htons(_port);
-        if (inet_pton(m_dom, _ip, &addr.sin_addr) <= 0)
-            return false;
-        if (connect(m_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-            return false;
-        return true;
-    }
-
-    int Socket::c_accept()
-    {
-        return accept(m_fd);
-    }
-
-    size_t Socket::c_send(const std::string &_data)
-    {
-        return c_send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
-    }
-
-    size_t Socket::c_send(const uint8_t *_data, size_t _size)
-    {
-        return send(m_fd, _data, _size);
-    }
-
-    const uint8_t *Socket::c_receive(size_t _size, int &_error)
-    {
-        return receive(m_fd, _size, _error);
-    }
-
-    const uint8_t *Socket::c_receiveUDP(size_t _size, int &_error)
-    {
-        return receiveUDP(m_fd, _size, _error);
-    }
-
-    bool Socket::c_blocking(bool _block)
-    {
-        return blocking(m_fd, _block);
-    }
-
-    bool Socket::c_close()
-    {
-        if (!is_open())
-            return true;
-        return close(m_fd);
-    }
-
-    void Socket::raw(int _fd)
-    {
-        m_fd = _fd;
-    }
-
-    int Socket::raw() const
-    {
-        return m_fd;
+        return setsockopt(_fd, SOL_SOCKET, SO_BROADCAST, &bc_cast, sizeof(int)) == 0;
     }
 }

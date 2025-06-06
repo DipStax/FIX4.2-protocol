@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 
+include(FetchContent)
+
 set(CR ${CMAKE_CURRENT_LIST_DIR})
 
 include_directories("${CR}/include")
@@ -140,3 +142,34 @@ target_link_libraries(LibCommon
         COM_Network
         COM_Thread
 )
+
+
+###################################
+#   Test
+###################################
+
+enable_testing()
+
+set(GTEST_VERSION 1.17.0)
+FetchContent_Declare(
+  googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG v${GTEST_VERSION}
+)
+FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
+
+file(GLOB_RECURSE SRC_Tests
+    "${CR}/tests/**.cpp"
+)
+
+add_executable(COM_Tests
+    ${SRC_Tests}
+)
+target_include_directories(COM_Tests PRIVATE include)
+target_include_directories(COM_Tests PRIVATE test)
+
+target_link_libraries(COM_Tests LibCommon GTest::gtest_main)
+
+gtest_discover_tests(COM_Tests)

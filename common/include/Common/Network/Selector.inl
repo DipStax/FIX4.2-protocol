@@ -5,47 +5,53 @@
 
 namespace net
 {
-    template<IsSocket T>
+    template<IsSocketDomain T>
     Selector<T>::Selector()
         : c::EPoll((int)MAX_EVENT_EPOLL), m_to(0)
     {
     }
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     bool Selector<T>::client(Client _client)
     {
-        Event event;
+        if (_client == nullptr)
+            return false;
 
-        event.data.fd = _client->raw();
+        Event event;
+        int fd = _client->FD();
+
+        event.data.fd = fd;
         event.events = EPOLLIN | EPOLLET;
-        if (ctl(EPOLL_CTL_ADD, _client->raw(), &event) != -1) {
-            m_clients.emplace(_client->raw(), _client);
+        if (ctl(EPOLL_CTL_ADD, fd, &event) != -1) {
+            m_clients.emplace(fd, _client);
             return true;
         }
         return false;
     }
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     void Selector<T>::erase(Client _client)
     {
+        if (_client == nullptr)
+            return;
         std::erase_if(m_clients, [_client] (const std::pair<int, Client> &_lclient) {
-            return _client->raw() == _lclient.second->raw();
+            return _client->FD() == _lclient.second->FD();
         });
     }
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     void Selector<T>::timeout(float _to)
     {
         m_to = _to;
     }
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     float Selector<T>::timeout() const
     {
         return m_to;
     }
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     std::vector<typename Selector<T>::Client> Selector<T>::pull()
     {
         Event events[MAX_EVENT_EPOLL];
@@ -61,7 +67,7 @@ namespace net
     }
 
 
-    template<IsSocket T>
+    template<IsSocketDomain T>
     size_t Selector<T>::size() const
     {
         return m_clients.size();

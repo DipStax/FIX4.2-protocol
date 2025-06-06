@@ -4,7 +4,7 @@ namespace io
 {
     TCPHandler::TCPHandler(const net::Ip &_ip, uint32_t _port)
     {
-        m_socket = std::make_shared<net::tcp::Socket>();
+        m_socket = std::make_shared<net::INetTcp>();
         if (!m_socket->connect(_ip, _port))
             Logger::Log("Restart needed, you are not connected to the server");
         else
