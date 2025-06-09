@@ -61,11 +61,12 @@ namespace pu
         fix::Serializer::AnonMessage msg;
         fix::Reject reject;
 
-        if (!_client->getSocket()) { // todo is_open
-            Logger->log<log::Level::Info>("Client disconnected");
+        if (_client->getSocket() == nullptr || !_client->getSocket()->isOpen()) {
+            Logger->log<log::Level::Info>("Client socket not found or closed");
             return true;
         }
-        std::string data(_client->getSocket()->receive(MAX_RECV_SIZE, error));
+        std::vector<std::byte> bytes = _client->getSocket()->receive(MAX_RECV_SIZE, error);
+        std::string data(reinterpret_cast<const char*>(bytes.data()), + bytes.size());
 
         Logger->log<log::Level::Info>("Received from the client: (", _client->getUserId(), "), data:", data);
         if (error == 0) {

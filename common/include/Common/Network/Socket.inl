@@ -20,29 +20,26 @@ namespace net::type
     template<IsSocketDomain T>
     size_t Stream<T>::send(const std::string &_data)
     {
-        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+        return send(reinterpret_cast<const std::byte *>(_data.c_str()), _data.size());
     }
 
     template<IsSocketDomain T>
-    size_t Stream<T>::send(const uint8_t *_data, size_t _size)
+    size_t Stream<T>::send(const std::byte *_data, size_t _size)
     {
         return c::Socket::send(this->FD(), _data, _size);
     }
 
     template<IsSocketDomain T>
-    std::string Stream<T>::receive(size_t _size, int &_error)
+    std::vector<std::byte> Stream<T>::receive(size_t _size, int &_error)
     {
-        const uint8_t *data = c::Socket::receive(this->FD(), _size, _error);
-        std::string str = "";
+        const std::byte *data = c::Socket::receive(this->FD(), _size, _error);
+        std::vector<std::byte> buffer{};
 
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
+        if (_error != -1)
+            buffer.assign(data, data + _error);
+        if (data != nullptr)
+            delete[] data;
+        return buffer;
     }
 
 
@@ -62,29 +59,26 @@ namespace net::type
     template<IsSocketDomain T>
     size_t DGram<T>::send(const std::string &_data)
     {
-        return send(reinterpret_cast<const uint8_t *>(_data.c_str()), _data.size());
+        return send(reinterpret_cast<const std::byte *>(_data.c_str()), _data.size());
     }
 
     template<IsSocketDomain T>
-    size_t DGram<T>::send(const uint8_t *_data, size_t _size)
+    size_t DGram<T>::send(const std::byte *_data, size_t _size)
     {
-        return sendto(this->FD(), _data, _size, 0, reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(this->m_addr));
+        return c::Socket::sendTo(this->FD(), _data, _size, reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(this->m_addr));
     }
 
     template<IsSocketDomain T>
-    std::string DGram<T>::receive(size_t _size, int &_error)
+    std::vector<std::byte> DGram<T>::receive(size_t _size, int &_error)
     {
-        const uint8_t *data = c::Socket::receiveUDP(this->FD(), _size, reinterpret_cast<struct sockaddr *>(&this->m_addr), _error);
-        std::string str = "";
+        const std::byte *data = c::Socket::receiveFrom(this->FD(), _size, reinterpret_cast<struct sockaddr *>(&this->m_addr), _error);
+        std::vector<std::byte> buffer{};
 
-        if (_error == -1) {
-            if (data != nullptr)
-                delete[] data;
-            return str;
-        }
-        str.assign(data, data + _error);
-        delete[] data;
-        return str;
+        if (_error != -1)
+            buffer.assign(data, data + _error);
+        if (data != nullptr)
+            delete[] data;
+        return buffer;
     }
 
     template<IsSocketDomain T>

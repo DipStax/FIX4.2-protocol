@@ -30,7 +30,7 @@ namespace pu
                     std::string data = _input.Message.to_string();
 
                     if (_input.Client->getSocket()) { // todo is_open
-                        if (_input.Client->getSocket()->send(reinterpret_cast<const uint8_t *>(data.c_str()), data.size()) == data.size())
+                        if (_input.Client->getSocket()->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size()) == data.size())
                             Logger->log<log::Level::Info>("[Responce] Data send successfuly: ", data);
                         else
                             Logger->log<log::Level::Error>("[Responce] Error occured when sending data");

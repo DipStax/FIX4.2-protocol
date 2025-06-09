@@ -33,7 +33,7 @@ namespace pu
             if (m_message.size())
                 Logger->log<log::Level::Debug>("Broadcasting message number: ", m_message.size());
             for (const auto &[_, _val] : m_message) {
-                (void)m_socket.send(reinterpret_cast<const uint8_t*>(&_val), sizeof(data::UDPPackage));
+                (void)m_socket.send(reinterpret_cast<const std::byte *>(&_val), sizeof(data::UDPPackage));
             }
             clean();
             sleep(UDP_TICK);
