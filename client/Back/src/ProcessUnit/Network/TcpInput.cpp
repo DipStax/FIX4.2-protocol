@@ -22,7 +22,8 @@ namespace pu
             std::vector<Socket> clients = m_selector.pull();
 
             if (!clients.empty()) {
-                std::string data = m_server->receive(MAX_RECV_SIZE, error);
+                std::vector<std::byte> bytes = clients[0]->receive(MAX_RECV_SIZE, error);
+                std::string data(reinterpret_cast<const char*>(bytes.data()), + bytes.size());
                 fix::Serializer::AnonMessage msg{};
 
                 if (error == 0) {

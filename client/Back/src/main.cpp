@@ -5,11 +5,15 @@
 #include "Common/Log/Imp/File.hpp"
 #include "Common/Log/Imp/Buffer.hpp"
 
+#include "Client/Back/FrontManager.hpp"
+
 int main()
 {
     log::Manager::registerNewLogger<log::imp::Console>("console");
     log::Manager::registerNewLogger<log::imp::File>("file");
     log::Manager::registerDefaultLogger<log::imp::Buffer>();
+
+    FrontManager::Instance().wait_frontend();
 
     Core core{8080, 8081};
 

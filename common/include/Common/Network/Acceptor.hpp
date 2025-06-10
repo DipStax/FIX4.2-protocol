@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Common/Network/Socket.hpp"
 
 #ifndef MAX_SOCKET

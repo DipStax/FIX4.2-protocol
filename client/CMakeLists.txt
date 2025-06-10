@@ -9,11 +9,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 
-set(CR ${CMAKE_CURRENT_LIST_DIR})
+set(CRLD ${CMAKE_CURRENT_LIST_DIR})
 
 add_compile_options(-Wall -Wextra -g3)
 
 include_directories(common/include/)
+
+include("${CRLD}/Common/CMakeLists.txt")
 
 ###################################
 #   GUI
@@ -26,19 +28,19 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
 file(GLOB_RECURSE SRC_FIXClient_GUI
-    "${CR}/GUI/include/Client/GUI/**.hpp"
-    "${CR}/GUI/include/Client/GUI/**.inl"
-    "${CR}/GUI/src/**.cpp"
+    "${CRLD}/GUI/include/**.hpp"
+    "${CRLD}/GUI/include/**.inl"
+    "${CRLD}/GUI/src/**.cpp"
 )
 
 add_executable(FIX_Client_GUI
     ${SRC_FIXClient_GUI}
 )
 
-target_link_libraries(FIX_Client_GUI PRIVATE LibCommon)
+target_link_libraries(FIX_Client_GUI PRIVATE LibCommon CLIENT_COM_IPC)
 target_link_libraries(FIX_Client_GUI PRIVATE Qt6::Core Qt6::Widgets)
 
-target_include_directories(FIX_Client_GUI PUBLIC "${CR}/GUI/include")
+target_include_directories(FIX_Client_GUI PUBLIC "${CRLD}/GUI/include")
 target_compile_definitions(FIX_Client_GUI PUBLIC PROVIDER_NAME="MyMarket")
 
 set(CMAKE_AUTOMOC OFF)
@@ -49,20 +51,18 @@ set(CMAKE_AUTORCC OFF)
 #   Backend
 ###################################
 
-
-
 file(GLOB_RECURSE SRC_FIXClient_Back
-    "${CR}/Back/include/Client/Back/**.hpp"
-    "${CR}/Back/include/Client/Back/**.inl"
-    "${CR}/Back/src/**.cpp"
+    "${CRLD}/Back/include/**.hpp"
+    "${CRLD}/Back/include/**.inl"
+    "${CRLD}/Back/src/**.cpp"
 )
 
 add_executable(FIX_Client_Back
     ${SRC_FIXClient_Back}
 )
 
-target_include_directories(FIX_Client_Back PUBLIC "${CR}/Back/include")
+target_include_directories(FIX_Client_Back PUBLIC "${CRLD}/Back/include")
 
 target_compile_definitions(FIX_Client_Back PUBLIC PROVIDER_NAME="MyMarket")
 
-target_link_libraries(FIX_Client_Back PRIVATE LibCommon)
+target_link_libraries(FIX_Client_Back PRIVATE LibCommon CLIENT_COM_IPC)

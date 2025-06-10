@@ -28,8 +28,6 @@ add_library(COM_Utils STATIC
     ${SRC_Utils}
 )
 
-message(STATUS "Utils sources: \"${CR}/include/Common/*.hpp\"")
-
 ###################################
 #   Core
 ###################################
@@ -57,8 +55,6 @@ add_library(COM_Container INTERFACE
     ${SRC_Container}
 )
 
-message(STATUS "Container sources: ${SRC_Container}")
-
 ###################################
 #   Log
 ###################################
@@ -73,6 +69,7 @@ add_library(COM_Log STATIC
     ${SRC_Log}
 )
 target_compile_options(COM_Log PRIVATE -Wno-builtin-declaration-mismatch)
+
 ###################################
 #   Message
 ###################################

@@ -8,5 +8,6 @@ int main(int argc, char *argv[])
     ui::LoginForm form;
 
     form.show();
+
     return app.exec();
 }

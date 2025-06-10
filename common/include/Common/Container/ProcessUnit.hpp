@@ -5,7 +5,7 @@
 
 #include "Common/Container/IProcessUnitStopable.hpp"
 
-enum PUStatus
+enum class PUStatus : uint8_t
 {
     Initialize,
     Running,

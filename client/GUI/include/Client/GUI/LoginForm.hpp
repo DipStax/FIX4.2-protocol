@@ -25,7 +25,7 @@ namespace ui
 
                 QVBoxLayout *layout = new QVBoxLayout;
                 layout->addWidget(label);
-                layout->addWidget(lineEdit);
+                layout->addWidget(m_entry);
                 layout->addWidget(button);
 
                 setLayout(layout);

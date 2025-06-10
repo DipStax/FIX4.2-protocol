@@ -10,7 +10,7 @@ namespace pu
     class TcpOutputNetwork : public IProcessUnit<fix::Message>
     {
         public:
-            using Socket = std::shared_ptr<net::tcp::Socket>;
+            using Socket = std::shared_ptr<net::INetTcp>;
 
             TcpOutputNetwork(Socket _server);
             virtual ~TcpOutputNetwork() = default;

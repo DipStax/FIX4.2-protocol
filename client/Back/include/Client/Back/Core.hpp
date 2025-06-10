@@ -21,7 +21,7 @@ class Core
     private:
         bool m_running;
 
-        std::shared_ptr<net::tcp::Socket> m_server;
+        std::shared_ptr<net::INetTcp> m_server;
 
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 

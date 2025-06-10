@@ -14,7 +14,7 @@ namespace pu
     class TcpInputNetwork : public IProcessUnitBase
     {
         public:
-            using Socket = std::shared_ptr<net::tcp::Socket>;
+            using Socket = std::shared_ptr<net::INetTcp>;
 
             TcpInputNetwork(Socket _server, QueueTransit &_output);
             virtual ~TcpInputNetwork() = default;
@@ -27,7 +27,7 @@ namespace pu
 
             QueueTransit &m_output;
 
-            net::Selector<net::tcp::Socket> m_selector;
+            net::Selector<net::INetTcp> m_selector;
 
             std::unique_ptr<log::ILogger> Logger = nullptr;
     };

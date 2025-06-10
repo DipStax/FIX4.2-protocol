@@ -8,7 +8,7 @@
 
 #include "Common/Network/BaseSocket.hpp"
 #include "Common/Network/Ip.hpp"
-#include "Common/Network/NetworkBuffer.hpp"
+#include "Common/Network/Buffer.hpp"
 
 template<class T>
 concept IsSocketType = requires (T _sock, const std::byte *_data1, size_t _size, std::string _data2, int &_err) {
@@ -96,7 +96,7 @@ namespace net
                 Stream(int _fd);
                 ~Stream() = default;
 
-                // size_t send(const NetworkBuffer &_data);
+                // size_t send(const Buffer &_data);
                 size_t send(const std::string &_data);
                 size_t send(const std::byte *_data, size_t _size);
 
@@ -113,7 +113,7 @@ namespace net
                 DGram(int _fd);
                 ~DGram() = default;
 
-                // size_t send(const NetworkBuffer &_data);
+                // size_t send(const Buffer &_data);
                 size_t send(const std::string &_data);
                 size_t send(const std::byte *_data, size_t _size);
 
