@@ -2,15 +2,10 @@
 
 #include <cstdint>
 
-#include "Common/Network/Buffer.hpp"
+#include "Client/Common/ipc/MessageType.hpp"
 
 namespace ipc
 {
-    enum class MessageType : uint8_t
-    {
-        Status
-    };
-
     struct Header
     {
         MessageType MsgType;

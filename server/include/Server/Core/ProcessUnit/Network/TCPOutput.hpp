@@ -31,6 +31,6 @@ namespace pu
 
             ThreadPool<TS_SIZE_ON> m_tp;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

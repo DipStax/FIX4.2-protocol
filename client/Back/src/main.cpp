@@ -9,9 +9,9 @@
 
 int main()
 {
-    log::Manager::registerNewLogger<log::imp::Console>("console");
-    log::Manager::registerNewLogger<log::imp::File>("file");
-    log::Manager::registerDefaultLogger<log::imp::Buffer>();
+    logger::Manager::registerNewLogger<logger::imp::Console>("console");
+    logger::Manager::registerNewLogger<logger::imp::File>("file");
+    logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     FrontManager::Instance().wait_frontend();
 

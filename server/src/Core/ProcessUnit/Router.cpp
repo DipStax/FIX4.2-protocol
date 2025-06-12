@@ -12,7 +12,7 @@
 namespace pu
 {
     Router::Router(InputNetworkOutput &_tcp_output, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat)
-        : m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat), Logger(log::Manager::newLogger("Router-master"))
+        : m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat), Logger(logger::Manager::newLogger("Router-master"))
     {
     }
 
@@ -36,12 +36,12 @@ namespace pu
                 input = m_input.pop_front();
                 reject = fix::Header::Verify(input.Message, input.Client->getUserId(), PROVIDER_NAME, input.Client->getSeqNumber());
                 if (reject.first) {
-                    Logger->log<log::Level::Info>("Header verification failed");
+                    Logger->log<logger::Level::Info>("Header verification failed");
                     m_tcp_output.append(input.Client, input.ReceiveTime, std::move(reject.second));
                     continue;
                 }
-                Logger->log<log::Level::Debug>("Header verification validated");
-                Logger->log<log::Level::Info>("Message from: (", *(input.Client), ") with type: ", input.Message.at(fix::Tag::MsgType));
+                Logger->log<logger::Level::Debug>("Header verification validated");
+                Logger->log<logger::Level::Info>("Message from: (", *(input.Client), ") with type: ", input.Message.at(fix::Tag::MsgType));
                 switch (input.Message.at("35")[0])
                 {
                     case fix::Logon::cMsgType: m_logon_handler.push(std::move(input));
@@ -66,7 +66,7 @@ namespace pu
                                     break;
                             }
                         } else {
-                            Logger->log<log::Level::Warning>("User logged in, but try to access login required message type: ", input.Message.at(fix::Tag::MsgType));
+                            Logger->log<logger::Level::Warning>("User logged in, but try to access login required message type: ", input.Message.at(fix::Tag::MsgType));
                             (void)treatUnknown(input);
                         }
                 }
@@ -76,21 +76,21 @@ namespace pu
 
     void Router::redirectToMarket(InputType &_input)
     {
-        Logger->log<log::Level::Debug>("(Market Order) Redirecting to correct market router");
+        Logger->log<logger::Level::Debug>("(Market Order) Redirecting to correct market router");
         m_market_input.at(_input.Message[fix::Tag::Symbol]).push(std::move(_input));
     }
 
     bool Router::treatUnknown(InputType &_input)
     {
-        Logger->log<log::Level::Info>("(Unknown) Processing message...");
+        Logger->log<logger::Level::Info>("(Unknown) Processing message...");
         fix::Reject reject;
 
-        Logger->log<log::Level::Info>("(New Order Single) Rejecting request from client: ", _input.Client->getUserId(), ", with request type: ", _input.Message.at(fix::Tag::MsgType));
+        Logger->log<logger::Level::Info>("(New Order Single) Rejecting request from client: ", _input.Client->getUserId(), ", with request type: ", _input.Message.at(fix::Tag::MsgType));
         reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
         reject.set371_refTagId(fix::Tag::MsgType);
         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
         reject.set58_text("Unknown message type");
-        Logger->log<log::Level::Debug>("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
+        Logger->log<logger::Level::Debug>("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
         return true;
     }
@@ -118,7 +118,7 @@ namespace pu
         // }
         // for (const auto &_sym : symbols)
         //     m_market_input.at(_sym).append(std::move(sub)); // reject if not found
-        // Logger->log<log::Level::Info>("(MarketDataRequest) Validate from client: ", _input.Client->getUserId());
+        // Logger->log<logger::Level::Info>("(MarketDataRequest) Validate from client: ", _input.Client->getUserId());
         // return true;
     }
 }

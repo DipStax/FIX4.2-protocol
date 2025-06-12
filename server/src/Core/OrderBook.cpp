@@ -47,9 +47,9 @@ fix::MarketDataSnapshotFullRefresh OrderBook::refresh(const OrderBook::Subscript
         return refresh<cache_AskBook>(m_cache_ask_full, _sub.depth);
     }
     cache_on<AskBook, cache_AskBook>(m_ask, m_cache_ask_full);
-    Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached ask size: ", m_cache_bid.size());
+    Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached ask size: ", m_cache_bid.size());
     cache_on<BidBook, cache_BidBook>(m_bid, m_cache_bid_full);
-    Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached bid size: ", m_cache_bid.size());
+    Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached bid size: ", m_cache_bid.size());
     m_is_cached = true;
     return refresh(_sub);
 }
@@ -62,18 +62,18 @@ fix::MarketDataIncrementalRefresh OrderBook::update(const OrderBook::Subscriptio
         return update<cache_AskBook>(m_cache_ask, m_cache_ask_upd, _sub.depth);
     }
     m_cache_ask_upd = m_cache_ask;
-    Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached old bid size: ", m_cache_ask_upd.size());
+    Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached old bid size: ", m_cache_ask_upd.size());
     m_cache_bid_upd = m_cache_bid;
-    Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached old bid size: ", m_cache_bid_upd.size());
+    Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached old bid size: ", m_cache_bid_upd.size());
     m_is_cached_udp = true;
 
     {
         std::lock_guard<std::mutex> guard(m_mutex);
 
         cache_on<AskBook, cache_AskBook>(m_ask, m_cache_ask);
-        Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached new ask size: ", m_cache_ask.size());
+        Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached new ask size: ", m_cache_ask.size());
         cache_on<BidBook, cache_BidBook>(m_bid, m_cache_bid);
-        Logger->log<log::Level::Info>("[OrderBook] {FullRefresh} Cached new bid size: ", m_cache_bid.size());
+        Logger->log<logger::Level::Info>("[OrderBook] {FullRefresh} Cached new bid size: ", m_cache_bid.size());
     }
     m_is_cached = true;
     return update(_sub);
@@ -114,7 +114,7 @@ void OrderBook::add(OrderType _type, Price _price, Order &_order, OrderStatus _s
         if (add<AskBook, std::greater_equal<Price>>(m_ask, _price, _order)) {
             std::lock_guard<std::mutex> guard(m_mutex);
 
-            Logger->log<log::Level::Info>("[OrderBook] (", m_name, ") {Add} New order in BID: ", _order, " at price: ", _price);
+            Logger->log<logger::Level::Info>("[OrderBook] (", m_name, ") {Add} New order in BID: ", _order, " at price: ", _price);
             m_bid[_price].push_back(_order);
             m_bid_id.emplace(_order.orderId, std::make_pair(m_bid.find(_price), m_bid.at(_price).end() - 1));
             event.status = OrderStatus::PartiallyFilled;
@@ -123,7 +123,7 @@ void OrderBook::add(OrderType _type, Price _price, Order &_order, OrderStatus _s
         if (add<BidBook, std::less_equal<Price>>(m_bid, _price, _order)) {
             std::lock_guard<std::mutex> guard(m_mutex);
 
-            Logger->log<log::Level::Info>("[OrderBook] (", m_name, ") {Add} New order in ASK: ", _order, " at price: ", _price);
+            Logger->log<logger::Level::Info>("[OrderBook] (", m_name, ") {Add} New order in ASK: ", _order, " at price: ", _price);
             m_ask[_price].push_back(_order);
             m_ask_id.emplace(_order.orderId, std::make_pair(m_ask.find(_price), m_ask.at(_price).end() - 1));
             event.status = OrderStatus::PartiallyFilled;
@@ -136,7 +136,7 @@ void OrderBook::add(OrderType _type, Price _price, Order &_order, OrderStatus _s
         event.status = OrderStatus::PartiallyFilled;
     else
         event.status = OrderStatus::Filled;
-    Logger->log<log::Level::Info>("[OrderBook] (", m_name, ") {Add} New order event: "); // todo log
+    Logger->log<logger::Level::Info>("[OrderBook] (", m_name, ") {Add} New order event: "); // todo log
     m_output.append(event);
-    Logger->log<log::Level::Info>("[OrderBook] (", m_name, ") {Add} New order event send");
+    Logger->log<logger::Level::Info>("[OrderBook] (", m_name, ") {Add} New order event send");
 }

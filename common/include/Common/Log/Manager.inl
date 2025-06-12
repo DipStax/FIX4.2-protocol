@@ -2,7 +2,7 @@
 
 #include "Common/Log/Manager.hpp"
 
-namespace log
+namespace logger
 {
     template<class T>
     void Manager::registerNewLogger(const std::string &_type)

@@ -39,6 +39,6 @@ namespace pu
             QueueInputType &m_logout_handler;
             QueueInputType &m_heartbeat_handler;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

@@ -10,7 +10,7 @@
 namespace pu
 {
     HeartBeatHandler::HeartBeatHandler(QueueMessage &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(log::Manager::newLogger("HeartBeat-handler"))
+        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("HeartBeat-handler"))
     {
         m_thread = std::jthread(&HeartBeatHandler::heartbeatLoop, this);
     }
@@ -52,17 +52,17 @@ namespace pu
 
         if (reject.first) {
             if (reject.second.contains(fix::Tag::Text))
-                Logger->log<log::Level::Info>("TestRequest | TestRequest verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                Logger->log<logger::Level::Info>("TestRequest | TestRequest verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
             else
-                Logger->log<log::Level::Warning>("TestRequest | TestRequest verification failed for unknown reason");
+                Logger->log<logger::Level::Warning>("TestRequest | TestRequest verification failed for unknown reason");
             reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<log::Level::Debug>("TestRequest | Reject moving to TCP output");
+            Logger->log<logger::Level::Debug>("TestRequest | Reject moving to TCP output");
             m_tcp_output.append(std::move(reject.second));
             return false;
         }
 
         User::Instance().setSinceHeartBeat(std::chrono::system_clock::now());
-        Logger->log<log::Level::Info>("TestRequest | TestRequest with Id: ", _input.at(fix::Tag::TestReqId));
+        Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", _input.at(fix::Tag::TestReqId));
         hb.set112_testReqID(_input.at(fix::Tag::TestReqId));
         m_tcp_output.append(std::move(hb));
         return true;
@@ -74,17 +74,17 @@ namespace pu
 
         if (reject.first) {
             if (reject.second.contains(fix::Tag::Text))
-                Logger->log<log::Level::Info>("HeartBeat | HeartBeat verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                Logger->log<logger::Level::Info>("HeartBeat | HeartBeat verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
             else
-                Logger->log<log::Level::Warning>("HeartBeat | HeartBeat verification failed for unknown reason");
+                Logger->log<logger::Level::Warning>("HeartBeat | HeartBeat verification failed for unknown reason");
             reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<log::Level::Debug>("HeartBeat | Reject moving to TCP output");
+            Logger->log<logger::Level::Debug>("HeartBeat | Reject moving to TCP output");
             m_tcp_output.append(std::move(reject.second));
             return false;
         }
 
         User::Instance().setSinceHeartBeat(std::chrono::system_clock::now());
-        Logger->log<log::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
+        Logger->log<logger::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
         return true;
     }
 
@@ -96,7 +96,7 @@ namespace pu
             if (User::Instance().isLogin() && std::chrono::duration<double>(now - User::Instance().getSinceHeartBeat()).count() > PU_HEARTBEAT_TO) {
                 fix::HeartBeat hb;
 
-                Logger->log<log::Level::Info>("Sending HeartBeat Message");
+                Logger->log<logger::Level::Info>("Sending HeartBeat Message");
                 User::Instance().setSinceHeartBeat(now);
                 m_tcp_output.append(std::move(hb));
             }

@@ -40,6 +40,6 @@ namespace pu::market
 
             OrderBook &m_ob;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

@@ -2,7 +2,7 @@
 
 #include "Common/Log/ILogger.hpp"
 
-namespace log::imp
+namespace logger::imp
 {
     class Base : public ILogger
     {

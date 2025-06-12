@@ -104,7 +104,7 @@ class OrderBook
         BidBook m_bid{};
         AskBook m_ask{};
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };
 
 #include "Server/Core/OrderBook.inl"

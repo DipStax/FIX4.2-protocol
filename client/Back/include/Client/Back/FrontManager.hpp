@@ -22,9 +22,9 @@ class FrontManager
         void notify_status(PUStatus _status);
 
     private:
-        FrontManager() = default;
+        FrontManager();
 
         net::Acceptor<net::UnixStream>::Client m_socket;
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

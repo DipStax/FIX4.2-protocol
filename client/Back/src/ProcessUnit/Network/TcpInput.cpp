@@ -6,16 +6,16 @@
 namespace pu
 {
     TcpInputNetwork::TcpInputNetwork(TcpInputNetwork::Socket _server, QueueTransit &_output)
-        : m_server(_server), m_output(_output), Logger(log::Manager::newLogger("TCP-Input"))
+        : m_server(_server), m_output(_output), Logger(logger::Manager::newLogger("TCP-Input"))
     {
         m_selector.client(m_server);
         m_selector.timeout(1.0);
-        Logger->log<log::Level::Verbose>("Server socket added to selector");
+        Logger->log<logger::Level::Verbose>("Server socket added to selector");
     }
 
     void TcpInputNetwork::runtime(std::stop_token _st)
     {
-        Logger->log<log::Level::Info>("Starting process unit...");
+        Logger->log<logger::Level::Info>("Starting process unit...");
         int error = 0;
 
         while (!_st.stop_requested()) {
@@ -27,17 +27,17 @@ namespace pu
                 fix::Serializer::AnonMessage msg{};
 
                 if (error == 0) {
-                    Logger->log<log::Level::Fatal>("Server socket disonnected");
+                    Logger->log<logger::Level::Fatal>("Server socket disonnected");
                     // todo
                     continue;
                 }
-                Logger->log<log::Level::Info>("New message received: ", data);
+                Logger->log<logger::Level::Info>("New message received: ", data);
                 if (fix::Serializer::run(data, msg) != fix::Serializer::Error::None) {
                     fix::Reject reject;
 
                     // build reject
                     // m_error.append(_client, std::chrono::system_clock::now(), std::move(reject));
-                    Logger->log<log::Level::Error>("Message deserialization failed");
+                    Logger->log<logger::Level::Error>("Message deserialization failed");
                 } else {
                     m_output.push(std::move(msg));
                 }

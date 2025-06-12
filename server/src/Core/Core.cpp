@@ -11,7 +11,7 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
         m_heartbeat.getInput()
     ),
     m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), _tcp_port),
-    Logger(log::Manager::newLogger("Core"))
+    Logger(logger::Manager::newLogger("Core"))
 {
     market_init();
 }
@@ -23,7 +23,7 @@ Core::~Core()
 
 bool Core::start()
 {
-    Logger->log<log::Level::Info>("Starting server...");
+    Logger->log<logger::Level::Info>("Starting server...");
     m_running = true;
     if (internal_start()) {
         m_running = false;
@@ -42,10 +42,10 @@ bool Core::start()
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
-            Logger->log<log::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
+            Logger->log<logger::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
             return false;
         } catch (std::exception &_e) {
-            Logger->log<log::Level::Fatal>("Pipeline have crash: ", _e.what());
+            Logger->log<logger::Level::Fatal>("Pipeline have crash: ", _e.what());
             return false;
         }
     }
@@ -57,7 +57,7 @@ void Core::stop()
 {
     if (m_running) {
         m_running = false;
-        Logger->log<log::Level::Info>("Stoping...");
+        Logger->log<logger::Level::Info>("Stoping...");
         m_tcp_input.stop();
         m_router.stop();
         // m_logon.stop();
@@ -67,13 +67,13 @@ void Core::stop()
         //     _pip.stop();
         m_tcp_output.stop();
         // m_udp_output.stop();
-        Logger->log<log::Level::Info>("All process unit are stoped");
+        Logger->log<logger::Level::Info>("All process unit are stoped");
     }
 }
 
 bool Core::internal_start()
 {
-    Logger->log<log::Level::Info>("Starting pipeline...");
+    Logger->log<logger::Level::Info>("Starting pipeline...");
     // m_udp_output.start();
     m_tcp_output.start();
 

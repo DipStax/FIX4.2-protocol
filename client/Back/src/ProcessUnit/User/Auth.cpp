@@ -7,7 +7,7 @@
 namespace pu
 {
     AuthHandler::AuthHandler(QueueMessage &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(log::Manager::newLogger("Auth"))
+        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("Auth"))
     {
     }
 
@@ -42,11 +42,11 @@ namespace pu
 
         if (reject.first) {
             if (reject.second.contains(fix::Tag::Text))
-                Logger->log<log::Level::Info>("Logon | Logon verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                Logger->log<logger::Level::Info>("Logon | Logon verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
             else
-                Logger->log<log::Level::Warning>("Logon | Logon verification failed for unknown reason");
+                Logger->log<logger::Level::Warning>("Logon | Logon verification failed for unknown reason");
             reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<log::Level::Debug>("Logon | Reject moving to TCP output");
+            Logger->log<logger::Level::Debug>("Logon | Reject moving to TCP output");
             m_tcp_output.append(std::move(reject.second));
             return false;
         }
@@ -61,22 +61,22 @@ namespace pu
 
         if (reject.first) {
             if (reject.second.contains(fix::Tag::Text))
-                Logger->log<log::Level::Info>("Logout | Logout verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                Logger->log<logger::Level::Info>("Logout | Logout verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
             else
-                Logger->log<log::Level::Warning>("Logout | Logout verification failed for unknown reason");
+                Logger->log<logger::Level::Warning>("Logout | Logout verification failed for unknown reason");
             reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<log::Level::Debug>("Logout | Reject moving to TCP output");
+            Logger->log<logger::Level::Debug>("Logout | Reject moving to TCP output");
             m_tcp_output.append(std::move(reject.second));
             return false;
         }
 
         if (User::Instance().logoutRequested()) {
-            Logger->log<log::Level::Info>("Server accepted logout");
+            Logger->log<logger::Level::Info>("Server accepted logout");
             // close server
         } else {
-            Logger->log<log::Level::Info>("Logout send from server");
+            Logger->log<logger::Level::Info>("Logout send from server");
             User::Instance().shouldDisconnect(true);
-            Logger->log<log::Level::Debug>("Reply with client logout movingto TCP output");
+            Logger->log<logger::Level::Debug>("Reply with client logout movingto TCP output");
             m_tcp_output.push(std::move(fix::Logout{}));
         }
         return true;

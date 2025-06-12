@@ -27,6 +27,6 @@ namespace pu
 
             QueueMessage &m_tcp_output;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

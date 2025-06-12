@@ -3,7 +3,7 @@
 
 #include "Common/Log/Imp/Console.hpp"
 
-namespace log::imp
+namespace logger::imp
 {
     Console::Console(const std::string &_name)
         : Base(_name)

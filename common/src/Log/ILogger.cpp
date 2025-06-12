@@ -1,6 +1,6 @@
 #include "Common/Log/ILogger.hpp"
 
-namespace log
+namespace logger
 {
     void ILogger::log(Level _lvl, const std::string &_content)
     {

@@ -5,7 +5,7 @@
 
 #include "Common/Log/Level.hpp"
 
-namespace log
+namespace logger
 {
     struct Event
     {

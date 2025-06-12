@@ -87,6 +87,6 @@ void User::setSinceHeartBeat(std::chrono::system_clock::time_point _time)
 }
 
 User::User()
-    : Logger(log::Manager::newLogger("UserStore"))
+    : Logger(logger::Manager::newLogger("UserStore"))
 {
 }

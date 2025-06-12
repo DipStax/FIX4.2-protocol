@@ -33,6 +33,6 @@ namespace pu
             net::Acceptor<net::INetTcp> m_acceptor{};
             net::Selector<net::INetTcp> m_selector{};
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

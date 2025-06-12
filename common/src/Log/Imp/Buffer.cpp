@@ -1,13 +1,13 @@
 #include "Common/Log/Imp/Buffer.hpp"
 #include "Common/Log/Manager.hpp"
 
-namespace log::imp
+namespace logger::imp
 {
     Buffer::Buffer(const std::string &_name)
         : Base(_name)
     {
-        m_loggers.push_back(log::Manager::newLogger("console", _name));
-        m_loggers.push_back(log::Manager::newLogger("file", _name));
+        m_loggers.push_back(logger::Manager::newLogger("console", _name));
+        m_loggers.push_back(logger::Manager::newLogger("file", _name));
     }
 
     void Buffer::newEventLog(Event _event)

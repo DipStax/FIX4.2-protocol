@@ -31,6 +31,6 @@ namespace pu::market
             QueueInputType m_input;
             InputOBAction &m_ob_action;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

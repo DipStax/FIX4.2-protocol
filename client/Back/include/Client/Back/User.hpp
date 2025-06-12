@@ -42,5 +42,5 @@ class User
         bool m_dc_req = false;
         bool m_logout_req = false;
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

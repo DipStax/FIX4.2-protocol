@@ -39,6 +39,6 @@ namespace pu::market
 
             ThreadPool<TS_SIZE_OE> m_tp;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

@@ -6,7 +6,7 @@
 namespace pu
 {
     TcpOutputNetwork::TcpOutputNetwork()
-        : Logger(log::Manager::newLogger("TCP-Output"))
+        : Logger(logger::Manager::newLogger("TCP-Output"))
     {
     }
 
@@ -17,7 +17,7 @@ namespace pu
 
     void TcpOutputNetwork::runtime(std::stop_token _st)
     {
-        Logger->log<log::Level::Info>("Starting process unit...");
+        Logger->log<logger::Level::Info>("Starting process unit...");
         InputType input;
 
         while (!_st.stop_requested()) {
@@ -31,18 +31,18 @@ namespace pu
 
                     if (_input.Client->getSocket()) { // todo is_open
                         if (_input.Client->getSocket()->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size()) == data.size())
-                            Logger->log<log::Level::Info>("[Responce] Data send successfuly: ", data);
+                            Logger->log<logger::Level::Info>("[Responce] Data send successfuly: ", data);
                         else
-                            Logger->log<log::Level::Error>("[Responce] Error occured when sending data");
+                            Logger->log<logger::Level::Error>("[Responce] Error occured when sending data");
                         // todo log timing
-                        Logger->log<log::Level::Info>("[Responce] Updated client status: { UserId: ", _input.Client->getUserId(), " }"); // todo log
+                        Logger->log<logger::Level::Info>("[Responce] Updated client status: { UserId: ", _input.Client->getUserId(), " }"); // todo log
                         if (_input.Client->shouldDisconnect()) {
                             _input.Client->disconnect();
                             ClientStore::Instance().removeClient(_input.Client);
-                            Logger->log<log::Level::Debug>("[Responce] Client has been disconnected: ", _input.Client->getUserId());
+                            Logger->log<logger::Level::Debug>("[Responce] Client has been disconnected: ", _input.Client->getUserId());
                         }
                     } else {
-                        Logger->log<log::Level::Warning>("[Responce] Client not connected: ", _input.Client->getUserId());
+                        Logger->log<logger::Level::Warning>("[Responce] Client not connected: ", _input.Client->getUserId());
                         ClientStore::Instance().removeClient(_input.Client);
                         return true;
                     }
@@ -50,6 +50,6 @@ namespace pu
                 });
             }
         }
-        Logger->log<log::Level::Warning>("Exiting process unit...", _st.stop_requested());
+        Logger->log<logger::Level::Warning>("Exiting process unit...", _st.stop_requested());
     }
 }

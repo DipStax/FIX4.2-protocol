@@ -6,7 +6,7 @@
 namespace pu
 {
     TcpOutputNetwork::TcpOutputNetwork(Socket _server)
-        : m_server(_server), Logger(log::Manager::newLogger("NET/TCP-Output"))
+        : m_server(_server), Logger(logger::Manager::newLogger("NET/TCP-Output"))
     {
     }
 
@@ -30,9 +30,9 @@ namespace pu
                 std::string data = input.to_string();
 
                 if (m_server->send(data) == 0)
-                    Logger->log<log::Level::Error>("Failed to send message to server: ", data);
+                    Logger->log<logger::Level::Error>("Failed to send message to server: ", data);
                 else
-                    Logger->log<log::Level::Info>("Sended new message: ", data);
+                    Logger->log<logger::Level::Info>("Sended new message: ", data);
             }
         }
     }

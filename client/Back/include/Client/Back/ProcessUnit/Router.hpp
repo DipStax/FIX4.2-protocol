@@ -26,6 +26,6 @@ namespace pu
             QueueTransit &m_heartbeat;
             QueueTransit &m_auth;
 
-            std::unique_ptr<log::ILogger> Logger;
+            std::unique_ptr<logger::ILogger> Logger;
     };
 }

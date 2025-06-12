@@ -25,6 +25,6 @@ namespace pu
 
             QueueInputType m_input;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

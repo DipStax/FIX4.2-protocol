@@ -32,22 +32,22 @@ bool OrderBook::add(T &_book, Price _price, Order &_order)
             event.quantity = 0;
             event.orgQty = order.quantity;
             if (order.quantity == _order.quantity) {
-                Logger->log<log::Level::Info>("{Add} Filled the order: ", order, ", price: ", _key);
-                Logger->log<log::Level::Info>("{Add-Incoming} Filled the order: ", _order);
+                Logger->log<logger::Level::Info>("{Add} Filled the order: ", order, ", price: ", _key);
+                Logger->log<logger::Level::Info>("{Add-Incoming} Filled the order: ", _order);
                 _order.quantity = 0;
                 _val.erase(_val.begin() + i);
                 _order.quantity = 0;
                 m_output.append(event);
                 return false;
             } else if (order.quantity < _order.quantity) {
-                Logger->log<log::Level::Info>("{Add} Filled the order: ", order, ", price: ", _key);
-                Logger->log<log::Level::Info>("{Add-Incoming} Partially filled the order: ", _order, ", new quantity: ", _order.quantity - order.quantity);
+                Logger->log<logger::Level::Info>("{Add} Filled the order: ", order, ", price: ", _key);
+                Logger->log<logger::Level::Info>("{Add-Incoming} Partially filled the order: ", _order, ", new quantity: ", _order.quantity - order.quantity);
                 _order.quantity -= order.quantity;
                 _val.erase(_val.begin() + i);
                 m_output.append(event);
             } else {
-                Logger->log<log::Level::Info>("{Add} Partially sold the order: ", order, ", new quantity: ", order.quantity - _order.quantity, ", price: ", _key);
-                Logger->log<log::Level::Info>("{Add-Incoming} Filled the order: ", _order);
+                Logger->log<logger::Level::Info>("{Add} Partially sold the order: ", order, ", new quantity: ", order.quantity - _order.quantity, ", price: ", _key);
+                Logger->log<logger::Level::Info>("{Add-Incoming} Filled the order: ", _order);
                 order.quantity -= _order.quantity;
                 _order.quantity = 0;
                 event.quantity = order.quantity;
@@ -57,7 +57,7 @@ bool OrderBook::add(T &_book, Price _price, Order &_order)
             }
         }
     }
-    Logger->log<log::Level::Info>("(Add) Finished order processing: ", _order, ", price: ", _price);
+    Logger->log<logger::Level::Info>("(Add) Finished order processing: ", _order, ", price: ", _price);
     return true;
 }
 
@@ -82,10 +82,10 @@ bool OrderBook::cancel(OrderIdMap<T> &_mapId, OrderId _orderId, bool _event)
             event.quantity = it->second.second->quantity;
             event.orgQty = it->second.second->quantity;
             event.sold = false;
-            Logger->log<log::Level::Info>("{Cancel} Sended event: "); // todo log
+            Logger->log<logger::Level::Info>("{Cancel} Sended event: "); // todo log
             m_output.append(event);
         }
-        Logger->log<log::Level::Info>("{Cancel} Sucefully canceled the order: ", _orderId);
+        Logger->log<logger::Level::Info>("{Cancel} Sucefully canceled the order: ", _orderId);
         it->second.first->second.erase(it->second.second);
         _mapId.erase(it);
         return true;
@@ -109,7 +109,7 @@ fix::MarketDataSnapshotFullRefresh OrderBook::refresh(T &_cache, size_t _depth)
             break;
         default: size = std::min(_depth, _cache.size());
     }
-    Logger->log<log::Level::Info>("size: ", size, ", cache: ", _cache.size());
+    Logger->log<logger::Level::Info>("size: ", size, ", cache: ", _cache.size());
     std::string ssize = std::to_string(size);
     std::string price{};
     std::string quantity{};
@@ -130,7 +130,7 @@ fix::MarketDataSnapshotFullRefresh OrderBook::refresh(T &_cache, size_t _depth)
         types.pop_back();
     if (!quantity.empty())
         quantity.pop_back();
-    Logger->log<log::Level::Info>("Final version: { quantity: ", quantity, ", price: ", price, ", type: ", types, " }, size: ", ssize);
+    Logger->log<logger::Level::Info>("Final version: { quantity: ", quantity, ", price: ", price, ", type: ", types, " }, size: ", ssize);
     result.set110_minQty(quantity);
     result.set267_noMDEntryTypes(ssize);
     result.set269_mDEntryType(types);

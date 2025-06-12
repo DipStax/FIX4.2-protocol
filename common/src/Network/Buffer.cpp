@@ -44,6 +44,17 @@ namespace net
         return m_data.size();
     }
 
+    void Buffer::reset()
+    {
+        m_read = 0;
+    }
+
+    void Buffer::clear()
+    {
+        reset();
+        m_data.clear();
+    }
+
     void Buffer::append(const void *_data, size_t _size)
     {
         if (_data && (_size > 0))

@@ -35,6 +35,9 @@ namespace net
             const std::byte *data() const;
             size_t size() const noexcept;
 
+            void reset();
+            void clear();
+
             void append(const void *_data, size_t _size);
 
         private:

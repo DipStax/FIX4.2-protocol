@@ -47,5 +47,5 @@ class Core
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::TCPInputNetwork> m_tcp_input;
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

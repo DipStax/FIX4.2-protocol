@@ -60,14 +60,14 @@ ClientStore::Client ClientStore::findClient(const std::string &_client_id)
 
 void ClientStore::removeClient(Client _client)
 {
-    Logger->log<log::Level::Info>("Request to remove client (", *_client, ")");
+    Logger->log<logger::Level::Info>("Request to remove client (", *_client, ")");
     _client->shouldDisconnect(true);
     _client->disconnect();
     m_tp_onremove.enqueue([this, _client] {
         {
             std::unique_lock lock_client(m_client_mutex);
 
-            Logger->log<log::Level::Debug>("Removing client from client list (", *_client, ")");
+            Logger->log<logger::Level::Debug>("Removing client from client list (", *_client, ")");
             auto it = std::find_if(m_clients.begin(), m_clients.end(), [_client] (const Client _original) {
                 return _client == _original;
             });
@@ -76,7 +76,7 @@ void ClientStore::removeClient(Client _client)
         {
             std::shared_lock lock_remove(m_onremove_mutex);
 
-            Logger->log<log::Level::Verbose>("Applying callback (", m_onremove.size(), ") to remove client (", *_client, ")");
+            Logger->log<logger::Level::Verbose>("Applying callback (", m_onremove.size(), ") to remove client (", *_client, ")");
             for (OnClientCallback _cb : m_onremove)
                 _cb(_client);
         }
@@ -99,6 +99,6 @@ void ClientStore::Apply(ForEachCallback<void> _callback)
 }
 
 ClientStore::ClientStore()
-    : Logger(log::Manager::newLogger("ClientStore"))
+    : Logger(logger::Manager::newLogger("ClientStore"))
 {
 }

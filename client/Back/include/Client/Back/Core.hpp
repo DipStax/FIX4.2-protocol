@@ -34,5 +34,5 @@ class Core
 
         QueueMessage m_tmp;
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };
