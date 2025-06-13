@@ -6,6 +6,8 @@
 
 namespace ipc
 {
+#pragma pack(push, 1)
+
     struct Header
     {
         MessageType MsgType;
@@ -14,4 +16,8 @@ namespace ipc
         friend net::Buffer &operator<<(net::Buffer &_buffer, const Header &_header);
         friend net::Buffer &operator>>(net::Buffer &_buffer, Header &_header);
     };
+
+#pragma pack(pop)
+
+    static_assert(sizeof(Header) == 5, "Header is padded");
 }

@@ -22,25 +22,33 @@ BackManager *BackManager::Instance()
 void BackManager::startConnection()
 {
     net::Selector<net::UnixStream> selector;
+    const std::string socket_address = "/tmp/fix-backend.socket";
 
     m_socket = std::make_shared<net::UnixStream>();
-    while (!m_socket->connect("/tmp/fix.backend.socket")) {
+    Logger->log<logger::Level::Debug>("Connecting to: ", socket_address);
+    while (!m_socket->connect(socket_address)) {
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        Logger->log<logger::Level::Info>("Retrying to connect");
     }
+    Logger->log<logger::Level::Info>("Successfully connected to backend");
 
     selector.timeout(1000);
+    selector.client(m_socket);
 
     while (true) {
         std::vector<net::Selector<net::UnixStream>::Client> clients = selector.pull();
 
         if (!clients.empty()) {
-            int error;
+            int error = 0;
 
             std::vector<std::byte> bytes = clients[0]->receive(sizeof(ipc::Header), error);
             if (error != sizeof(ipc::Header)) {
-                Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket");
+                if (error == -1)
+                    Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
+                else if (error == 0)
+                    Logger->log<logger::Level::Error>("Backend disconnected");
+                else
+                    Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
                 continue; // continue
             }
             net::Buffer buffer;
@@ -49,13 +57,14 @@ void BackManager::startConnection()
             buffer.append(bytes.data(), bytes.size());
             buffer >> header;
             bytes = clients[0]->receive(header.BodySize, error);
-            if (error != sizeof(ipc::Header)) {
+            if (error != static_cast<int>(header.BodySize)) {
                 Logger->log<logger::Level::Warning>("Unable to read body size from socket expected: ", header.BodySize, ", got: ", error);
                 continue; // continue
             }
             buffer.append(bytes.data(), bytes.size());
             buffer.reset();
 
+            Logger->log<logger::Level::Debug>("Received new data from backend");
             emit received(buffer);
         }
     }

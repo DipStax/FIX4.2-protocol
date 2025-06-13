@@ -19,6 +19,7 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
 {
     if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
         Logger->log<logger::Level::Fatal>("Failed to connect to server");
+    Logger->log<logger::Level::Debug>("Notifying front of initialized status");
     FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Initialize));
 }
 
@@ -38,6 +39,7 @@ bool Core::start()
     m_auth.start();
     m_router.start();
     m_tcp_input.start();
+    Logger->log<logger::Level::Debug>("Notifying front of running status");
     FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Running));
     while (m_running)
     {
@@ -55,6 +57,7 @@ bool Core::start()
             return false;
         }
     }
+    Logger->log<logger::Level::Debug>("Notifying front of stop status");
     FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Stop));
     stop();
     return true;

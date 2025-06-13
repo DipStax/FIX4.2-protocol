@@ -80,9 +80,9 @@ namespace net::c
         return fcntl(_fd, F_GETFD) != -1;
     }
 
-    bool Socket::bind(int _fd, struct sockaddr *_addr)
+    bool Socket::bind(int _fd, struct sockaddr *_addr, size_t _size)
     {
-        return ::bind(_fd, _addr, sizeof(struct sockaddr_in)) == 0;
+        return ::bind(_fd, _addr, _size) == 0;
     }
 
      bool Socket::listen(int _fd, int _max)

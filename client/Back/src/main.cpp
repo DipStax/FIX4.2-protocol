@@ -11,9 +11,10 @@ int main()
 {
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
-    logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
+    logger::Manager::registerDefaultLogger<logger::imp::Console>();
 
-    FrontManager::Instance().wait_frontend();
+    if (!FrontManager::Instance().wait_frontend())
+        return 1;
 
     Core core{8080, 8081};
 

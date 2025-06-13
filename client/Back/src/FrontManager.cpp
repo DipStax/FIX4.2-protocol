@@ -9,15 +9,20 @@ FrontManager &FrontManager::Instance()
     return instance;
 }
 
-void FrontManager::wait_frontend()
+bool FrontManager::wait_frontend()
 {
-    net::Acceptor<net::UnixStream> acceptor{};
-
-    acceptor.listen("/tmp/fix.backend.socket");
+    if (!m_acceptor.listen("/tmp/fix-backend.socket")) {
+        Logger->log<logger::Level::Error>("Acceptor failed to listen, error: ", strerror(errno));
+        return false;
+    }
     Logger->log<logger::Level::Info>("Waiting connection of client on socket: /tmp/fix.backend.socket");
-    while (!m_socket)
-        m_socket = acceptor.accept();
-    Logger->log<logger::Level::Info>("Client front connected to server", m_socket == nullptr);
+    m_socket = m_acceptor.accept();
+    if (m_socket == nullptr) {
+        Logger->log<logger::Level::Error>("Acceptor failed to accept, error: ", strerror(errno));
+        return false;
+    }
+    Logger->log<logger::Level::Info>("Client front connected to server");
+    return true;
 }
 
 void FrontManager::notify(const net::Buffer &_buffer)

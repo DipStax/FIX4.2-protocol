@@ -76,7 +76,7 @@ namespace net::c
             /// @param _fd File descriptor to bind.
             /// @param _addr Address to bind to
             /// @return True if the bind function succed.
-            static bool bind(int _fd, struct sockaddr *_addr);
+            static bool bind(int _fd, struct sockaddr *_addr, size_t _size);
 
             /// @brief C++ binding to the C function listen.
             /// @param _fd File descirptor wich listen.

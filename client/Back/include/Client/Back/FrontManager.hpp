@@ -17,13 +17,14 @@ class FrontManager
         void notify(const net::Buffer &_buffer);
 
         /// @brief Wait the connection of the frontend
-        void wait_frontend();
+        bool wait_frontend();
 
         void notify_status(PUStatus _status);
 
     private:
         FrontManager();
 
+        net::Acceptor<net::UnixStream> m_acceptor;
         net::Acceptor<net::UnixStream>::Client m_socket;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
