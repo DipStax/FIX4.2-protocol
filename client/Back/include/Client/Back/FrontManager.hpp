@@ -1,11 +1,13 @@
 #pragma once
 
+#include <thread>
+
+#include "Common/Container/ProcessUnit.hpp"
+#include "Common/Log/ILogger.hpp"
+#include "Common/Network/Acceptor.hpp"
 #include "Common/Network/Buffer.hpp"
 #include "Common/Network/Socket.hpp"
-#include "Common/Network/Acceptor.hpp"
-#include "Common/Container/ProcessUnit.hpp"
-
-#include "Common/Log/ILogger.hpp"
+#include "Common/Thread/Queue.hpp"
 
 class FrontManager
 {
@@ -16,13 +18,18 @@ class FrontManager
 
         void notify(const net::Buffer &_buffer);
 
-        /// @brief Wait the connection of the frontend
         bool wait_frontend();
 
-        void notify_status(PUStatus _status);
+        ts::Queue<net::Buffer> &getMessageQueue();
 
     private:
         FrontManager();
+
+        void receiveLoop(std::stop_token _st);
+
+        ts::Queue<net::Buffer> m_output;
+
+        std::jthread m_thread;
 
         net::Acceptor<net::UnixStream> m_acceptor;
         net::Acceptor<net::UnixStream>::Client m_socket;

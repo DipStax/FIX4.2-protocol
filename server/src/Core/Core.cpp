@@ -60,8 +60,8 @@ void Core::stop()
         Logger->log<logger::Level::Info>("Stoping...");
         m_tcp_input.stop();
         m_router.stop();
-        // m_logon.stop();
-        // m_logout.stop();
+        m_logon.stop();
+        m_logout.stop();
         m_heartbeat.stop();
         // for (auto &[_name, _pip] : m_markets)
         //     _pip.stop();
@@ -77,8 +77,8 @@ bool Core::internal_start()
     // m_udp_output.start();
     m_tcp_output.start();
 
-    // m_logon.start();
-    // m_logout.start();
+    m_logon.start();
+    m_logout.start();
     m_heartbeat.start();
 
     // for (auto &[_name, _pip] : m_markets)

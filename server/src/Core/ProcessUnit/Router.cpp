@@ -54,8 +54,7 @@ namespace pu
                         break;
                     default:
                         if (input.Client->isLoggedin()) {
-                            switch (input.Message.at("35")[0])
-                            {
+                            switch (input.Message.at("35")[0]) {
                                 case fix::NewOrderSingle::cMsgType:
                                 case fix::OrderCancelRequest::cMsgType:
                                 case fix::OrderCancelReplaceRequest::cMsgType:

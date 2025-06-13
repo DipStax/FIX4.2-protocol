@@ -46,10 +46,10 @@ void BackManager::startConnection()
                 if (error == -1)
                     Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
                 else if (error == 0)
-                    Logger->log<logger::Level::Error>("Backend disconnected");
+                    Logger->log<logger::Level::Fatal>("Backend disconnected");
                 else
                     Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
-                continue; // continue
+                continue;
             }
             net::Buffer buffer;
             ipc::Header header;

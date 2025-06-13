@@ -48,6 +48,12 @@ const std::string &User::getUserId() const
     return m_userid;
 }
 
+void User::setUserId(const std::string &_userid)
+{
+    m_userid = _userid;
+}
+
+
 void User::logoutRequested(bool _logout)
 {
     m_logout_req = _logout;

@@ -7,6 +7,7 @@
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     : m_server(std::make_shared<net::INetTcp>()),
     m_tcp_output(m_server),
+    m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
     m_auth(m_tcp_output.getInput()),
     m_router(
@@ -35,6 +36,7 @@ bool Core::start()
 
 
     m_tcp_output.start();
+    m_builder.start();
     m_heartbeat.start();
     m_auth.start();
     m_router.start();
@@ -45,6 +47,7 @@ bool Core::start()
     {
         try {
             m_tcp_output.status();
+            m_builder.status();
             m_heartbeat.status();
             m_auth.status();
             m_router.status();
@@ -68,11 +71,12 @@ void Core::stop()
     if (m_running) {
         m_running = false;
         Logger->log<logger::Level::Info>("Stoping...");
-        m_tcp_input.status();
-        m_router.status();
-        m_auth.status();
-        m_heartbeat.status();
-        m_tcp_output.status();
+        m_tcp_input.stop();
+        m_builder.stop();
+        m_router.stop();
+        m_auth.stop();
+        m_heartbeat.stop();
+        m_tcp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
     }
 }

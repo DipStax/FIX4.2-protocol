@@ -4,6 +4,7 @@
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
 #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
 #include "Client/Back/ProcessUnit/User/Auth.hpp"
+#include "Client/Back/ProcessUnit/FixBuilder.hpp"
 #include "Client/Back/ProcessUnit/Router.hpp"
 
 #include "Common/Container/ProcessUnit.hpp"
@@ -24,6 +25,8 @@ class Core
         std::shared_ptr<net::INetTcp> m_server;
 
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
+
+        ProcessUnit<pu::FixBuilder> m_builder;
 
         ProcessUnit<pu::HeartBeatHandler> m_heartbeat;
         ProcessUnit<pu::AuthHandler> m_auth;

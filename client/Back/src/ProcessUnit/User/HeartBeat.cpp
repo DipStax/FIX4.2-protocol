@@ -22,6 +22,7 @@ namespace pu
 
     void HeartBeatHandler::runtime(std::stop_token _st)
     {
+        Logger->log<logger::Level::Info>("Starting process unit...");
         InputType input;
 
         while (!_st.stop_requested()) {

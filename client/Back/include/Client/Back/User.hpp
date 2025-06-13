@@ -18,6 +18,7 @@ class User
         void login(const std::string &_userid);
         [[nodiscard]] bool isLogin() const;
         [[nodiscard]] const std::string &getUserId() const;
+        void setUserId(const std::string &_userid);
 
         void logoutRequested(bool _logout);
         [[nodiscard]] bool logoutRequested() const;
