@@ -20,7 +20,7 @@ class BackManager : public QObject
         void send(const net::Buffer &_buffer);
 
     signals:
-        void received(net::Buffer &_buffer);
+        void received(net::Buffer _buffer);
         void closed();
 
     protected:

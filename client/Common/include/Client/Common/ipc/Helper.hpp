@@ -8,5 +8,6 @@ namespace ipc
     struct Helper
     {
         static net::Buffer Status(PUStatus _status);
+        static net::Buffer Logon(const std::string &_name, uint32_t _seqnum);
     };
 }

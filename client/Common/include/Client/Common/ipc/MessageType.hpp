@@ -6,7 +6,8 @@ namespace ipc
 {
     enum class MessageType : uint8_t
     {
-        Status
+        Status,
+        Logon
     };
 
     net::Buffer &operator<<(net::Buffer &_buffer, const MessageType &_type);

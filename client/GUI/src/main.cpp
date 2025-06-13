@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerDefaultLogger<logger::imp::Console>();
 
+    qRegisterMetaType<net::Buffer>();
 
     QApplication app(argc, argv);
     ui::LoginScreen login;

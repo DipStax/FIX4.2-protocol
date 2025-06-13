@@ -7,10 +7,10 @@
 
 enum class PUStatus : uint8_t
 {
+    Unknown = 0,
     Initialize,
     Running,
-    Stop,
-    Unknown
+    Stop
 };
 
 template<class T>
