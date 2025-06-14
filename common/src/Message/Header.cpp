@@ -37,9 +37,9 @@ namespace fix
             reject = verify<Tag::SenderCompId>(_msg.at(Tag::SenderCompId), _sender);
             if (reject.first)
                 return reject;
-            // reject = verify<Tag::MsqSeqNum>(_msg.at(Tag::MsqSeqNum), _seqnum);
-            // if (reject.first)
-            //     return reject;
+            reject = verify<Tag::MsqSeqNum>(_msg.at(Tag::MsqSeqNum), _seqnum);
+            if (reject.first)
+                return reject;
         }
         reject = verify<Tag::TargetCompId>(_msg.at(Tag::TargetCompId), _target);
         if (reject.first)

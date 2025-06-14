@@ -19,12 +19,9 @@ void User::setSeqNumber(size_t _seq_num)
     m_seqnum = _seq_num;
 }
 
-size_t User::nextSeqNumber()
+void User::nextSeqNumber()
 {
-    size_t tmp = m_seqnum;
-
     m_seqnum++;
-    return tmp;
 }
 
 size_t User::getSeqNumber() const

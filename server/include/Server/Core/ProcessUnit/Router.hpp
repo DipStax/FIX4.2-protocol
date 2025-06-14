@@ -25,7 +25,11 @@ namespace pu
 
         protected:
             void redirectToMarket(InputType &_input);
+
             bool treatUnknown(InputType &_input);
+            bool treatRequireLogin(InputType &_input);
+            bool treatReject(InputType &_input);
+
             bool treatMarketDataRequest(InputType &_input);
 
         private:

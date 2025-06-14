@@ -8,8 +8,7 @@ namespace pu
     TcpInputNetwork::TcpInputNetwork(TcpInputNetwork::Socket _server, QueueTransit &_output)
         : m_server(_server), m_output(_output), Logger(logger::Manager::newLogger("TCP-Input"))
     {
-        m_selector.client(m_server);
-        m_selector.timeout(1.0);
+        m_selector.timeout(1000);
         Logger->log<logger::Level::Verbose>("Server socket added to selector");
     }
 
@@ -18,6 +17,7 @@ namespace pu
         Logger->log<logger::Level::Info>("Starting process unit...");
         int error = 0;
 
+        m_selector.client(m_server);
         while (!_st.stop_requested()) {
             std::vector<Socket> clients = m_selector.pull();
 

@@ -41,7 +41,6 @@ target_link_libraries(FIX_Client_GUI PRIVATE LibCommon CLIENT_COM_IPC)
 target_link_libraries(FIX_Client_GUI PRIVATE Qt6::Core Qt6::Widgets)
 
 target_include_directories(FIX_Client_GUI PUBLIC "${CRLD}/GUI/include")
-target_compile_definitions(FIX_Client_GUI PUBLIC PROVIDER_NAME="MyMarket")
 
 set(CMAKE_AUTOMOC OFF)
 set(CMAKE_AUTOUIC OFF)

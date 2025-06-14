@@ -12,7 +12,7 @@ class User
         static User &Instance();
 
         void setSeqNumber(size_t _seqnum);
-        [[nodiscard]] size_t nextSeqNumber();
+        void nextSeqNumber();
         [[nodiscard]] size_t getSeqNumber() const;
 
         void login(const std::string &_userid);

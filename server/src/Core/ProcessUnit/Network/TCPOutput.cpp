@@ -23,9 +23,10 @@ namespace pu
         while (!_st.stop_requested()) {
             while (!this->m_input.empty()) {
                 m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    _input.Message.header.set34_msgSeqNum(std::to_string(_input.Client->nextSeqNumber()));
+                    _input.Message.header.set34_msgSeqNum(std::to_string(_input.Client->getSeqNumber()));
                     _input.Message.header.set49_SenderCompId(PROVIDER_NAME);
                     _input.Message.header.set56_TargetCompId(_input.Client->getUserId());
+                    _input.Client->nextSeqNumber();
 
                     std::string data = _input.Message.to_string();
 

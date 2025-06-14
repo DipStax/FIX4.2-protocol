@@ -30,22 +30,25 @@ namespace pu
                 reject = fix::Header::Verify(input, PROVIDER_NAME, User::Instance().getUserId(), User::Instance().getSeqNumber());
                 if (reject.first) {
                     if (reject.second.contains(fix::Tag::Text))
-                        Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+                        Logger->log<logger::Level::Warning>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
                     else
-                        Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
-                    // m_tcp_output.append(std::move(reject.second));
+                        Logger->log<logger::Level::Error>("Header verification failed for unknown reason");
+                    m_tcp_output.append(std::move(reject.second));
                     continue;
                 }
+                User::Instance().nextSeqNumber();
                 Logger->log<logger::Level::Debug>("Header verification validated");
 
                 switch (input.at(fix::Tag::MsgType)[0])
                 {
-                    // case fix::Logon::cMsgType:
-                    // case fix::Logout::cMsgType:
-                    //     m_
+                    case fix::Logon::cMsgType:
+                    case fix::Logout::cMsgType:
+                        m_auth.push(std::move(input));
                     case fix::HeartBeat::cMsgType:
                     case fix::TestRequest::cMsgType:
                         m_heartbeat.push(std::move(input));
+                        break;
+                    case fix::Reject::cMsgType: treatReject(input);
                         break;
                     default:
                         unknownMessage(input);
@@ -65,6 +68,12 @@ namespace pu
         reject.set58_text("Unknown message type");
         Logger->log<logger::Level::Debug>("Moving Reject Unknown from server to TCP Output");
         // m_tcp_output.append(std::move(reject));
+        return true;
+    }
+
+    bool Router::treatReject(InputType &_input)
+    {
+        Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), " }");
         return true;
     }
 }

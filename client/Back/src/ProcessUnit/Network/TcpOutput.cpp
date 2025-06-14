@@ -24,9 +24,10 @@ namespace pu
             while (!m_input.empty()) {
                 input = m_input.pop_front();
 
-                input.header.set34_msgSeqNum(std::to_string(User::Instance().nextSeqNumber()));
+                input.header.set34_msgSeqNum(std::to_string(User::Instance().getSeqNumber()));
                 input.header.set49_SenderCompId(User::Instance().getUserId());
                 input.header.set56_TargetCompId(PROVIDER_NAME);
+                User::Instance().nextSeqNumber();
 
                 std::string data = input.to_string();
 

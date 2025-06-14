@@ -53,7 +53,8 @@ namespace pu::user
         }
 
         _input.Client->login(_input.Message.at(fix::Tag::SenderCompId));
-        _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)));
+        _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)) + 1);
+        _input.Client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
 
         Logger->log<logger::Level::Info>("Client set as logged in as: (", *(_input.Client), ")");
         logon.set98_EncryptMethod("0");

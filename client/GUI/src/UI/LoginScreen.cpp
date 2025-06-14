@@ -54,6 +54,7 @@ namespace ui
 
                 Logger->log<logger::Level::Info>("Sending request to login to the backend");
                 BackManager::Instance()->send(ipc::Helper::Logon(name, 1));
+                m_progress->setValue(3);
             }
         } else if (header.MsgType == ipc::MessageType::Logon) {
             m_progress->setValue(4);

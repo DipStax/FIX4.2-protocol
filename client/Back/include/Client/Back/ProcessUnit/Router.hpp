@@ -19,6 +19,7 @@ namespace pu
 
         private:
             bool unknownMessage(InputType &_input);
+            bool treatReject(InputType &_input);
 
             QueueTransit m_input;
 

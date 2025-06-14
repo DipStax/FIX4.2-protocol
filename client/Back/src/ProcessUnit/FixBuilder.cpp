@@ -42,6 +42,7 @@ namespace pu
 
         _buffer >> name >> seqnum;
         User::Instance().setSeqNumber(seqnum);
+        User::Instance().setUserId(name);
         logon.set108_HeartBtInt("5");
         logon.set98_EncryptMethod("0");
         return logon;

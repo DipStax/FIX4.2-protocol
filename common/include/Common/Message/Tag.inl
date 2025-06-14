@@ -100,9 +100,10 @@ namespace fix
             OrderCancelReplaceRequest::cMsgType,
             MarketDataRequest::cMsgType,
             Logout::cMsgType,
-            TestRequest::cMsgType
+            TestRequest::cMsgType,
+            Reject::cMsgType
         };
-        constexpr const size_t size_type = 8;
+        constexpr const size_t size_type = sizeof(type);
         std::pair<bool, fix::Reject> reject = { false, {} };
 
         for (size_t i = 0; i < size_type; i++)
@@ -153,7 +154,7 @@ namespace fix
             reject.first = true;
             reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
             reject.second.set58_text("Sequence number should be numeric");
-        } else if (utils::to<size_t>(_value) != _seqnum) {
+        } else if (_seqnum != 0 && utils::to<size_t>(_value) != _seqnum) {
             reject.first = true;
             reject.second.set373_sessionRejectReason(Reject::ValueOORange);
             reject.second.set58_text("Sequence number is not correct");
