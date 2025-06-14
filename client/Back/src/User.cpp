@@ -79,14 +79,9 @@ void User::disconnect()
     m_logout_req = false;
 }
 
-std::chrono::system_clock::time_point User::getSinceHeartBeat() const
+User::HeartBeatInfo &User::getHeartBeatInfo()
 {
-    return m_since_heartbeat;
-}
-
-void User::setSinceHeartBeat(std::chrono::system_clock::time_point _time)
-{
-    m_since_heartbeat = _time;
+    return m_hb_info;
 }
 
 User::User()

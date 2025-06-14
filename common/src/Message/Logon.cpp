@@ -11,10 +11,10 @@ namespace fix
 
     std::pair<bool, Reject> Logon::Verify(Serializer::AnonMessage &_msg)
     {
-        std::pair<bool, Reject> reject = utils::Has<Tag::EncryptMethod, Tag::HearBtInt>(_msg);
+        std::pair<bool, Reject> reject = utils::Has<Tag::EncryptMethod, Tag::HeartBtInt>(_msg);
 
         if (!reject.first)
-            reject = verify_all<Tag::EncryptMethod, Tag::HearBtInt>(_msg);
+            reject = verify_all<Tag::EncryptMethod, Tag::HeartBtInt>(_msg);
         reject.second.set372_refMsgType(Logon::MsgType);
         return reject;
     }
@@ -26,6 +26,6 @@ namespace fix
 
     void Logon::set108_HeartBtInt(const std::string &_val)
     {
-        m_params.append({ Tag::HearBtInt, _val });
+        m_params.append({ Tag::HeartBtInt, _val });
     }
 }

@@ -107,7 +107,7 @@ namespace pu::user
 
                 if (_client->shouldDisconnect() || !_client->isLoggedin())
                     return;
-                if (std::chrono::duration<double>(now - hb_info.Since).count() > PU_HEARTBEAT_TO) {
+                if (std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
                     if (!hb_info.TestRequest) {
                         fix::TestRequest test;
 

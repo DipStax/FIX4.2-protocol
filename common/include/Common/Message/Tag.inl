@@ -340,13 +340,13 @@ namespace fix
     }
 
     template<>
-    std::pair<bool, Reject> verify<Tag::HearBtInt>(const std::string &_value)
+    std::pair<bool, Reject> verify<Tag::HeartBtInt>(const std::string &_value)
     {
         std::pair<bool, fix::Reject> reject = { false, {} };
 
         if (!utils::is_numeric(_value)) {
             reject.first = true;
-            reject.second.set371_refTagId(Tag::HearBtInt);
+            reject.second.set371_refTagId(Tag::HeartBtInt);
             reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
             reject.second.set58_text("Heart beat should be a numerical value");
         }

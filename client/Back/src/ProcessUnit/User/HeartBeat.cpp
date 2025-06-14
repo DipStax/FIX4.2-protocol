@@ -62,7 +62,7 @@ namespace pu
             return false;
         }
 
-        User::Instance().setSinceHeartBeat(std::chrono::system_clock::now());
+        User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
         Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", _input.at(fix::Tag::TestReqId));
         hb.set112_testReqID(_input.at(fix::Tag::TestReqId));
         m_tcp_output.append(std::move(hb));
@@ -84,21 +84,23 @@ namespace pu
             return false;
         }
 
-        User::Instance().setSinceHeartBeat(std::chrono::system_clock::now());
+        User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
         Logger->log<logger::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
         return true;
     }
 
     void HeartBeatHandler::heartbeatLoop(std::stop_token _st)
     {
+        User::HeartBeatInfo &hb_info = User::Instance().getHeartBeatInfo();
+
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-            if (User::Instance().isLogin() && std::chrono::duration<double>(now - User::Instance().getSinceHeartBeat()).count() > PU_HEARTBEAT_TO) {
+            if (User::Instance().isLogin() && std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
                 fix::HeartBeat hb;
 
                 Logger->log<logger::Level::Info>("Sending HeartBeat Message");
-                User::Instance().setSinceHeartBeat(now);
+                hb_info.Since = now;
                 m_tcp_output.append(std::move(hb));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

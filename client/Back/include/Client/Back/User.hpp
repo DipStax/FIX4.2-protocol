@@ -11,6 +11,12 @@ class User
     public:
         static User &Instance();
 
+        struct HeartBeatInfo
+        {
+            std::chrono::system_clock::time_point Since{};
+            float Elapsing;
+        };
+
         void setSeqNumber(size_t _seqnum);
         void nextSeqNumber();
         [[nodiscard]] size_t getSeqNumber() const;
@@ -27,11 +33,12 @@ class User
         [[nodiscard]] bool shouldDisconnect() const;
         void disconnect();
 
-        [[nodiscard]] std::chrono::system_clock::time_point getSinceHeartBeat() const;
-        void setSinceHeartBeat(std::chrono::system_clock::time_point _time);
+        HeartBeatInfo &getHeartBeatInfo();
 
     private:
         User();
+
+        HeartBeatInfo m_hb_info;
 
         std::chrono::system_clock::time_point m_since_heartbeat = std::chrono::system_clock::now();
 

@@ -16,7 +16,7 @@ namespace utils
     }
 
     template<const char *T, const char *...Ts>
-    std::pair<bool, fix::Reject> Has(fix::Serializer::AnonMessage &_msg)
+    std::pair<bool, fix::Reject> Has(const fix::Serializer::AnonMessage &_msg)
     {
         std::pair<bool, fix::Reject> reject = { false, {} };
 
@@ -30,11 +30,8 @@ namespace utils
             reject.second.set371_refTagId(T);
             reject.second.set373_sessionRejectReason(fix::Reject::EmptyValue);
             reject.second.set58_text("Waiting a value");
-        } else {
-            if constexpr (sizeof...(Ts) == 0)
-                return { false, fix::Reject{} };
-            else
-                return utils::Has<Ts...>(_msg);
+        } else if constexpr (sizeof...(Ts) > 0) {
+            return Has<Ts...>(_msg);
         }
         return reject;
     }

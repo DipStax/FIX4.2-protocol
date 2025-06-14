@@ -14,10 +14,6 @@
     #define PU_HEARTBEAT_TP_SIZE 1
 #endif
 
-#if !defined(PU_HEARTBEAT_TO) || PU_HEARTBEAT_TO <= 0
-    #define PU_HEARTBEAT_TO 5.f
-#endif
-
 namespace data
 {
     using HeartBeatInput = RouterInput;

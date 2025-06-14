@@ -54,11 +54,15 @@ namespace pu::user
 
         _input.Client->login(_input.Message.at(fix::Tag::SenderCompId));
         _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)) + 1);
-        _input.Client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
+
+        InternalClient::HeartBeatInfo &hb_info = _input.Client->getHeartBeatInfo();
+
+        hb_info.Since = std::chrono::system_clock::now();
+        hb_info.Elapsing = std::min(PU_LOGON_HB_MAX_TO, utils::to<float>(_input.Message.at(fix::Tag::HeartBtInt)));
 
         Logger->log<logger::Level::Info>("Client set as logged in as: (", *(_input.Client), ")");
         logon.set98_EncryptMethod("0");
-        logon.set108_HeartBtInt(_input.Message.at(fix::Tag::HearBtInt));
+        logon.set108_HeartBtInt(std::to_string(static_cast<int>(hb_info.Elapsing)));
         Logger->log<logger::Level::Debug>("Reply to (", *(_input.Client), ") moving to TCP output");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(logon));
         return true;

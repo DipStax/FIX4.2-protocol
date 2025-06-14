@@ -44,6 +44,7 @@ namespace pu
                     case fix::Logon::cMsgType:
                     case fix::Logout::cMsgType:
                         m_auth.push(std::move(input));
+                        break;
                     case fix::HeartBeat::cMsgType:
                     case fix::TestRequest::cMsgType:
                         m_heartbeat.push(std::move(input));
@@ -73,7 +74,7 @@ namespace pu
 
     bool Router::treatReject(InputType &_input)
     {
-        Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), " }");
+        Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), ", text: ", _input.at(fix::Tag::Text)," }");
         return true;
     }
 }

@@ -52,7 +52,10 @@ namespace pu
             return false;
         }
 
-        User::Instance().login(_input.at(fix::Tag::TargetCompId));
+        User &user = User::Instance();
+
+        user.getHeartBeatInfo().Elapsing = utils::to<float>(_input.at(fix::Tag::HeartBtInt));
+        user.login(_input.at(fix::Tag::TargetCompId));
         return true;
     }
 
