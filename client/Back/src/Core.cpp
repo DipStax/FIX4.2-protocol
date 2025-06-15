@@ -2,7 +2,7 @@
 
 #include "Common/Log/Manager.hpp"
 #include "Client/Back/FrontManager.hpp"
-#include "Client/Common/ipc/Helper.hpp"
+#include "Client/Common/IPC/Helper.hpp"
 
 Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     : m_server(std::make_shared<net::INetTcp>()),
@@ -33,7 +33,6 @@ bool Core::start()
 {
     m_running = true;
     Logger->log<logger::Level::Info>("Starting client backend...");
-
 
     m_tcp_output.start();
     m_builder.start();

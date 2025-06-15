@@ -31,7 +31,10 @@ namespace ui
 
             QVBoxLayout *m_layout = nullptr;
 
-            QLineEdit *m_entry = nullptr;
+            QLineEdit *m_uid_entry = nullptr;
+            QLineEdit *m_hb_entry = nullptr;
+            QLineEdit *m_seqnum_entry = nullptr;
+
             QPushButton *m_button = nullptr;
             QProgressBar *m_progress = nullptr;
 

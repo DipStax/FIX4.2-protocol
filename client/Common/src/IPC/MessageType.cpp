@@ -1,4 +1,4 @@
-#include "Client/Common/ipc/MessageType.hpp"
+#include "Client/Common/IPC/MessageType.hpp"
 
 namespace ipc
 {

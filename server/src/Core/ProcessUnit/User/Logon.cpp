@@ -58,8 +58,9 @@ namespace pu::user
         InternalClient::HeartBeatInfo &hb_info = _input.Client->getHeartBeatInfo();
 
         hb_info.Since = std::chrono::system_clock::now();
-        hb_info.Elapsing = std::min(PU_LOGON_HB_MAX_TO, utils::to<float>(_input.Message.at(fix::Tag::HeartBtInt)));
+        hb_info.Elapsing = std::max(1.f, std::min(PU_LOGON_HB_MAX_TO, utils::to<float>(_input.Message.at(fix::Tag::HeartBtInt))));
 
+        Logger->log<logger::Level::Debug>("Set heartbeat int at: ", hb_info.Elapsing);
         Logger->log<logger::Level::Info>("Client set as logged in as: (", *(_input.Client), ")");
         logon.set98_EncryptMethod("0");
         logon.set108_HeartBtInt(std::to_string(static_cast<int>(hb_info.Elapsing)));

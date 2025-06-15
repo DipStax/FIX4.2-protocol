@@ -3,9 +3,9 @@ set(CR ${CMAKE_CURRENT_LIST_DIR})
 include_directories("${CR}/include")
 
 file(GLOB_RECURSE SRC_IPC
-    "${CR}/include/Client/Common/ipc/**.hpp"
-    "${CR}/include/Client/Common/ipc/**.inl"
-    "${CR}/src/ipc/*.cpp"
+    "${CR}/include/Client/Common/IPC/**.hpp"
+    "${CR}/include/Client/Common/IPC/**.inl"
+    "${CR}/src/IPC/*.cpp"
 )
 
 add_library(CLIENT_COM_IPC STATIC

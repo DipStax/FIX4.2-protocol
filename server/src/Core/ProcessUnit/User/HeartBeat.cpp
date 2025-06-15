@@ -38,8 +38,10 @@ namespace pu::user
                         case fix::HeartBeat::cMsgType:
                             processHeartBeat(_input);
                             break;
+                        default:
+                            Logger->log<logger::Level::Error>("Unknow message", _input.Message.at("35")[0]);
+                            break;
                     }
-                    Logger->log<logger::Level::Error>("Unknow message", _input.Message.at("35")[0]);
                 });
             }
         }

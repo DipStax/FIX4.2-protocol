@@ -1,5 +1,5 @@
-#include "Client/Common/ipc/Header.hpp"
-#include "Client/Common/ipc/Helper.hpp"
+#include "Client/Common/IPC/Header.hpp"
+#include "Client/Common/IPC/Helper.hpp"
 
 namespace ipc
 {
@@ -14,15 +14,15 @@ namespace ipc
         return buffer << header << static_cast<uint8_t>(_status);
     }
 
-    net::Buffer Helper::Logon(const std::string &_name, uint32_t _seqnum)
+    net::Buffer Helper::Logon(const msg::Logon &_logon)
     {
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::Logon,
-            sizeof(uint32_t) * 2 + _name.size()
+            sizeof(uint32_t) * 2 + _logon.UserId.size() + sizeof(float)
         };
 
-        buffer << header << _name << _seqnum;
+        buffer << header << _logon;
         return buffer;
     }
 }

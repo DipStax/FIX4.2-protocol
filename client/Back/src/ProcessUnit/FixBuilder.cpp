@@ -1,7 +1,8 @@
 #include "Client/Back/ProcessUnit/FixBuilder.hpp"
 #include "Client/Back/User.hpp"
 
-#include "Client/Common/ipc/Header.hpp"
+#include "Client/Common/IPC/Header.hpp"
+#include "Client/Common/IPC/Message/Logon.hpp"
 
 #include "Common/Log/Manager.hpp"
 
@@ -36,14 +37,14 @@ namespace pu
 
     fix::Message FixBuilder::buildLogon(net::Buffer &_buffer)
     {
-        std::string name;
-        uint32_t seqnum;
         fix::Logon logon;
+        ipc::msg::Logon ipc_logon;
 
-        _buffer >> name >> seqnum;
-        User::Instance().setSeqNumber(seqnum);
-        User::Instance().setUserId(name);
-        logon.set108_HeartBtInt("5");
+        _buffer >> ipc_logon;
+        Logger->log<logger::Level::Info>("Building login message with: { userId: ", ipc_logon.UserId, ", seqnum: ", ipc_logon.SeqNum, ", heartbeat: ", ipc_logon.HeartBeat, " }");
+        User::Instance().setSeqNumber(ipc_logon.SeqNum);
+        User::Instance().setUserId(ipc_logon.UserId);
+        logon.set108_HeartBtInt(std::to_string(ipc_logon.HeartBeat));
         logon.set98_EncryptMethod("0");
         return logon;
     }

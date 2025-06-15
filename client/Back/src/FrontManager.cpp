@@ -1,7 +1,7 @@
 #include "Client/Back/FrontManager.hpp"
 
-#include "Client/Common/ipc/Header.hpp"
-#include "Client/Common/ipc/Helper.hpp"
+#include "Client/Common/IPC/Header.hpp"
+#include "Client/Common/IPC/Helper.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Network/Selector.hpp"

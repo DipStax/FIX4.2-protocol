@@ -92,6 +92,7 @@ namespace pu
     void HeartBeatHandler::heartbeatLoop(std::stop_token _st)
     {
         User::HeartBeatInfo &hb_info = User::Instance().getHeartBeatInfo();
+        Logger->log<logger::Level::Verbose>("Using elapsing time as: ", hb_info.Elapsing);
 
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();

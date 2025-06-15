@@ -344,7 +344,7 @@ namespace fix
     {
         std::pair<bool, fix::Reject> reject = { false, {} };
 
-        if (!utils::is_numeric(_value)) {
+        if (!utils::is_double(_value)) {
             reject.first = true;
             reject.second.set371_refTagId(Tag::HeartBtInt);
             reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
