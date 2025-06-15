@@ -19,6 +19,7 @@ class InternalClient
         {
             std::shared_ptr<InternalClient> Client = nullptr;
             std::chrono::system_clock::time_point Since{};
+            float Elapsing = 1.f;
             bool TestRequest = false;
             std::optional<std::string> TestValue = std::nullopt;
         };
@@ -35,7 +36,7 @@ class InternalClient
         [[nodiscard]] bool shouldDisconnect() const;
 
         void setSeqNumber(size_t _seqnum);
-        size_t nextSeqNumber();
+        void nextSeqNumber();
         [[nodiscard]] size_t getSeqNumber() const;
 
         [[nodiscard]] std::shared_ptr<net::INetTcp> getSocket() const;
@@ -54,7 +55,7 @@ class InternalClient
         bool m_logged_in = false;
         bool m_should_dc = false;
         UserId m_user_id = "";
-        size_t m_seq_num = 1;
+        size_t m_seq_num = 0;
 
         using SubcribeMap = std::unordered_map<std::string, InternalClient::Subs>;
 

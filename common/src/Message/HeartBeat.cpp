@@ -12,17 +12,7 @@ namespace fix
 
     std::pair<bool, Reject> HeartBeat::Verify(const Serializer::AnonMessage &_msg)
     {
-        std::pair<bool, Reject> reject = { true, {} };
-
-        reject.second.set371_refTagId(HeartBeat::MsgType);
-        if (_msg.contains(Tag::TestReqId) && !utils::is_numeric(_msg.at(Tag::TestReqId))) {
-            reject.second.set371_refTagId(Tag::TestReqId);
-            reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
-            reject.second.set58_text("Not supported test Id");
-        } else {
-            reject.first = false;
-        }
-        return reject;
+        return { false, {} };
     }
 
     void HeartBeat::set112_testReqID(const std::string &_val)

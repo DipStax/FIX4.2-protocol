@@ -32,20 +32,20 @@ namespace net::c
             /// @param _data Data to send to the endpoint.
             /// @param _size Size in bytes of data to send.
             /// @return The size send to the endpoint, if an error occured it return -1.
-            static size_t send(int _fd, const uint8_t *_data, size_t _size);
-
+            static size_t send(int _fd, const std::byte *_data, size_t _size);
+            static size_t sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size);
             /// @brief  C++ binding to the C function recv.
             /// @param _fd File descriptor of the socket receiving.
             /// @param _size Size of the data that should be receive at max.
             /// @param _error return value of the recv function, if it's set to -1 this is an error.
             /// @return The data receive (it should be delete using delete[])
-            [[nodiscard]] static const uint8_t *receive(int _fd, size_t _size, int &_error);
+            [[nodiscard]] static const std::byte *receive(int _fd, size_t _size, int &_error);
             /// @brief  C++ binding to the C function recvfrom.
             /// @param _fd File descriptor of the socket receiving.
             /// @param _size Size of the data that should be receive at max.
             /// @param _error return value of the recv function, if it's set to -1 this is an error.
             /// @return The data receive (it should be delete using delete[])
-            [[nodiscard]] static const uint8_t *receiveUDP(int _fd, size_t _size, int &_error);
+            [[nodiscard]] static const std::byte *receiveFrom(int _fd, size_t _size, struct sockaddr *_addr, int &_error);
 
             /// @brief Set a file descriptor as blocking or not.
             /// @param _fd File descriptor to modify
@@ -76,7 +76,7 @@ namespace net::c
             /// @param _fd File descriptor to bind.
             /// @param _addr Address to bind to
             /// @return True if the bind function succed.
-            static bool bind(int _fd, struct sockaddr *_addr);
+            static bool bind(int _fd, struct sockaddr *_addr, size_t _size);
 
             /// @brief C++ binding to the C function listen.
             /// @param _fd File descirptor wich listen.

@@ -2,7 +2,7 @@
 
 #include "Common/Network/Selector.hpp"
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 #include "Server/Core/ClientStore.hpp"
 #include "Server/Core/meta.hpp"
@@ -33,6 +33,6 @@ namespace pu
             net::Acceptor<net::INetTcp> m_acceptor{};
             net::Selector<net::INetTcp> m_selector{};
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

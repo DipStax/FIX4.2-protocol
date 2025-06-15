@@ -1,7 +1,8 @@
 #include <cstring>
-#include <string.h>
+#include <iostream>
 
 #include <netinet/in.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "Common/Network/Acceptor.hpp"
@@ -36,7 +37,7 @@ namespace net
 
         if (!recreate())
             return false;
-        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr))) {
+        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_in))) {
             close();
             return false;
         }
@@ -63,10 +64,11 @@ namespace net
         std::memset(&addr, 0, sizeof(addr));
         addr.sun_family = T::Domain;
         std::strncpy(addr.sun_path, this->m_path.c_str(), sizeof(addr.sun_path) - 1);
+        std::cout << addr.sun_path << std::endl;
 
         if (!recreate())
             return false;
-        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr))) {
+        if (!c::Socket::bind(this->FD(), reinterpret_cast<struct sockaddr *>(&addr), sizeof(struct sockaddr_un))) {
             close();
             return false;
         }
@@ -83,9 +85,8 @@ namespace net
         int fd = c::Socket::accept(this->FD());
         Client socket = nullptr;
 
-        if (fd == -1)
-            return nullptr;
-        socket = std::make_shared<T>(fd);
+        if (fd != -1)
+            socket = std::make_shared<T>(fd);
         return socket;
     }
 

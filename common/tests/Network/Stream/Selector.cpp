@@ -156,7 +156,9 @@ TYPED_TEST(SingleClientSelector, pull_client)
     ASSERT_EQ(clients.size(), 1);
 
     int error = 0;
-    std::string str = clients.at(0)->receive(msg.size(), error);
+    std::vector<std::byte> bytes = clients.at(0)->receive(msg.size(), error);
+    std::string str(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, msg.size());
     EXPECT_EQ(str.size(), msg.size());
     ASSERT_EQ(str, msg);
@@ -220,13 +222,17 @@ TYPED_TEST(MultiClientSelector, pull_multiple)
     ASSERT_EQ(clients.size(), 2);
 
     int error = 0;
-    std::string str = clients.at(0)->receive(msg.size(), error);
+    std::vector<std::byte>  bytes = clients.at(0)->receive(msg.size(), error);
+    std::string str(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, msg.size());
     EXPECT_EQ(str.size(), msg.size());
     ASSERT_EQ(str, msg);
 
     error = 0;
-    str = clients.at(1)->receive(msg.size(), error);
+    bytes = clients.at(1)->receive(msg.size(), error);
+    str.assign(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, msg.size());
     EXPECT_EQ(str.size(), msg.size());
     ASSERT_EQ(str, msg);

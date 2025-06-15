@@ -10,9 +10,9 @@ int main(int _ac, const char **_av)
     std::ignore = _ac;
     std::ignore = _av;
 
-    log::Manager::registerNewLogger<log::imp::Console>("console");
-    log::Manager::registerNewLogger<log::imp::File>("file");
-    log::Manager::registerDefaultLogger<log::imp::Buffer>();
+    logger::Manager::registerNewLogger<logger::imp::Console>("console");
+    logger::Manager::registerNewLogger<logger::imp::File>("file");
+    logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     Core core{8080, 8081};
 

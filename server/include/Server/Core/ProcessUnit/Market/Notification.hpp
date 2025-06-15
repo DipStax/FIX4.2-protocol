@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnitBase.hpp"
+#include "Common/Container/IProcessUnitBase.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Log/ILogger.hpp"
@@ -26,6 +26,6 @@ namespace pu::market
             InputNetworkOutput &m_tcp_output;
             OrderBook &m_ob;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

@@ -38,7 +38,7 @@ namespace fix
         constexpr const char Text[] = "58";                     ///< Tag [58](https://www.onixs.biz/fix-dictionary/4.2/tagNum_58.html).
         constexpr const char TransactTime[] = "60";             ///< Tag [60](https://www.onixs.biz/fix-dictionary/4.2/tagNum_60.html).
         constexpr const char EncryptMethod[] = "98";            ///< Tag [98](https://www.onixs.biz/fix-dictionary/4.2/tagNum_98.html).
-        constexpr const char HearBtInt[] = "108";               ///< Tag [108](https://www.onixs.biz/fix-dictionary/4.2/tagNum_108.html).
+        constexpr const char HeartBtInt[] = "108";               ///< Tag [108](https://www.onixs.biz/fix-dictionary/4.2/tagNum_108.html).
         constexpr const char MinQty[] = "110";                  ///< Tag [110](https://www.onixs.biz/fix-dictionary/4.2/tagNum_110.html).
         constexpr const char TestReqId[] = "112";               ///< Tag [112](https://www.onixs.biz/fix-dictionary/4.2/tagNum_112.html).
         constexpr const char NoRelatedSym[] = "146";            ///< Tag [146](https://www.onixs.biz/fix-dictionary/4.2/tagNum_146.html).
@@ -192,11 +192,11 @@ namespace fix
     /// @return If the first element is true then second is set, otherwise it rigly formated.
     template<>
     UNUSED std::pair<bool, Reject> verify<Tag::EncryptMethod>(const std::string &_value);
-    /// @brief Verify the value of Tag::HearBtInt.
+    /// @brief Verify the value of Tag::HeartBtInt.
     /// @param _value value of the tag.
     /// @return If the first element is true then second is set, otherwise it rigly formated.
     template<>
-    UNUSED std::pair<bool, Reject> verify<Tag::HearBtInt>(const std::string &_value);
+    UNUSED std::pair<bool, Reject> verify<Tag::HeartBtInt>(const std::string &_value);
     /// @brief Verify the value of Tag::NoRelatedSym.
     /// @param _value value of the tag.
     /// @return If the first element is true then second is set, otherwise it rigly formated.

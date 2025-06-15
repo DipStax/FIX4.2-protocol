@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Log/ILogger.hpp"
@@ -25,7 +25,11 @@ namespace pu
 
         protected:
             void redirectToMarket(InputType &_input);
+
             bool treatUnknown(InputType &_input);
+            bool treatRequireLogin(InputType &_input);
+            bool treatReject(InputType &_input);
+
             bool treatMarketDataRequest(InputType &_input);
 
         private:
@@ -39,6 +43,6 @@ namespace pu
             QueueInputType &m_logout_handler;
             QueueInputType &m_heartbeat_handler;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

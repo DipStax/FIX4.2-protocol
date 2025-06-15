@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -36,6 +36,6 @@ namespace pu::user
 
             ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

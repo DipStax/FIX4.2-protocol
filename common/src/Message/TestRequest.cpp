@@ -15,7 +15,7 @@ namespace fix
         std::pair<bool, Reject> reject = { true, {} };
 
         reject.second.set371_refTagId(TestRequest::MsgType);
-        if (_msg.contains(Tag::TestReqId)) {
+        if (!_msg.contains(Tag::TestReqId)) {
             reject.second.set371_refTagId(Tag::TestReqId);
             reject.second.set373_sessionRejectReason(Reject::ReqTagMissing);
             reject.second.set58_text("Missing TestRequest");

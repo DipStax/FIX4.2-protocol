@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Log/ILogger.hpp"
@@ -42,6 +42,6 @@ namespace pu
 
             QueueInputType m_input;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

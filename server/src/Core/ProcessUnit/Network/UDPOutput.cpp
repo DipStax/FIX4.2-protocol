@@ -7,11 +7,11 @@
 namespace pu
 {
     UdpOutputNetwork::UdpOutputNetwork(uint32_t _port)
-        : Logger(log::Manager::newLogger("UDP-Output"))
+        : Logger(logger::Manager::newLogger("UDP-Output"))
     {
         m_socket.connect("localhost", _port);
         if (!m_socket.setBroadcast(true))
-            Logger->log<log::Level::Error>("Failed to setup broadcast, crashing after first action");
+            Logger->log<logger::Level::Error>("Failed to setup broadcast, crashing after first action");
     }
 
     UdpOutputNetwork::QueueInputType &UdpOutputNetwork::getInput()
@@ -21,19 +21,19 @@ namespace pu
 
     void UdpOutputNetwork::runtime(std::stop_token _st)
     {
-        Logger->log<log::Level::Info>("Starting process unit...");
+        Logger->log<logger::Level::Info>("Starting process unit...");
 
         while (!_st.stop_requested()) {
             auto now = std::chrono::steady_clock::now();
 
             for (size_t it = 0; it < UDP_MAX_MSG && !m_input.empty(); it++) {
-                Logger->log<log::Level::Info>("New notification to be broadcast: ", m_input.front());
+                Logger->log<logger::Level::Info>("New notification to be broadcast: ", m_input.front());
                 m_message.emplace_back(now, m_input.pop_front());
             }
             if (m_message.size())
-                Logger->log<log::Level::Debug>("Broadcasting message number: ", m_message.size());
+                Logger->log<logger::Level::Debug>("Broadcasting message number: ", m_message.size());
             for (const auto &[_, _val] : m_message) {
-                (void)m_socket.send(reinterpret_cast<const uint8_t*>(&_val), sizeof(data::UDPPackage));
+                (void)m_socket.send(reinterpret_cast<const std::byte *>(&_val), sizeof(data::UDPPackage));
             }
             clean();
             sleep(UDP_TICK);
@@ -48,7 +48,7 @@ namespace pu
 
         for (auto it = m_message.begin(); it != m_message.end();) {
             if (std::chrono::duration_cast<std::chrono::seconds>(now - it->first).count() >= 2) {
-                Logger->log<log::Level::Info>("Cleaning message:", it->second);
+                Logger->log<logger::Level::Info>("Cleaning message:", it->second);
                 it = m_message.erase(it);
                 cleaned++;
             } else {
@@ -56,6 +56,6 @@ namespace pu
             }
         }
         if (cleaned)
-            Logger->log<log::Level::Info>("Cleaned ", cleaned, " messages from the UDP queue, new size: ", m_message.size());
+            Logger->log<logger::Level::Info>("Cleaned ", cleaned, " messages from the UDP queue, new size: ", m_message.size());
     }
 }

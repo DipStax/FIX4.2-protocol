@@ -2,7 +2,7 @@
 
 #include "Common/Log/ILogger.hpp"
 
-namespace log
+namespace logger
 {
     template<Level Lvl, class ...Ts>
     void ILogger::log(Ts &&..._content)

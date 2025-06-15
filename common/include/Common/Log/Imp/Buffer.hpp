@@ -11,7 +11,7 @@
     #define LOG_BUFFER_TP
 #endif
 
-namespace log::imp
+namespace logger::imp
 {
     class Buffer : public Base
     {

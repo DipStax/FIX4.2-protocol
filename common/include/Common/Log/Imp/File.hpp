@@ -5,7 +5,7 @@
 
 #include "Common/Log/Imp/Base.hpp"
 
-namespace log::imp
+namespace logger::imp
 {
     class File : public Base
     {

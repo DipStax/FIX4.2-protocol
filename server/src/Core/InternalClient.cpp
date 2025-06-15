@@ -45,12 +45,9 @@ void InternalClient::setSeqNumber(size_t _seq_num)
     m_seq_num = _seq_num;
 }
 
-size_t InternalClient::nextSeqNumber()
+void InternalClient::nextSeqNumber()
 {
-    size_t tmp = m_seq_num;
-
     m_seq_num++;
-    return tmp;
 }
 
 size_t InternalClient::getSeqNumber() const

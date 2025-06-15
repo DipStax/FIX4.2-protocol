@@ -19,15 +19,18 @@ namespace fix
             Header header;
 
             operator std::string();
-            std::string to_string();
+            [[nodiscard]] std::string to_string();
 
-            static std::size_t getBodyLength(const std::string &_str);
-            static std::string getChecksum(const std::string &_str);
+            [[nodiscard]] static std::size_t getBodyLength(const std::string &_str);
+            [[nodiscard]] static std::string getChecksum(const std::string &_str);
+
+            [[nodiscard]] bool contains(const std::string &_key) const;
+            [[nodiscard]] const std::string &get(const std::string &_key) const;
 
             /// @brief Verify if the header receive is correctly formated.
             /// @param _msg Message to check.
             /// @return If the first element is true then second is set, otherwise it rigly formated.
-            static std::pair<bool, Reject> VerifyValid(Serializer::AnonMessage &_msg);
+            [[nodiscard]] static std::pair<bool, Reject> VerifyValid(Serializer::AnonMessage &_msg);
 
         protected:
             friend class Serializer;

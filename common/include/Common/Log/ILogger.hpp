@@ -2,7 +2,7 @@
 
 #include "Common/Log/Event.hpp"
 
-namespace log
+namespace logger
 {
     class ILogger
     {

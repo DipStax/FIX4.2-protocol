@@ -99,9 +99,11 @@ namespace fix
             OrderCancelRequest::cMsgType,
             OrderCancelReplaceRequest::cMsgType,
             MarketDataRequest::cMsgType,
-            Logout::cMsgType
+            Logout::cMsgType,
+            TestRequest::cMsgType,
+            Reject::cMsgType
         };
-        constexpr const size_t size_type = 7;
+        constexpr const size_t size_type = sizeof(type);
         std::pair<bool, fix::Reject> reject = { false, {} };
 
         for (size_t i = 0; i < size_type; i++)
@@ -152,7 +154,7 @@ namespace fix
             reject.first = true;
             reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
             reject.second.set58_text("Sequence number should be numeric");
-        } else if (utils::to<size_t>(_value) != _seqnum) {
+        } else if (_seqnum != 0 && utils::to<size_t>(_value) != _seqnum) {
             reject.first = true;
             reject.second.set373_sessionRejectReason(Reject::ValueOORange);
             reject.second.set58_text("Sequence number is not correct");
@@ -338,13 +340,13 @@ namespace fix
     }
 
     template<>
-    std::pair<bool, Reject> verify<Tag::HearBtInt>(const std::string &_value)
+    std::pair<bool, Reject> verify<Tag::HeartBtInt>(const std::string &_value)
     {
         std::pair<bool, fix::Reject> reject = { false, {} };
 
-        if (!utils::is_numeric(_value)) {
+        if (!utils::is_double(_value)) {
             reject.first = true;
-            reject.second.set371_refTagId(Tag::HearBtInt);
+            reject.second.set371_refTagId(Tag::HeartBtInt);
             reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
             reject.second.set58_text("Heart beat should be a numerical value");
         }

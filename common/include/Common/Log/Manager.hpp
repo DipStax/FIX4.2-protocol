@@ -7,7 +7,7 @@
 
 #include "Common/Log/ILogger.hpp"
 
-namespace log
+namespace logger
 {
     class Manager
     {

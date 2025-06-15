@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -8,6 +8,10 @@
 
 #if !defined(PU_LOGON_TP_SIZE) || PU_LOGON_TP_SIZE <= 0
     #define PU_LOGON_TP_SIZE 1
+#endif
+
+#if !defined(PU_LOGON_HB_MAX_TO) || PU_LOGON_HB_MAX_TOw <= 0
+    #define PU_LOGON_HB_MAX_TO 5.f
 #endif
 
 namespace data
@@ -38,6 +42,6 @@ namespace pu::user
 
             ThreadPool<PU_LOGON_TP_SIZE> m_tp;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

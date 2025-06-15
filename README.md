@@ -1,23 +1,17 @@
 # FIX4.2 Protocol
 
-A C++ implementation of the FIX 4.2 protocol, designed to simulate a basic financial trading system with client-server architecture. This project was developed as part of an Epitech educational assignment and includes components for order management, market data handling, and user interaction via a command-line interface.
+A C++ implementation of the FIX 4.2 protocol, designed to simulate a basic financial trading system with client-server architecture. This project includes components for order management, market data handling.
 
-## Development Status 🚧
+## Development Status
 
-⚠️ Note: The client component is currently not buildable due to unresolved dependencies and structural issues. Work is in progress to address these problems.
-
----
-
-🔧 In parallel, the server is undergoing a major refactor to improve architectural stability, modularity, and long-term maintainability. This effort aims to create a more robust backend foundation before reintroducing a fully functional client.
-
+The project is currently, both the client and the server, under heavy refactor to improve architectural stability, modularity, and long-term maintainability.
 
 ## Features:
 
 - **Client-Server Architecture**: Facilitates communication between clients and a central server using the FIX 4.2 protocol.
-- **Command-Line Interface (CLI)**: Allows users to interact with the system through predefined commands.
+- **User interface (UI)**: Allows users to interact with the system through QT UI.
 - **Market Data Simulation**: Supports subscribing to market data feeds and refreshing market information.
 - **Order Management**: Enables users to log in, log out, and manage their trading status.
-- **Docker Support**: Includes Docker configurations for easy deployment and testing.
 - **Modular Codebase**: Structured into distinct modules for client, server, common utilities, scripts, and tests.
 
 ## Project Structure:
@@ -25,6 +19,8 @@ A C++ implementation of the FIX 4.2 protocol, designed to simulate a basic finan
 ```
 FIX4.2-protocol/
 ├── client/             # Client-side application code
+|   ├── Back            # Backend solution for the client GUI
+|   └── GUI             # User Interface of the client connected to the backend
 ├── server/             # Server-side application code
 ├── common/             # Shared utilities and definitions
 ├── test/               # Unit and integration tests
@@ -42,6 +38,7 @@ FIX4.2-protocol/
 - C++20 compatible compiler
 - CMake 3.10 or higher
 - Docker and Docker Compose (for containerized deployement)
+- Qt6 developement tool kit
 
 ### Building the project
 
@@ -57,62 +54,9 @@ cd FIX4.2-protocol
 ```bash
 mkdir build
 cd build
-cmake ..
+cmake -DClientBuild=TRUE -DServerBuild=TRUE ..
 make
 ```
-
-### Running with Docker
-
-1. Build and start Containers:
-
-```bash
-docker-compose up --build
-```
-
-2. Access the CLI:
-
-Once the containers are running, you can interact with the client CLI to send commands to the server.
-
-## CLI Commands:
-
-The client application supports the following commands:
-
-- **logon**
-
-```
-logon -u <UserId>
-```
-Send a request to logon with the **UserId** passed in argument.
-
-- **logout**
-```
-logout
-```
-Send a request to logout of the actual connected account, nothing is done if the user isn't connected.
-
-- **status**
-```
-status
-```
-Displays the current session status and user information.
-
-- **Refresh Market Data**
-```
-fresh -m <Market> -s <Side> -d <Depth> -i <Id>
-```
-Request a refresh on **Market** chosing the **Side** (both/ask/bid), the **Depth** (full/top/N) and providing an **Id**
-
-- **Subscribe to Market Data**
-```
-sub -m <Market> -s <Side> -d <Depth> -i <Id>
-```
-Request a refresh on **Market** chosing the **Side** (both/ask/bid), the **Depth** (full/top/N) and providing an **Id**
-
-- **Subcribe to Marker Data**
-```
-unsub -m <Market> -s <Side> -d <Depth> -i <Id>
-```
-Request a refresh on **Market** chosing the **Side** (both/ask/bid), the **Depth** (full/top/N) and the target **Id**
 
 ## License
 

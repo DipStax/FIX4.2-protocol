@@ -1,18 +1,21 @@
 #pragma once
 
 #include <string>
+#include <vector>
+
 #include <netinet/in.h>
 #include <sys/un.h>
 
 #include "Common/Network/BaseSocket.hpp"
 #include "Common/Network/Ip.hpp"
+#include "Common/Network/Buffer.hpp"
 
 template<class T>
-concept IsSocketType = requires (T _sock, const uint8_t *_data1, size_t _size, std::string _data2, int &_err) {
+concept IsSocketType = requires (T _sock, const std::byte *_data1, size_t _size, std::string _data2, int &_err) {
     { T::Type } -> std::same_as<const uint32_t &>;
     { _sock.send(_data1, _size) } -> std::same_as<size_t>;
     { _sock.send(_data2) } -> std::same_as<size_t>;
-    { _sock.receive(_size, _err) } -> std::same_as<std::string>;
+    { _sock.receive(_size, _err) } -> std::same_as<std::vector<std::byte>>;
 };
 
 template<class T>
@@ -93,12 +96,11 @@ namespace net
                 Stream(int _fd);
                 ~Stream() = default;
 
+                // size_t send(const Buffer &_data);
                 size_t send(const std::string &_data);
-                size_t send(const uint8_t *_data, size_t _size);
+                size_t send(const std::byte *_data, size_t _size);
 
-                [[nodiscard]] std::string receive(size_t _size, int &_error);
-
-            protected:
+                [[nodiscard]] std::vector<std::byte> receive(size_t _size, int &_error);
         };
 
         template<IsSocketDomain T>
@@ -111,10 +113,11 @@ namespace net
                 DGram(int _fd);
                 ~DGram() = default;
 
+                // size_t send(const Buffer &_data);
                 size_t send(const std::string &_data);
-                size_t send(const uint8_t *_data, size_t _size);
+                size_t send(const std::byte *_data, size_t _size);
 
-                [[nodiscard]] std::string receive(size_t _size, int &_error);
+                [[nodiscard]] std::vector<std::byte> receive(size_t _size, int &_error);
 
                 bool setBroadcast(bool _bc)
                     requires IsINetSocketDomain<T>;

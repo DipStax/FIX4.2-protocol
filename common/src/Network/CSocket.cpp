@@ -17,23 +17,28 @@ namespace net::c
         return ::accept(_fd, (struct sockaddr *)NULL, NULL);
     }
 
-    size_t Socket::send(int _fd, const uint8_t *_data, size_t _size)
+    size_t Socket::send(int _fd, const std::byte *_data, size_t _size)
     {
         return ::send(_fd, _data, _size, 0);
     }
 
-    const uint8_t *Socket::receiveUDP(int _fd, size_t _size, struct sockaddr *_addr, int &_error)
+    size_t Socket::sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size)
     {
-        std::unique_ptr<uint8_t []> data(new uint8_t[_size]);
+        return sendto(_fd, _data, _size, 0, _addr, _addr_size);
+    }
+
+    const std::byte *Socket::receiveFrom(int _fd, size_t _size, struct sockaddr *_addr, int &_error)
+    {
+        std::unique_ptr<std::byte []> data(new std::byte[_size]);
         socklen_t addr_len = sizeof(_addr);
 
         _error = ::recvfrom(_fd, data.get(), _size, 0, _addr, &addr_len);
         return data.release();
     }
 
-    const uint8_t *Socket::receive(int _fd, size_t _size, int &_error)
+    const std::byte *Socket::receive(int _fd, size_t _size, int &_error)
     {
-        std::unique_ptr<uint8_t []> data(new uint8_t[_size]{});
+        std::unique_ptr<std::byte []> data(new std::byte[_size]{});
 
         _error = ::recv(_fd, data.get(), _size, 0);
         return data.release();
@@ -75,9 +80,9 @@ namespace net::c
         return fcntl(_fd, F_GETFD) != -1;
     }
 
-    bool Socket::bind(int _fd, struct sockaddr *_addr)
+    bool Socket::bind(int _fd, struct sockaddr *_addr, size_t _size)
     {
-        return ::bind(_fd, _addr, sizeof(struct sockaddr_in)) == 0;
+        return ::bind(_fd, _addr, _size) == 0;
     }
 
      bool Socket::listen(int _fd, int _max)

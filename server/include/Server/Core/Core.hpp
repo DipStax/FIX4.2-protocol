@@ -12,7 +12,7 @@
 
 #include "Server/Core/ProcessUnit/Router.hpp"
 
-#include "Server/Core/ProcessUnit/ProcessUnit.hpp"
+#include "Common/Container/ProcessUnit.hpp"
 
 #include "Common/Log/Manager.hpp"
 
@@ -37,7 +37,7 @@ class Core
 
         std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
-        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
+        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output{};
         ProcessUnit<pu::UdpOutputNetwork> m_udp_output;
 
         ProcessUnit<pu::user::LogonHandler> m_logon;
@@ -47,5 +47,5 @@ class Core
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::TCPInputNetwork> m_tcp_input;
 
-        std::unique_ptr<log::ILogger> Logger = nullptr;
+        std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

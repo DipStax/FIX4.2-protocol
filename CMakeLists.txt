@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22.1)
 
-project(Epifinance)
+project(FIX_Protocol)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +19,7 @@ endif()
 
 if (ClientBuild)
     set(CommonBuild TRUE)
-    include(client/client.cmake)
+    include(client/CMakeLists.txt)
 endif()
 
 if (CommonBuild)

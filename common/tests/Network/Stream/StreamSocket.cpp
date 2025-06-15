@@ -130,11 +130,13 @@ TYPED_TEST_SUITE(SocketSendRecv, SocketTypeList, SocketTypeName);
 TYPED_TEST(SocketSendRecv, single_send_single_recv)
 {
     const std::string send1 = "this is a test";
-    int error = 0;
 
     ASSERT_EQ(this->socket.send(send1), send1.size());
 
-    std::string recv = this->client->receive(send1.size(), error);
+    int error = 0;
+    std::vector<std::byte> bytes = this->client->receive(send1.size(), error);
+    std::string recv(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, send1.size());
     ASSERT_EQ(recv.size(), send1.size());
     ASSERT_EQ(recv, send1);
@@ -144,12 +146,14 @@ TYPED_TEST(SocketSendRecv, multi_send_single_recv)
 {
     const std::string send1 = "this is ";
     const std::string send2 = "a test";
-    int error = 0;
 
     ASSERT_EQ(this->socket.send(send1), send1.size());
     ASSERT_EQ(this->socket.send(send2), send2.size());
 
-    std::string recv = this->client->receive(send1.size() + send2.size(), error);
+    int error = 0;
+    std::vector<std::byte> bytes = this->client->receive(send1.size() + send2.size(), error);
+    std::string recv(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, send1.size() + send2.size());
     ASSERT_EQ(recv.size(), send1.size() + send2.size());
     ASSERT_EQ(recv, send1 + send2);
@@ -157,18 +161,24 @@ TYPED_TEST(SocketSendRecv, multi_send_single_recv)
 
 TYPED_TEST(SocketSendRecv, single_send_multi_recv)
 {
-    int error = 0;
     const std::string send1 = "this is a test";
     // The sample data to send should have an odd length
 
     ASSERT_EQ(this->socket.send(send1), send1.size());
 
-    std::string recv = this->client->receive(send1.size() / 2, error);
+    int error = 0;
+    std::vector<std::byte> bytes = this->client->receive(send1.size() / 2, error);
+    std::string recv(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
+
     ASSERT_EQ(error, send1.size() / 2);
     ASSERT_EQ(recv.size(), send1.size() / 2);
     ASSERT_EQ(recv, send1.substr(0, send1.size() / 2));
 
-    recv = this->client->receive(send1.size() / 2, error);
+    error = 0;
+    bytes = this->client->receive(send1.size() / 2, error);
+    recv.assign(reinterpret_cast<const char *>(bytes.data()), bytes.size());
+
     ASSERT_EQ(error, send1.size() / 2);
     ASSERT_EQ(recv.size(), send1.size() / 2);
     ASSERT_EQ(recv, send1.substr(send1.size() / 2, send1.size()));

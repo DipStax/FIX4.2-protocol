@@ -1,6 +1,6 @@
 #include "Common/Log/Manager.hpp"
 
-namespace log
+namespace logger
 {
     std::unique_ptr<ILogger> Manager::newLogger(const std::string &_type, const std::string &_name)
     {

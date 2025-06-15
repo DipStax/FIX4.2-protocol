@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/Core/ProcessUnit/interface/IProcessUnit.hpp"
+#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -40,6 +40,6 @@ namespace pu::market
 
             OrderBook &m_ob;
 
-            std::unique_ptr<log::ILogger> Logger = nullptr;
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

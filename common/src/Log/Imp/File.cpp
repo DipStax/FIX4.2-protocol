@@ -5,7 +5,7 @@
 #include "Common/Log/Imp/File.hpp"
 #include "Common/Log/Manager.hpp"
 
-namespace log::imp
+namespace logger::imp
 {
     File::File(const std::string &_name)
         : Base(_name)
