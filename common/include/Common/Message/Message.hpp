@@ -15,3 +15,4 @@
 #include "Common/Message/Reject.hpp"
 #include "Common/Message/Serializer.hpp"
 #include "Common/Message/TestRequest.hpp"
+#include "Common/Message/BusinessMessageReject.hpp"

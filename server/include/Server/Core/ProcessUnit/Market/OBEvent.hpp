@@ -14,31 +14,31 @@
 
 namespace pu::market
 {
-    class OBEvent : public IProcessUnit<data::OBEventInput>
-    {
-        public:
-            OBEvent(const std::string &_symbol, InputUdp &_udp, InputNetworkOutput &_tcp);
-            virtual ~OBEvent() = default;
+    // class OBEvent : public IProcessUnit<data::OBEventInput>
+    // {
+    //     public:
+    //         OBEvent(const std::string &_symbol, InputUdp &_udp, InputNetworkOutput &_tcp);
+    //         virtual ~OBEvent() = default;
 
-            [[nodiscard]] QueueInputType &getInput();
+    //         [[nodiscard]] QueueInputType &getInput();
 
-        protected:
-            void runtime(std::stop_token _st);
+    //     protected:
+    //         void runtime(std::stop_token _st);
 
-        protected:
-            bool createTcp(const OrderBook::Event &_input);
-            bool createUdp(const OrderBook::Event &_input);
+    //     protected:
+    //         bool createTcp(const OrderBook::Event &_input);
+    //         bool createUdp(const OrderBook::Event &_input);
 
-        private:
-            const std::string m_symbol;
+    //     private:
+    //         const std::string m_symbol;
 
-            QueueInputType m_input;
+    //         QueueInputType m_input;
 
-            InputUdp &m_udp_output;
-            InputNetworkOutput &m_tcp_output;
+    //         InputUdp &m_udp_output;
+    //         InputNetworkOutput &m_tcp_output;
 
-            ThreadPool<TS_SIZE_OE> m_tp;
+    //         ThreadPool<TS_SIZE_OE> m_tp;
 
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
-    };
+    //         std::unique_ptr<logger::ILogger> Logger = nullptr;
+    // };
 }

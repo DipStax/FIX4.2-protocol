@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <iostream>
-#include <vector>
+#include <list>
 
 using UserId = std::string;
 using OrderId = std::string;
@@ -19,7 +19,7 @@ struct Order
 std::ostream &operator<<(std::ostream &_os, const Order &_order);
 
 using Price = double;
-using OrderList = std::vector<Order>;
+using OrderList = std::list<Order>;
 
 /// @brief Available value for OrdStatus [39](https://www.onixs.biz/fix-dictionary/4.2/tagNum_39.html).
 enum OrderStatus

@@ -27,15 +27,15 @@ namespace pu
         private:
             const std::string m_symbol;
 
-            OrderBook::EventQueue m_q_event;
+            // OrderBook::EventQueue m_q_event;
             QueueInputType m_input;
 
-            ProcessUnit<pu::market::OBEvent> m_obevent;
+            // ProcessUnit<pu::market::OBEvent> m_obevent;
             OrderBook m_ob;
 
             ProcessUnit<pu::market::OBAction> m_market;
             ProcessUnit<pu::market::Router> m_router;
-            ProcessUnit<pu::market::Notification> m_notify;
-            ProcessUnit<pu::market::RefreshSuscribtion> m_data_refresh;
+            // ProcessUnit<pu::market::Notification> m_notify;
+            // ProcessUnit<pu::market::RefreshSuscribtion> m_data_refresh;
     };
 }

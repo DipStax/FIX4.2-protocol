@@ -23,7 +23,7 @@ namespace fix
             /// @param _val Value assigned to it: char.
             void set371_refTagId(const std::string &_val);
 
-            /// @brief Reference to the [fix message type](https://www.onixs.biz/fix-dictionary/4.2/tagNum_35.html) [372](https://www.onixs.biz/fix-dictionary/4.2/tagNum_371.html).
+            /// @brief Reference to the fix message type [372](https://www.onixs.biz/fix-dictionary/4.2/tagNum_372.html) [372](https://www.onixs.biz/fix-dictionary/4.2/tagNum_371.html).
             /// @param _val Value assigned to it: char.
             void set372_refMsgType(const std::string &_val);
 

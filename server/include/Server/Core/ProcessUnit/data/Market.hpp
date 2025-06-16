@@ -5,32 +5,32 @@
 
 namespace data
 {
-    struct OBActionInput
-    {
-        enum class Action
-        {
-            Add,
-            Modify,
-            Cancel
-        };
+    // struct OBActionInput
+    // {
+    //     enum class Action
+    //     {
+    //         Add,
+    //         Modify,
+    //         Cancel
+    //     };
 
-        OBActionInput() = default;
-        OBActionInput(OBActionInput &&_data) noexcept = default;
-        OBActionInput(const OBActionInput &_data) = default;
-        virtual ~OBActionInput() = default;
+    //     OBActionInput() = default;
+    //     OBActionInput(OBActionInput &&_data) noexcept = default;
+    //     OBActionInput(const OBActionInput &_data) = default;
+    //     virtual ~OBActionInput() = default;
 
-        OBActionInput &operator=(OBActionInput &&_data) noexcept = default;
+    //     OBActionInput &operator=(OBActionInput &&_data) noexcept = default;
 
-        Action action;
-        OrderType type;
-        Price price;
-        Price oprice;
-        OrderId target;
-        Order order;
-    };
+    //     Action action;
+    //     OrderType type;
+    //     Price price;
+    //     Price oprice;
+    //     OrderId target;
+    //     Order order;
+    // };
 
     using MarketRouterInput = RouterInput;
-    using OBEventInput = OrderBook::Event;
+    using OBActionInput = RouterInput;
 
     struct RefreshSubInput
     {
