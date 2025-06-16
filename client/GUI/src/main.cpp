@@ -2,6 +2,7 @@
 #include <QThread>
 
 #include "Client/GUI/UI/LoginScreen.hpp"
+#include "Client/GUI/UI/OrderExecution.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Log/Imp/Console.hpp"
@@ -18,8 +19,10 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
     ui::LoginScreen login;
+    ui::OrderExecution exec;
 
-    login.show();
-
+    if (login.exec() == QDialog::Accepted) {
+        exec.show();
+    }
     return app.exec();
 }

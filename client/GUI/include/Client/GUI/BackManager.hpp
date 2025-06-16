@@ -32,4 +32,5 @@ class BackManager : public QObject
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 
         inline static BackManager *m_instance = nullptr;
+void extra(int &error, int &retFlag);
 };

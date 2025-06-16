@@ -49,6 +49,8 @@ namespace pu
                     case fix::TestRequest::cMsgType:
                         m_heartbeat.push(std::move(input));
                         break;
+                    // case fix::BusinessMessageReject::cMsgType: treatBusinessReject(input);
+                    //     break;
                     case fix::Reject::cMsgType: treatReject(input);
                         break;
                     default:
@@ -68,7 +70,7 @@ namespace pu
         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
         reject.set58_text("Unknown message type");
         Logger->log<logger::Level::Debug>("Moving Reject Unknown from server to TCP Output");
-        // m_tcp_output.append(std::move(reject));
+        m_tcp_output.append(std::move(reject));
         return true;
     }
 
@@ -77,4 +79,10 @@ namespace pu
         Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), ", text: ", _input.at(fix::Tag::Text)," }");
         return true;
     }
+
+    // bool Router::treatBusinessReject(InputType &_input)
+    // {
+    //     Logger->log<logger::Level::Erro>("Reject Business message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", reject refId: ", _input.at(fix::Tag::BusinessRejectRefId), ", reason", _input.at(fix::Tag::BusinessRejectReason),", text: ", _input.at(fix::Tag::Text));
+    //     return true;
+    // }
 }

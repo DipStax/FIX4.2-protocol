@@ -23,23 +23,17 @@ namespace ui
         m_progress(new QProgressBar()),
         Logger(logger::Manager::newLogger("LoginScreen"))
     {
-        QLabel *label_login = new QLabel("Login:");
-        QLabel *label_hb = new QLabel("HeartBeat:");
-        QLabel *label_seqnum = new QLabel("Seqence Number:");
-        QDoubleValidator *validator_hb = new QDoubleValidator(0, 100, 2);
-        QIntValidator *validator_seqnum = new QIntValidator(1, 255);
-
-        m_hb_entry->setValidator(validator_hb);
+        m_hb_entry->setValidator(new QDoubleValidator(0, 100, 2));
         m_hb_entry->setText("5.00");
-        m_seqnum_entry->setValidator(validator_seqnum);
+        m_seqnum_entry->setValidator(new QIntValidator(1, 255));
         m_seqnum_entry->setText("1");
         m_progress->setRange(0, 4);
 
-        m_layout->addWidget(label_login);
+        m_layout->addWidget(new QLabel("Login:"));
         m_layout->addWidget(m_uid_entry);
-        m_layout->addWidget(label_hb);
+        m_layout->addWidget(new QLabel("HeartBeat:"));
         m_layout->addWidget(m_hb_entry);
-        m_layout->addWidget(label_seqnum);
+        m_layout->addWidget(new QLabel("Seqence Number:"));
         m_layout->addWidget(m_seqnum_entry);
         m_layout->addWidget(m_button);
         setLayout(m_layout);
@@ -82,6 +76,7 @@ namespace ui
             _buffer >> logon;
             Logger->log<logger::Level::Info>("Received validation of logon with: { userId: ", logon.UserId, ", seqnum: ", logon.SeqNum, ", heartbeat: ", logon.HeartBeat, " }");
             m_progress->setValue(4);
+            accept();
         } else {
             Logger->log<logger::Level::Warning>("Unknow signal from back during login setup");
         }
