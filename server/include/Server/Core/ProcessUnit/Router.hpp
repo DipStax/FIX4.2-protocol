@@ -20,7 +20,7 @@ namespace pu
             void onInput(InputType _input) final;
 
         protected:
-            void redirectToMarket(const InputType &_input);
+            bool redirectToMarket(const InputType &_input);
 
             bool treatUnknown(const InputType &_input);
             bool treatRequireLogin(const InputType &_input);

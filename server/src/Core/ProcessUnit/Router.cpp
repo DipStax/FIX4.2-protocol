@@ -66,10 +66,22 @@ namespace pu
         }
     }
 
-    void Router::redirectToMarket(const InputType &_input)
+    bool Router::redirectToMarket(const InputType &_input)
     {
+        if (!m_market_input.contains(_input.Message.at(fix::Tag::Symbol))) {
+            fix::Reject reject{};
+
+            reject.set371_refTagId(fix::Tag::Symbol);
+            reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+            reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
+            reject.set58_text("Unknown symbol");
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
+            return false;
+        }
+
         Logger->log<logger::Level::Debug>("(Market Order) Redirecting to correct market router");
         m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(_input));
+        return true;
     }
 
     bool Router::treatUnknown(const InputType &_input)
