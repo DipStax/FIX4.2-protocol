@@ -9,7 +9,8 @@
 namespace pu
 {
     FixBuilder::FixBuilder(ts::Queue<net::Buffer> &_input, QueueMessage &_output)
-        : m_input(_input), m_output(_output), Logger(logger::Manager::newLogger("FixBuilder"))
+        : AProcessUnitBase("Client/FixBuilder"),
+        m_input(_input), m_output(_output)
     {
     }
 

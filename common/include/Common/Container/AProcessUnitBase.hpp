@@ -13,9 +13,15 @@ namespace pu
             AProcessUnitBase(const std::string &_name);
             virtual ~AProcessUnitBase() = default;
 
+            const std::string &getProcessName() const;
+
         protected:
             virtual void runtime(std::stop_token _st) = 0;
 
+        private:
+            const std::string m_name;
+
+        protected:
             std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

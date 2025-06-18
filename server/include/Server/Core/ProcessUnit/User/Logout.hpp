@@ -29,7 +29,6 @@ namespace pu::user
         private:
             bool process(InputType &_input);
 
-            QueueInputType m_input;
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;

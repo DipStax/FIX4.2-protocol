@@ -34,8 +34,6 @@ namespace pu::market
             void rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order);
             void orderValidated(InputType &_input, const obs::OrderInfo &_order, const std::pair<OrderStatus, Quantity> &_result);
 
-
-            QueueInputType m_input;
             InputNetworkOutput &m_tcp_output;
 
             OrderBook &m_ob;

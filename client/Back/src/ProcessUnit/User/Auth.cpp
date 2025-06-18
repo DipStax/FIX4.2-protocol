@@ -11,33 +11,20 @@
 namespace pu
 {
     AuthHandler::AuthHandler(QueueMessage &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("Auth"))
+        : AInputProcess<InputType>("Client/Auth"),
+        m_tcp_output(_tcp_output)
     {
     }
 
-    AuthHandler::QueueInputType &AuthHandler::getInput()
+    void AuthHandler::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void AuthHandler::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-        InputType input;
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                input = m_input.pop_front();
-
-                switch (input.at(fix::Tag::MsgType)[0]) {
-                case fix::Logon::cMsgType: handleLogon(input);
-                    break;
-                case fix::Logout::cMsgType: handleLogout(input);
-                    break;
-                default:
-                    break;
-                }
-            }
+        switch (_input.at(fix::Tag::MsgType)[0]) {
+            case fix::Logon::cMsgType: handleLogon(_input);
+                break;
+            case fix::Logout::cMsgType: handleLogout(_input);
+                break;
+            default:
+                break;
         }
     }
 

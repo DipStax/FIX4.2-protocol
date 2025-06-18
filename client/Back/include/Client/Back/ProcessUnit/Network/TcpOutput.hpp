@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Common/Message/Fix.hpp"
 #include "Common/Log/ILogger.hpp"
 #include "Common/Network/Socket.hpp"
 
 namespace pu
 {
-    class TcpOutputNetwork : public IProcessUnit<fix::Message>
+    class TcpOutputNetwork : public AInputProcess<fix::Message>
     {
         public:
             using Socket = std::shared_ptr<net::INetTcp>;
@@ -15,16 +15,10 @@ namespace pu
             TcpOutputNetwork(Socket _server);
             virtual ~TcpOutputNetwork() = default;
 
-            QueueInputType &getInput();
-
         protected:
-            void runtime(std::stop_token _st) final;
+            void onInput(InputType _input) final;
 
         private:
             Socket m_server;
-
-            QueueInputType m_input;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

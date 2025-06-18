@@ -29,8 +29,6 @@ namespace pu
         private:
             std::map<std::string, QueueInputType &> m_market_input;
 
-            QueueInputType m_input;
-
             InputNetworkOutput &m_tcp_output;
 
             QueueInputType &m_logon_handler;

@@ -2,20 +2,20 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/IProcessUnitBase.hpp"
+#include "Common/Container/AProcessUnitBase.hpp"
 #include "Common/Log/ILogger.hpp"
 #include "Common/Network/Buffer.hpp"
 
 namespace pu
 {
-    class FixBuilder : public IProcessUnitBase
+    class FixBuilder : public AProcessUnitBase
     {
         public:
             FixBuilder(ts::Queue<net::Buffer> &_input, QueueMessage &_output);
             virtual ~FixBuilder() = default;
 
         protected:
-            void runtime(std::stop_token _st);
+            void runtime(std::stop_token _st) final;
 
         private:
             template<class T>
@@ -26,7 +26,5 @@ namespace pu
 
             ts::Queue<net::Buffer> &m_input;
             QueueMessage &m_output;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

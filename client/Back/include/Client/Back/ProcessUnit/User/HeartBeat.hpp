@@ -2,7 +2,7 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Common/Container/IProcessUnitStopable.hpp"
 #include "Common/Log/ILogger.hpp"
 
@@ -12,16 +12,14 @@
 
 namespace pu
 {
-    class HeartBeatHandler : public IProcessUnit<TransitMessage>, IProcessUnitStopable
+    class HeartBeatHandler : public AInputProcess<TransitMessage>, IProcessUnitStopable
     {
         public:
             HeartBeatHandler(QueueMessage &_tcp_output);
             virtual ~HeartBeatHandler() = default;
 
-            QueueInputType &getInput() final;
-
         protected:
-            void runtime(std::stop_token _st) final;
+            void onInput(InputType _input) final;
 
             void onStop() final;
 
@@ -33,10 +31,6 @@ namespace pu
 
             std::jthread m_thread;
 
-            QueueInputType m_input;
-
             QueueMessage &m_tcp_output;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

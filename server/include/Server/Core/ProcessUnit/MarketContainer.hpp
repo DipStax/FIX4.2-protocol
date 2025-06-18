@@ -29,7 +29,6 @@ namespace pu
             const std::string m_symbol;
 
             // OrderBook::EventQueue m_q_event;
-            QueueInputType m_input;
 
             // ProcessUnit<pu::market::OBEvent> m_obevent;
             OrderBook m_ob;

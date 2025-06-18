@@ -26,7 +26,6 @@ namespace pu::market
 
             InputNetworkOutput &m_tcp_output;
 
-            QueueInputType m_input;
             InputOBAction &m_ob_action;
     };
 }

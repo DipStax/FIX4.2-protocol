@@ -8,59 +8,45 @@
 namespace pu
 {
     Router::Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth)
-        : m_tcp_output(_tcp_output), m_heartbeat(_heartbeat), m_auth(_auth),
-        Logger(logger::Manager::newLogger("Router"))
+        : AInputProcess<InputType>("Client/Master-Router"),
+        m_tcp_output(_tcp_output), m_heartbeat(_heartbeat), m_auth(_auth)
     {
     }
 
-    QueueTransit &Router::getInput()
+    void Router::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void Router::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-        TransitMessage input;
-        std::pair<bool, fix::Reject> reject;
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                input = m_input.pop_front();
-                reject = fix::Header::Verify(input, PROVIDER_NAME, User::Instance().getUserId(), User::Instance().getSeqNumber());
-                if (reject.first) {
-                    if (reject.second.contains(fix::Tag::Text))
-                        Logger->log<logger::Level::Warning>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-                    else
-                        Logger->log<logger::Level::Error>("Header verification failed for unknown reason");
-                    m_tcp_output.append(std::move(reject.second));
-                    continue;
-                }
-                User::Instance().nextSeqNumber();
-                Logger->log<logger::Level::Debug>("Header verification validated");
-
-                switch (input.at(fix::Tag::MsgType)[0])
-                {
-                    case fix::Logon::cMsgType:
-                    case fix::Logout::cMsgType:
-                        m_auth.push(std::move(input));
-                        break;
-                    case fix::HeartBeat::cMsgType:
-                    case fix::TestRequest::cMsgType:
-                        m_heartbeat.push(std::move(input));
-                        break;
-                    // case fix::BusinessMessageReject::cMsgType: treatBusinessReject(input);
-                    //     break;
-                    case fix::Reject::cMsgType: treatReject(input);
-                        break;
-                    default:
-                        unknownMessage(input);
-                };
-            }
+        std::pair<bool, fix::Reject> reject = fix::Header::Verify(_input, PROVIDER_NAME, User::Instance().getUserId(), User::Instance().getSeqNumber());
+        if (reject.first) {
+            if (reject.second.contains(fix::Tag::Text))
+                Logger->log<logger::Level::Warning>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+            else
+                Logger->log<logger::Level::Error>("Header verification failed for unknown reason");
+            m_tcp_output.append(std::move(reject.second));
+            return;
         }
+        User::Instance().nextSeqNumber();
+        Logger->log<logger::Level::Debug>("Header verification validated");
+
+        switch (_input.at(fix::Tag::MsgType)[0])
+        {
+            case fix::Logon::cMsgType:
+            case fix::Logout::cMsgType:
+                m_auth.push(std::move(_input));
+                break;
+            case fix::HeartBeat::cMsgType:
+            case fix::TestRequest::cMsgType:
+                m_heartbeat.push(std::move(_input));
+                break;
+            // case fix::BusinessMessageReject::cMsgType: treatBusinessReject(_input);
+            //     break;
+            case fix::Reject::cMsgType: treatReject(_input);
+                break;
+            default:
+                unknownMessage(_input);
+        };
     }
 
-    bool Router::unknownMessage(InputType &_input)
+    bool Router::unknownMessage(const InputType &_input)
     {
         fix::Reject reject;
 
@@ -74,7 +60,7 @@ namespace pu
         return true;
     }
 
-    bool Router::treatReject(InputType &_input)
+    bool Router::treatReject(const InputType &_input)
     {
         Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), ", text: ", _input.at(fix::Tag::Text)," }");
         return true;

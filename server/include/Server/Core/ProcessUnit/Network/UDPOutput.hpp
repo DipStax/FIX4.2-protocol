@@ -39,7 +39,6 @@ namespace pu
             std::vector<std::pair<std::chrono::steady_clock::time_point, data::UDPPackage>> m_message;
 
             net::INetUdp m_socket;
-
             QueueInputType m_input;
     };
 }

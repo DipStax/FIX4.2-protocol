@@ -39,8 +39,6 @@ namespace pu::user
 
             std::jthread m_thread;
 
-            QueueInputType m_input;
-
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_HEARTBEAT_TP_SIZE> m_tp;

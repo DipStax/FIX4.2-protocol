@@ -25,6 +25,8 @@ namespace pu
 
     void MarketContainer::runtime(std::stop_token _st)
     {
+        Logger->log<logger::Level::Info>("Launching process unit runtime");
+
         m_router.start();
         m_market.start();
         // m_obevent.start();
