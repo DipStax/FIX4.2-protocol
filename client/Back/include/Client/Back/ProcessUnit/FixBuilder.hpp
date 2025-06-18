@@ -18,7 +18,11 @@ namespace pu
             void runtime(std::stop_token _st);
 
         private:
+            template<class T>
+            fix::Message build(net::Buffer &_buffer);
+
             fix::Message buildLogon(net::Buffer &_buffer);
+            fix::Message buildOrderSingle(net::Buffer &_buffer);
 
             ts::Queue<net::Buffer> &m_input;
             QueueMessage &m_output;

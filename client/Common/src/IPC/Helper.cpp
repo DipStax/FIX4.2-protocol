@@ -19,10 +19,22 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::Logon,
-            sizeof(uint32_t) * 2 + _logon.UserId.size() + sizeof(float)
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _logon.UserId.size() + sizeof(float))
         };
 
         buffer << header << _logon;
+        return buffer;
+    }
+
+    net::Buffer Helper::OrderSingle(const msg::OrderSingle &_order)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::OrderSingle,
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(float) * 2 + sizeof(uint8_t))
+        };
+
+        buffer << header << _order;
         return buffer;
     }
 }

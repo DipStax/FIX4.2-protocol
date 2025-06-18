@@ -11,4 +11,9 @@ namespace ipc::msg
     {
         return _buffer >> _logon.UserId >> _logon.SeqNum >> _logon.HeartBeat;
     }
+
+    std::ostream &operator<<(std::ostream &_os, const Logon &_logon)
+    {
+        return _os << "{ UserId: " << _logon.UserId << ", SeqNum: "<< _logon.SeqNum << ", HeartBeat: "<< _logon.HeartBeat << " }";
+    }
 }

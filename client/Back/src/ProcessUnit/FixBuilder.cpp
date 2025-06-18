@@ -2,7 +2,7 @@
 #include "Client/Back/User.hpp"
 
 #include "Client/Common/IPC/Header.hpp"
-#include "Client/Common/IPC/Message/Logon.hpp"
+#include "Client/Common/IPC/Message/Message.hpp"
 
 #include "Common/Log/Manager.hpp"
 
@@ -25,11 +25,13 @@ namespace pu
                 buffer >> header;
                 switch (header.MsgType)
                 {
-                case ipc::MessageType::Logon: m_output.push(buildLogon(buffer));
-                    break;
-                default:
-                    Logger->log<logger::Level::Error>("Unknow message type");
-                    break;
+                    case ipc::MessageType::Logon: m_output.push(buildLogon(buffer));
+                        break;
+                    case ipc::MessageType::OrderSingle: m_output.push(buildOrderSingle(buffer));
+                        break;
+                    default:
+                        Logger->log<logger::Level::Error>("Unknow message type");
+                        break;
                 }
             }
         }
@@ -41,11 +43,28 @@ namespace pu
         ipc::msg::Logon ipc_logon;
 
         _buffer >> ipc_logon;
-        Logger->log<logger::Level::Info>("Building login message with: { userId: ", ipc_logon.UserId, ", seqnum: ", ipc_logon.SeqNum, ", heartbeat: ", ipc_logon.HeartBeat, " }");
+        Logger->log<logger::Level::Info>("Building Logon message with: ", ipc_logon);
         User::Instance().setSeqNumber(ipc_logon.SeqNum);
         User::Instance().setUserId(ipc_logon.UserId);
         logon.set108_HeartBtInt(std::to_string(ipc_logon.HeartBeat));
         logon.set98_EncryptMethod("0");
         return logon;
+    }
+
+    fix::Message FixBuilder::buildOrderSingle(net::Buffer &_buffer)
+    {
+        fix::NewOrderSingle order;
+        ipc::msg::OrderSingle ipc_order;
+
+        _buffer >> ipc_order;
+        Logger->log<logger::Level::Info>("Building NewOrderSingle message with: ", ipc_order);
+        order.set11_clOrdID(ipc_order.orderId);
+        order.set21_handlInst("3");
+        order.set38_orderQty(std::to_string(ipc_order.quantity));
+        order.set40_ordType("2");
+        order.set44_price(std::to_string(ipc_order.price));
+        order.set54_side((ipc_order.type == OrderType::Ask) ? "4" : "3");
+        order.set55_symbol(ipc_order.symbol);
+        return order;
     }
 }

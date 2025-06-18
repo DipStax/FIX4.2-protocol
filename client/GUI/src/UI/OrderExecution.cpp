@@ -2,7 +2,12 @@
 #include <QLabel>
 
 #include "Client/GUI/UI/OrderExecution.hpp"
+#include "Client/GUI/BackManager.hpp"
 
+#include "Client/Common/IPC/Helper.hpp"
+#include "Client/Common/IPC/Message/OrderSingle.hpp"
+
+#include "Common/Log/Manager.hpp"
 #include "Common/Core/Order.hpp"
 
 namespace ui
@@ -10,19 +15,27 @@ namespace ui
     OrderExecution::OrderExecution(QWidget *_parent)
         : QWidget(_parent),
         m_main_lyaout(new QVBoxLayout()),
+        m_cb_symbol(new QComboBox()),
         m_cb_side(new QComboBox()),
         m_entry_orderid(new QLineEdit()),
         m_entry_qty(new QLineEdit()),
         m_entry_price(new QLineEdit()),
-        m_button(new QPushButton("Send"))
+        m_button(new QPushButton("Send")),
+        Logger(logger::Manager::newLogger("OrderExecution"))
     {
         QVBoxLayout *left_layout = new QVBoxLayout();
         QVBoxLayout *right_layout = new QVBoxLayout();
         QHBoxLayout *top_layout = new QHBoxLayout();
+        std::vector<std::string> symbols{ MARKET_NAME };
+
+        for (const std::string &_symbol : symbols)
+            m_cb_symbol->addItem(QString::fromStdString(_symbol));
 
         m_cb_side->addItem("Ask", static_cast<int>(OrderType::Ask));
         m_cb_side->addItem("Bid", static_cast<int>(OrderType::Bid));
 
+        left_layout->addWidget(new QLabel("Symbol:"));
+        left_layout->addWidget(m_cb_symbol);
         left_layout->addWidget(new QLabel("Side:"));
         left_layout->addWidget(m_cb_side);
 
@@ -41,6 +54,24 @@ namespace ui
 
         m_main_lyaout->addLayout(top_layout);
         m_main_lyaout->addWidget(m_button);
+
+        connect(m_button, &QPushButton::clicked, this, &OrderExecution::onSubmit);
+
         setLayout(m_main_lyaout);
     }
+
+    void OrderExecution::onSubmit()
+    {
+        ipc::msg::OrderSingle order{
+            m_cb_symbol->currentData().toString().toStdString(),
+            m_entry_orderid->text().toStdString(),
+            std::stof(m_entry_price->text().toStdString()),
+            std::stof(m_entry_qty->text().toStdString()),
+            static_cast<OrderType>(m_cb_side->currentData().toInt())
+        };
+
+        Logger->log<logger::Level::Info>("Notifiying server of new order: ", order);
+        BackManager::Instance()->send(ipc::Helper::OrderSingle(order));
+    }
 }
+
