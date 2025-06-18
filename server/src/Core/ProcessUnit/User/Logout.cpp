@@ -8,30 +8,19 @@
 namespace pu::user
 {
     LogoutHandler::LogoutHandler(InputNetworkOutput &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("Logout"))
+        : AInputProcess<InputType>("Server/User/Logout"),
+        m_tcp_output(_tcp_output)
     {
     }
 
-    LogoutHandler::QueueInputType &LogoutHandler::getInput()
+    void LogoutHandler::onInput(InputType _input)
     {
-        return m_input;
+        m_tp.enqueue([this, _input] () mutable {
+            process(_input);
+        });
     }
 
-    void LogoutHandler::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    process(std::move(_input));
-                });
-            }
-        }
-        Logger->log<logger::Level::Warning>("Exiting process unit...");
-    }
-
-    bool LogoutHandler::process(InputType &&_input)
+    bool LogoutHandler::process(InputType &_input)
     {
         Logger->log<logger::Level::Info>("Processing message...");
         fix::Logout logout;

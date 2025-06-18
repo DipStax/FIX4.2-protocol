@@ -7,7 +7,7 @@
 namespace pu
 {
     UdpOutputNetwork::UdpOutputNetwork(uint32_t _port)
-        : Logger(logger::Manager::newLogger("UDP-Output"))
+        : AProcessUnit<InputType>("Server/NET/UDP-Output")
     {
         m_socket.connect("localhost", _port);
         if (!m_socket.setBroadcast(true))
@@ -21,7 +21,7 @@ namespace pu
 
     void UdpOutputNetwork::runtime(std::stop_token _st)
     {
-        Logger->log<logger::Level::Info>("Starting process unit...");
+        Logger->log<logger::Level::Info>("Launching process unit runtime");
 
         while (!_st.stop_requested()) {
             auto now = std::chrono::steady_clock::now();
@@ -36,8 +36,9 @@ namespace pu
                 (void)m_socket.send(reinterpret_cast<const std::byte *>(&_val), sizeof(data::UDPPackage));
             }
             clean();
-            sleep(UDP_TICK);
+            std::this_thread::sleep_for(std::chrono::seconds(UDP_TICK));
         }
+        Logger->log<logger::Level::Info>("Exiting process unit runtime");
     }
 
     void UdpOutputNetwork::clean()

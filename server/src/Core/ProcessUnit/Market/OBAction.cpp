@@ -10,35 +10,23 @@
 namespace pu::market
 {
     OBAction::OBAction(OrderBook &_ob, InputNetworkOutput &_output)
-        : m_tcp_output(_output), m_ob(_ob), m_symbol(m_ob.getSymbol()), Logger(logger::Manager::newLogger("Market/" + m_ob.getSymbol() + "/OB-Event"))
+        : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/OB-Action"),
+        m_tcp_output(_output), m_ob(_ob)
     {
     }
 
-    OBAction::QueueInputType &OBAction::getInput()
+    void OBAction::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void OBAction::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-        InputType input;
-
-        while (!_st.stop_requested()) {
-            if (!m_input.empty()) {
-                input = m_input.pop_front();
-                switch (input.Message.at("35")[0])
-                {
-                    case fix::NewOrderSingle::cMsgType: treatNewOrderSingle(input);
-                        break;
-                    // case fix::OrderCancelRequest::cMsgType:
-                    // case fix::OrderCancelReplaceRequest::cMsgType:
-                    // case fix::MarketDataRequest::cMsgType:
-                    //     break;
-                    // default: (void)treatUnknown(input);
-                    //     break;
-                }
-            }
+        switch (_input.Message.at("35")[0])
+        {
+            case fix::NewOrderSingle::cMsgType: treatNewOrderSingle(_input);
+                break;
+            // case fix::OrderCancelRequest::cMsgType:
+            // case fix::OrderCancelReplaceRequest::cMsgType:
+            // case fix::MarketDataRequest::cMsgType:
+            //     break;
+            // default: (void)treatUnknown(input);
+            //     break;
         }
     }
 
@@ -55,7 +43,6 @@ namespace pu::market
         }
 
         obs::OrderInfo info;
-
 
         info.side = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
         info.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
@@ -107,7 +94,7 @@ namespace pu::market
         report.set40_ordType("2");
         report.set44_price(std::to_string(_order.price));
         report.set54_side((_order.side == OrderType::Ask) ? "4" : "3");
-        report.set55_symbol(m_symbol);
+        report.set55_symbol(m_ob.getSymbol());
         report.set151_leavesQty(std::to_string(_result.second));
         report.set150_execType(std::to_string(static_cast<uint8_t>(_result.first)));
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(report));

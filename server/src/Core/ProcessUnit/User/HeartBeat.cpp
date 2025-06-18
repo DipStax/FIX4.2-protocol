@@ -11,7 +11,8 @@
 namespace pu::user
 {
     HeartBeatHandler::HeartBeatHandler(InputNetworkOutput &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("HeartBeat"))
+        : AInputProcess<InputType>("Server/User/HeartBeat"),
+        m_tcp_output(_tcp_output)
     {
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {
             _client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
@@ -20,39 +21,29 @@ namespace pu::user
         m_thread = std::jthread(&HeartBeatHandler::handle, this);
     }
 
-    HeartBeatHandler::QueueInputType &HeartBeatHandler::getInput()
+    void HeartBeatHandler::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void HeartBeatHandler::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () {
-                    switch (_input.Message.at("35")[0]) {
-                        case fix::TestRequest::cMsgType:
-                            break;
-                        case fix::HeartBeat::cMsgType:
-                            processHeartBeat(_input);
-                            break;
-                        default:
-                            Logger->log<logger::Level::Error>("Unknow message", _input.Message.at("35")[0]);
-                            break;
-                    }
-                });
+        m_tp.enqueue([this, _input] () {
+            switch (_input.Message.at("35")[0]) {
+                case fix::TestRequest::cMsgType:
+                    break;
+                case fix::HeartBeat::cMsgType:
+                    processHeartBeat(_input);
+                    break;
+                default:
+                    Logger->log<logger::Level::Error>("Unknow message", _input.Message.at("35")[0]);
+                    break;
             }
-        }
-        Logger->log<logger::Level::Warning>("Exiting process unit...");
+        });
     }
 
     void HeartBeatHandler::onStop()
     {
         if (m_thread.joinable()) {
+            Logger->log<logger::Level::Info>("Requesting stop on the worker thread");
             m_thread.request_stop();
             m_thread.join();
+            Logger->log<logger::Level::Debug>("Worker thread joined");
         }
     }
 
@@ -75,7 +66,7 @@ namespace pu::user
         Logger->log<logger::Level::Info>("Updated client (", *(_input.Client), ") heartbeat");
         if (hb.TestRequest) {
             if (hb.TestValue.has_value()) {
-                if (hb.TestValue.value() != _input.Message[fix::Tag::TestReqId]) {
+                if (hb.TestValue.value() != _input.Message.at(fix::Tag::TestReqId)) {
                     fix::Reject reject;
 
                     reject.set371_refTagId(_input.Message.at(fix::Tag::MsqSeqNum));

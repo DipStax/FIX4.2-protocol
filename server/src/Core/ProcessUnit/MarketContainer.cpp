@@ -3,7 +3,8 @@
 namespace pu
 {
     MarketContainer::MarketContainer(const std::string &_symbol, InputUdp &_udp, InputNetworkOutput &_tcp_output)
-        :// m_obevent(_symbol, _udp, _tcp_output),
+        : AProcessUnit<InputType>("Server/Market/" + _symbol + "/Container"),
+        // m_obevent(_symbol, _udp, _tcp_output),
         m_ob(_symbol),
         m_market(m_ob, _tcp_output),
         m_router(m_ob.getSymbol(), _tcp_output, m_market.getInput())

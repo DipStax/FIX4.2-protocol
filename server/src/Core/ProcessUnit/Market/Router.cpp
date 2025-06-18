@@ -5,36 +5,24 @@
 namespace pu::market
 {
     Router::Router(std::string _symbol, InputNetworkOutput &_tcp_output, InputOBAction &_ob_action)
-        : m_symbol(_symbol), m_tcp_output(_tcp_output), m_ob_action(_ob_action), Logger(logger::Manager::newLogger("Market/" + _symbol + "/Router"))
+        : AInputProcess<InputType>("Server/Market/" + _symbol + "/Router"),
+        m_symbol(_symbol), m_tcp_output(_tcp_output), m_ob_action(_ob_action)
     {
     }
 
-    Router::QueueInputType &Router::getInput()
+    void Router::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void Router::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-        InputType input;
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                input = m_input.pop_front();
-                switch (input.Message.at("35")[0])
-                {
-                    case fix::NewOrderSingle::cMsgType:
-                    case fix::OrderCancelRequest::cMsgType:
-                    case fix::OrderCancelReplaceRequest::cMsgType:
-                        m_ob_action.push(std::move(input));
-                        break;
-                    // case fix::MarketDataRequest::cMsgType:
-                    //     break;
-                    // default: (void)treatUnknown(input);
-                    //     break;
-                }
-            }
+        switch (_input.Message.at("35")[0])
+        {
+            case fix::NewOrderSingle::cMsgType:
+            case fix::OrderCancelRequest::cMsgType:
+            case fix::OrderCancelReplaceRequest::cMsgType:
+                m_ob_action.push(std::move(_input));
+                break;
+            // case fix::MarketDataRequest::cMsgType:
+            //     break;
+            // default: (void)treatUnknown(input);
+            //     break;
         }
     }
 

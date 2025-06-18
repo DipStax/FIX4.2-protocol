@@ -2,30 +2,30 @@
 
 namespace pu::market
 {
-    RefreshSuscribtion::RefreshSuscribtion(OrderBook &_ob, InputNetworkOutput &_output)
-        : m_ob(_ob), m_tcp_output(_output)
-    {
-    }
+    // RefreshSuscribtion::RefreshSuscribtion(OrderBook &_ob, InputNetworkOutput &_output)
+    //     : m_ob(_ob), m_tcp_output(_output)
+    // {
+    // }
 
-    RefreshSuscribtion::QueueInputType &RefreshSuscribtion::getInput()
-    {
-        return m_input;
-    }
+    // RefreshSuscribtion::QueueInputType &RefreshSuscribtion::getInput()
+    // {
+    //     return m_input;
+    // }
 
-    void RefreshSuscribtion::runtime(std::stop_token _st)
-    {
-        InputType input;
+    // void RefreshSuscribtion::runtime(std::stop_token _st)
+    // {
+    //     InputType input;
 
-        while (!_st.stop_requested()) {
-            if (!m_input.empty()) {
-                input = m_input.pop_front();
-                process(input);
-            }
-        }
-    }
+    //     while (!_st.stop_requested()) {
+    //         if (!m_input.empty()) {
+    //             input = m_input.pop_front();
+    //             process(input);
+    //         }
+    //     }
+    // }
 
-    void RefreshSuscribtion::process(InputType &_input)
-    {
+    // void RefreshSuscribtion::process(InputType &_input)
+    // {
         // MarketRefreshInputData &data = std::get<MarketRefreshInputData>(_input.Data);
 
         // if (data.SubType == 0) {
@@ -74,5 +74,5 @@ namespace pu::market
         //                 subs.erase(it);
         //     // what to send???
         // }
-    }
+    // }
 }

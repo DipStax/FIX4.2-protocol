@@ -8,30 +8,19 @@
 namespace pu::user
 {
     LogonHandler::LogonHandler(InputNetworkOutput &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("Logon"))
+        : AInputProcess<InputType>("Server/User/Logon"),
+        m_tcp_output(_tcp_output)
     {
     }
 
-    LogonHandler::QueueInputType &LogonHandler::getInput()
+    void LogonHandler::onInput(InputType _input)
     {
-        return m_input;
+        m_tp.enqueue([this, _input] () mutable {
+            process(_input);
+        });
     }
 
-    void LogonHandler::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                m_tp.enqueue([this, _input = std::move(m_input.pop_front())] () mutable {
-                    process(std::move(_input));
-                });
-            }
-        }
-        Logger->log<logger::Level::Warning>("Exiting process unit...");
-    }
-
-    bool LogonHandler::process(InputType &&_input)
+    bool LogonHandler::process(InputType &_input)
     {
         Logger->log<logger::Level::Info>("Processing message...");
         fix::Logon logon;

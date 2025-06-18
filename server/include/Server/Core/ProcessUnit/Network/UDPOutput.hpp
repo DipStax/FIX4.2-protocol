@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Log/ILogger.hpp"
@@ -21,16 +21,16 @@
 
 namespace pu
 {
-    class UdpOutputNetwork : public IProcessUnit<data::UDPPackage>
+    class UdpOutputNetwork : public AProcessUnit<data::UDPPackage>
     {
         public:
             UdpOutputNetwork(uint32_t _port);
             virtual ~UdpOutputNetwork() = default;
 
-            [[nodiscard]] QueueInputType &getInput();
+            [[nodiscard]] QueueInputType &getInput() final;
 
         protected:
-            void runtime(std::stop_token _st);
+            void runtime(std::stop_token _st) final;
 
         protected:
             void clean();
@@ -41,7 +41,5 @@ namespace pu
             net::INetUdp m_socket;
 
             QueueInputType m_input;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

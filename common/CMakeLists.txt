@@ -48,10 +48,11 @@ add_library(COM_Core STATIC
 
 file(GLOB_RECURSE SRC_Container
     "${CR}/include/Common/Container/**.hpp"
-    "${CR}/Common/Container/**.inl"
+    "${CR}/include/Common/Container/**.inl"
+    "${CR}/src/Container/**.cpp"
 )
 
-add_library(COM_Container INTERFACE
+add_library(COM_Container STATIC
     ${SRC_Container}
 )
 

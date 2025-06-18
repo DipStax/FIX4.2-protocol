@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Message/Message.hpp"
@@ -8,16 +8,14 @@
 
 namespace pu::market
 {
-    class Router : public IProcessUnit<Context<data::MarketRouterInput>>
+    class Router : public AInputProcess<Context<data::MarketRouterInput>>
     {
         public:
             Router(std::string _symbol, InputNetworkOutput &_tcp_output, InputOBAction &_ob_action);
             virtual ~Router() = default;
 
-            QueueInputType &getInput();
-
         protected:
-            void runtime(std::stop_token _st);
+            void onInput(InputType _input) final;
 
         private:
             bool treatNewOrderSingle(InputType &&_input);
@@ -30,7 +28,5 @@ namespace pu::market
 
             QueueInputType m_input;
             InputOBAction &m_ob_action;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

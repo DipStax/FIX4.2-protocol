@@ -3,7 +3,7 @@
 
 #include "Common/Container/ProcessUnit.hpp"
 
-template<class T>
+template<IsProcessUnitBase T>
 template<class ...Ts>
 ProcessUnit<T>::ProcessUnit(Ts &&..._args)
     : T(std::forward<Ts>(_args)...),
@@ -11,13 +11,13 @@ ProcessUnit<T>::ProcessUnit(Ts &&..._args)
 {
 }
 
-template<class T>
+template<IsProcessUnitBase T>
 void ProcessUnit<T>::start()
 {
     m_thread = std::jthread(std::bind_front(&ProcessUnit<T>::process, this));
 }
 
-template<class T>
+template<IsProcessUnitBase T>
 PUStatus ProcessUnit<T>::status(float _to)
 {
     switch (m_future.wait_for(std::chrono::duration<float>(_to)))
@@ -35,7 +35,7 @@ PUStatus ProcessUnit<T>::status(float _to)
     }
 }
 
-template<class T>
+template<IsProcessUnitBase T>
 void ProcessUnit<T>::stop()
 {
     if (m_thread.joinable()) {
@@ -46,15 +46,19 @@ void ProcessUnit<T>::stop()
         m_future.wait();
 }
 
-template<class T>
+template<IsProcessUnitBase T>
 void ProcessUnit<T>::process(std::stop_token _st)
 {
     try {
+        this->Logger->template log<logger::Level::Info>("Starting process unit...");
         T::runtime(_st);
     } catch (...) {
+        this->Logger->template log<logger::Level::Fatal>("Process unit have crashed");
         m_promise.set_exception(std::current_exception());
     }
 
-    if constexpr (IsPUStopable<T>)
+    if constexpr (IsPUStopable<T>) {
+        this->Logger->template log<logger::Level::Debug>("Calling OnStop function for gracefull exit");
         this->onStop();
+    }
 }

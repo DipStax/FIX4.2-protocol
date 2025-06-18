@@ -4,6 +4,7 @@
 #include <thread>
 
 #include "Common/Container/IProcessUnitStopable.hpp"
+#include "Common/Container/AProcessUnitBase.hpp"
 
 enum class PUStatus : uint8_t
 {
@@ -17,6 +18,9 @@ template<class T>
 concept IsPUStopable = std::is_base_of_v<pu::IProcessUnitStopable, T>;
 
 template<class T>
+concept IsProcessUnitBase = std::is_base_of_v<pu::AProcessUnitBase, T>;
+
+template<IsProcessUnitBase T>
 class ProcessUnit : public T
 {
     public:

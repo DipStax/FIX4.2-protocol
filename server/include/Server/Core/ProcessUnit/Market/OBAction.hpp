@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -9,7 +9,7 @@
 namespace pu::market
 {
     /// @brief Pipeline managing the OrderBook.
-    class OBAction : public IProcessUnit<Context<data::OBActionInput>>
+    class OBAction : public AInputProcess<Context<data::OBActionInput>>
     {
         public:
             /// @brief Construct the pipeline.
@@ -19,10 +19,8 @@ namespace pu::market
             OBAction(OrderBook &_ob, InputNetworkOutput &_output);
             virtual ~OBAction() = default;
 
-            [[nodiscard]] QueueInputType &getInput();
-
         protected:
-            void runtime(std::stop_token _st);
+            void onInput(InputType _input) final;
 
         private:
 
@@ -43,8 +41,6 @@ namespace pu::market
             OrderBook &m_ob;
 
             const std::string m_symbol;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
 
             ThreadPool<1> m_tp{};
     };

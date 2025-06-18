@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -21,27 +21,21 @@ namespace data
 
 namespace pu::user
 {
-    class LogonHandler : public IProcessUnit<Context<data::LogonInput>>
+    class LogonHandler : public AInputProcess<Context<data::LogonInput>>
     {
         public:
             LogonHandler(InputNetworkOutput &_tcp_output);
             virtual ~LogonHandler() = default;
 
-            QueueInputType &getInput();
-
         protected:
-            std::string getThreadName() const;
-
-            void runtime(std::stop_token _st);
+            void onInput(InputType _input) final;
 
         private:
-            bool process(InputType &&_input);
+            bool process(InputType &_input);
 
             QueueInputType m_input;
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_LOGON_TP_SIZE> m_tp;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }
