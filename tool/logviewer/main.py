@@ -134,13 +134,13 @@ class LogContainer:
     def __init__(self, root: tk.Tk) -> None:
         self.frame: tk.Frame = tk.Frame(root)
         self.frame.pack(fill=tk.BOTH, expand=True)
-        self.log_text = tk.Text(self.frame)
-        self.log_text.pack(fill=tk.BOTH, expand=True)
-        # self.log_text.config(state="disabled")
 
         scrollbar = tk.Scrollbar(self.frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.log_text.config(yscrollcommand=scrollbar.set)
+
+        self.log_text = tk.Text(self.frame, yscrollcommand=scrollbar.set)
+        self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
         scrollbar.config(command=self.log_text.yview)
 
         self.logfile_info: List[LogFileInfo] = []
@@ -148,6 +148,8 @@ class LogContainer:
     def refresh(self, _) -> None:
         logconf: LogConfiguration = LogConfiguration()
         tracked_file: Set[str] = set()
+        self.log_text.config(state="normal")
+        self.log_text.delete("1.0", tk.END)
 
         for folder in logconf.inc_folder:
             for root, _, files in os.walk(folder):
@@ -170,20 +172,21 @@ class LogContainer:
             self.logfile_info.append(LogFileInfo(file, color))
 
 
-        self.log_text.delete("1.0", tk.END)
         log_list: List[LogFileInfo.LogLineInfo] = []
         for index, logfile_info in enumerate(self.logfile_info):
-            for line in logfile_info.lines:
-                tag_name: str = f"addr_{index}"
-                log_text: str = f"[{line.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] - [{line.level}] ({line.address}) {line.message}\n"
-                print(f"Inserting: {log_text}")
-                start_index = self.log_text.index("end")
-                self.log_text.insert("end", log_text)
-                end_index = self.log_text.index("end")
+            log_list.extend(logfile_info.lines)
 
-                print(f"tag: '{start_index}' '{end_index}' -> {line.color}")
-                self.log_text.tag_add(tag_name, start_index, end_index)
-                self.log_text.tag_config(tag_name, background=line.color)
+        log_list.sort(key=lambda log: log.timestamp)
+
+        for index, line in enumerate(log_list):
+            tag_name: str = f"addr_{index}"
+            log_text: str = f"[{line.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] - [{line.level}] ({line.address}) {line.message}\n"
+
+            self.log_text.insert(tk.END, log_text)
+            self.log_text.tag_add(tag_name, f"{index}.0", f"{index}.end")
+            self.log_text.tag_config(tag_name, background=line.color)
+
+        self.log_text.config(state="disabled")
 
     @staticmethod
     def _generate_setcolor(n: int) -> Set[str]:
