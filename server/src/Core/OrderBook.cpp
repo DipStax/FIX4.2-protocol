@@ -31,11 +31,8 @@ std::pair<OrderStatus, Quantity> OrderBook::add(const obs::OrderInfo &_order)
         Logger->log<logger::Level::Error>("Order side not supported: ", static_cast<int>(_order.side));
         return { OrderStatus::Rejected, 0 };
     }
-    if (qty != 0) {
-        if (qty == _order.order.quantity)
-            return { OrderStatus::New, qty };
-        return { OrderStatus::PartiallyFilled, qty };
-    }
+    if (qty != 0)
+        return { OrderStatus::New, qty };
     return { OrderStatus::Filled, 0 };
 }
 

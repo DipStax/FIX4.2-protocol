@@ -63,7 +63,7 @@ namespace ui
     void OrderExecution::onSubmit()
     {
         ipc::msg::OrderSingle order{
-            m_cb_symbol->currentData().toString().toStdString(),
+            m_cb_symbol->currentText().toStdString(),
             m_entry_orderid->text().toStdString(),
             std::stof(m_entry_price->text().toStdString()),
             std::stof(m_entry_qty->text().toStdString()),

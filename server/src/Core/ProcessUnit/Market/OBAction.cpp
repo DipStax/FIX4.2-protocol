@@ -35,7 +35,10 @@ namespace pu::market
         std::pair<bool, fix::Reject> reject = fix::NewOrderSingle::Verify(_input.Message);
 
         if (reject.first) {
-            Logger->log<logger::Level::Info>("(New Order Single) Request verification failed");
+            if (reject.second.contains(fix::Tag::Text))
+                Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
+            else
+                Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
             reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
             Logger->log<logger::Level::Debug>("(Logout) Reject from (", *(_input.Client), ") moving to TCP output");
             m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));

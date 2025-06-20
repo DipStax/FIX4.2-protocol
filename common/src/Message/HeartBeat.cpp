@@ -12,6 +12,8 @@ namespace fix
 
     std::pair<bool, Reject> HeartBeat::Verify(const Serializer::AnonMessage &_msg)
     {
+        std::ignore = _msg;
+
         return { false, {} };
     }
 

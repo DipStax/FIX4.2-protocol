@@ -13,13 +13,13 @@ namespace fix
     {
         // need to verify transaction time, symbol
         std::pair<bool, Reject> reject = utils::Has<Tag::ClOrdID, Tag::HandlInst,
-            Tag::OrderQty, Tag::OrdType, Tag::Price, Tag::Side, Tag::Symbol, Tag::TransactTime>(_msg);
+            Tag::OrderQty, Tag::OrdType, Tag::Price, Tag::Side, Tag::Symbol>(_msg);
 
         reject.second.set45_refSeqNum(NewOrderSingle::MsgType);
         if (reject.first)
             return reject;
         reject = verify_all<Tag::ClOrdID, Tag::HandlInst, Tag::OrderQty, Tag::OrdType,
-            Tag::Price, Tag::Side, Tag::Symbol, Tag::TransactTime>(_msg);
+            Tag::Price, Tag::Side, Tag::Symbol>(_msg);
         return reject;
     }
 
@@ -57,7 +57,6 @@ namespace fix
     {
         m_params.append({ Tag::Symbol, _val });
     }
-    
 
     void NewOrderSingle::set60_transactTime(const std::string &_val)
     {
