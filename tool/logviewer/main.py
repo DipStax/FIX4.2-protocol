@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 import tkinter.filedialog as fd
 import json
 import os
@@ -56,7 +57,7 @@ class LogConfiguration(metaclass=SingletonMeta):
 
 
 class TopLevelMenu:
-    RefreshLogConfig: str = "<<refresh-log-config>>"
+    RefreshLogConfigEvent: str = "<<refresh-log-config>>"
 
     def __init__(self, root: tk.Tk) -> None:
         self.toplevel_menu = tk.Menu(root)
@@ -76,7 +77,7 @@ class TopLevelMenu:
 
         if logconf.include_folder(fd.askdirectory(parent=root, title="Include a folder")):
             print(f"log config: {logconf}")
-            self.toplevel_menu.event_generate(self.RefreshLogConfig)
+            self.toplevel_menu.event_generate(self.RefreshLogConfigEvent)
 
 
     def exclude_folder(self):
@@ -84,7 +85,7 @@ class TopLevelMenu:
 
         if logconf.exclude_folder(fd.askdirectory(parent=root, title="Exclude a folder")):
             print(f"log config: {logconf}")
-            self.toplevel_menu.event_generate(self.RefreshLogConfig)
+            self.toplevel_menu.event_generate(self.RefreshLogConfigEvent)
 
 class LogFileInfo:
     class LogLineInfo:
@@ -130,10 +131,10 @@ class LogFileInfo:
                     print(f"Line data: {line_info}")
                     self.lines.append(line_info)
 
-class LogContainer:
-    def __init__(self, root: tk.Tk) -> None:
+class LogViewer:
+    def __init__(self, root: tk.Frame) -> None:
         self.frame: tk.Frame = tk.Frame(root)
-        self.frame.pack(fill=tk.BOTH, expand=True)
+        self.frame.pack(side=tk.RIGHT, fill=tk.Y)
 
         scrollbar = tk.Scrollbar(self.frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -143,37 +144,17 @@ class LogContainer:
 
         scrollbar.config(command=self.log_text.yview)
 
-        self.logfile_info: List[LogFileInfo] = []
-
-    def refresh(self, _) -> None:
-        logconf: LogConfiguration = LogConfiguration()
-        tracked_file: Set[str] = set()
+    def refresh(self, tracked_file: List[str]) -> None:
         self.log_text.config(state="normal")
         self.log_text.delete("1.0", tk.END)
+        logfile_info: List[LogFileInfo] = []
 
-        for folder in logconf.inc_folder:
-            for root, _, files in os.walk(folder):
-                if any(os.path.commonpath([root, exc]) == exc for exc in logconf.exc_folder):
-                    continue
-                for f in files:
-                    full_path = os.path.abspath(os.path.join(root, f))
-                    if full_path not in logconf.exc_file:
-                        tracked_file.add(full_path)
-        for file in logconf.inc_file:
-            full_path = os.path.abspath(file)
-            if full_path not in logconf.exc_file:
-                tracked_file.add(full_path)
-
-        print("--------------------")
-        print(f"Tracked file: {tracked_file}")
-        print("--------------------")
         color_set: Set[str] = self._generate_setcolor(len(tracked_file))
         for file, color in zip(tracked_file, color_set):
-            self.logfile_info.append(LogFileInfo(file, color))
-
+            logfile_info.append(LogFileInfo(file, color))
 
         log_list: List[LogFileInfo.LogLineInfo] = []
-        for index, logfile_info in enumerate(self.logfile_info):
+        for index, logfile_info in enumerate(logfile_info):
             log_list.extend(logfile_info.lines)
 
         log_list.sort(key=lambda log: log.timestamp)
@@ -196,13 +177,69 @@ class LogContainer:
             color_set.add("#"+("%06x" % random.randint(0, 255 ** 3)))
         return color_set
 
+class LogInfoBar:
+    LogRefreshDisplayEvent: str = "<<log-refresh-display>>"
+    LogRefreshFileEvent: str = "<<log-refresh-file>>"
+
+    def __init__(self, root: tk.Frame):
+        self.frame = tk.Frame(root, width=300)
+        self.frame.pack(side=tk.LEFT, fill=tk.Y)
+        self.frame.pack_propagate(False)
+
+        self.tree = ttk.Treeview(self.frame)
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+
+        self.refresh = tk.Button(self.frame, text="Refresh", command=self.onRefreshClick)
+        self.refresh.pack(fill=tk.BOTH, expand=True)
+
+    def onRefreshClick(self):
+        print("Refresh requested")
+        self.frame.event_generate(self.LogRefreshDisplayEvent)
+
+class LogContainer:
+    def __init__(self, root: tk.Tk):
+        self.frame: tk.Frame = tk.Frame(root)
+        self.frame.pack(fill=tk.BOTH, expand=True)
+
+        self.viewer: LogViewer = LogViewer(self.frame)
+        self.viewbar: LogInfoBar = LogInfoBar(self.frame)
+
+        self.tracked_file: Set[str] = set()
+        self.refreshLog(None)
+
+        self.viewbar.frame.bind(LogInfoBar.LogRefreshDisplayEvent, self.refreshDisplay)
+        self.viewbar.frame.bind(LogInfoBar.LogRefreshFileEvent, self.refreshLog)
+
+    def refreshLog(self, _) -> None:
+        logconf: LogConfiguration = LogConfiguration()
+
+        for folder in logconf.inc_folder:
+            for root, _, files in os.walk(folder):
+                if any(os.path.commonpath([root, exc]) == exc for exc in logconf.exc_folder):
+                    continue
+                for f in files:
+                    full_path = os.path.abspath(os.path.join(root, f))
+                    if full_path not in logconf.exc_file:
+                        self.tracked_file.add(full_path)
+        for file in logconf.inc_file:
+            full_path = os.path.abspath(file)
+            if full_path not in logconf.exc_file:
+                self.tracked_file.add(full_path)
+
+        print("--------------------")
+        print(f"Tracked file: {self.tracked_file}")
+        print("--------------------")
+        self.viewbar.frame.event_generate(LogInfoBar.LogRefreshDisplayEvent)
+
+    def refreshDisplay(self, _) -> None:
+        self.viewer.refresh(self.tracked_file)
 
 if __name__ == "__main__":
     root = tk.Tk()
 
     menu: TopLevelMenu = TopLevelMenu(root)
-    container: LogContainer = LogContainer(root)
+    logcontainer: LogContainer = LogContainer(root)
 
-    menu.toplevel_menu.bind(TopLevelMenu.RefreshLogConfig, container.refresh)
+    menu.toplevel_menu.bind(TopLevelMenu.RefreshLogConfigEvent, logcontainer.refreshLog)
 
     root.mainloop()
