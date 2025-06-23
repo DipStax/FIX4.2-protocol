@@ -123,7 +123,7 @@ class LogFileInfo:
         self.path = path
         self.lines: List[LogFileInfo.LogLineInfo] = []
 
-        print(f"Generating log info for file: {self.path }")
+        print(f"Generating log info for file: {self.path}")
         with open(self.path) as file:
             for line in file:
                 line_info: LogFileInfo.LogLineInfo = LogFileInfo.LogLineInfo(line.rstrip(), color)
@@ -189,8 +189,24 @@ class LogInfoBar:
         self.tree = ttk.Treeview(self.frame)
         self.tree.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
 
-        self.refresh = tk.Button(self.frame, text="Refresh", command=self.onRefreshClick)
-        self.refresh.pack(fill=tk.BOTH, expand=True)
+        self.refresh_btn = tk.Button(self.frame, text="Refresh", command=self.onRefreshClick)
+        self.refresh_btn.pack(fill=tk.BOTH, expand=True)
+
+    def refresh(self, tracked_file: List[str]) -> None:
+        for filepath in tracked_file:
+            parts: List[str] = filepath.strip(os.sep).split(os.sep)
+            current = ""
+            for part in parts:
+                children = self.tree.get_children(current)
+                found = None
+                for child in children:
+                    if self.tree.item(child, "text") == part:
+                        found = child
+                        break
+                if found:
+                    current = found
+                else:
+                    current = self.tree.insert(current, "end", text=part, open=True)
 
     def onRefreshClick(self):
         print("Refresh requested")
@@ -233,6 +249,7 @@ class LogContainer:
 
     def refreshDisplay(self, _) -> None:
         self.viewer.refresh(self.tracked_file)
+        self.viewbar.refresh(self.tracked_file)
 
 if __name__ == "__main__":
     root = tk.Tk()
