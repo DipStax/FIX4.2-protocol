@@ -17,8 +17,10 @@ class SingletonMeta(type):
 
 class LogFileInfo:
     def __init__(self, path: str, relative_to: str) -> None:
-        self.abs_path = path
-        self.rel_path = os.path.relpath(path, relative_to)
+        self.abs_path = os.path.join(relative_to, path)
+        self.rel_path = path
+
+        print(f"{self.abs_path} - {self.rel_path} - {relative_to}")
 
         self.color: str = "#"+("%06x" % random.randint(0, 255 ** 3))
         self.showed: bool = True
@@ -28,8 +30,8 @@ class LogFileInfo:
 
 class LogFolderInfo:
     def __init__(self, path: str, relative_to: str) -> None:
-        self.abs_path = path
-        self.rel_path = os.path.relpath(path, relative_to)
+        self.abs_path = os.path.join(relative_to, path)
+        self.rel_path = path
 
         self.showed: bool = True
 
@@ -209,30 +211,27 @@ class LogViewer(tk.Frame):
 
     def refresh_display(self, _) -> None:
         logconf: LogViewerInstance = LogViewerInstance()
+        self.lines = []
 
         for inc_file in logconf.inc_file:
             with open(inc_file.abs_path) as file:
                 for line in file:
-                    line_info: LogFileInfo.LogLineInfo = LogFileInfo.LogLineInfo(line.rstrip(), inc_file.color)
+                    line_info: LogViewer.LogLineInfo = LogViewer.LogLineInfo(line.rstrip(), inc_file.color)
                     if line_info.valid:
                         self.lines.append(line_info)
-
         self.lines.sort(key=lambda log: log.timestamp)
-        self.update_display()
 
-    def update_display(self):
-        self.log_text.config(state="normal")
+        self.log_text.config(state=tk.NORMAL)
         self.log_text.delete("1.0", tk.END)
-
         for index, line in enumerate(self.lines):
             tag_name: str = f"addr_{index}"
             log_text: str = f"[{line.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] - [{line.level}] ({line.address}) {line.message}\n"
 
             self.log_text.insert(tk.END, log_text)
-            self.log_text.tag_add(tag_name, f"{index}.0", f"{index}.end")
+            self.log_text.tag_add(tag_name, f"{index + 1}.0", f"{index + 1}.end")
             self.log_text.tag_config(tag_name, background=line.color)
 
-        self.log_text.config(state="disabled")
+        self.log_text.config(state=tk.DISABLED)
 
 if __name__ == "__main__":
     root: tk.Tk = tk.Tk()
