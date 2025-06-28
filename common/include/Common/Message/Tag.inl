@@ -96,11 +96,12 @@ namespace fix
             Logon::cMsgType,
             HeartBeat::cMsgType,
             NewOrderSingle::cMsgType,
-            OrderCancelRequest::cMsgType,
-            OrderCancelReplaceRequest::cMsgType,
-            MarketDataRequest::cMsgType,
+            // OrderCancelRequest::cMsgType,
+            // OrderCancelReplaceRequest::cMsgType,
+            // MarketDataRequest::cMsgType,
             Logout::cMsgType,
             TestRequest::cMsgType,
+            BusinessMessageReject::cMsgType,
             Reject::cMsgType
         };
         constexpr const size_t size_type = sizeof(type);

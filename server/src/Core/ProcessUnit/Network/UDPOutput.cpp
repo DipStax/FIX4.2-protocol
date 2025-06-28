@@ -27,7 +27,7 @@ namespace pu
             auto now = std::chrono::steady_clock::now();
 
             for (size_t it = 0; it < UDP_MAX_MSG && !m_input.empty(); it++) {
-                Logger->log<logger::Level::Info>("New notification to be broadcast: ", m_input.front());
+                // Logger->log<logger::Level::Info>("New notification to be broadcast: ", m_input.front());
                 m_message.emplace_back(now, m_input.pop_front());
             }
             if (m_message.size())
@@ -49,7 +49,7 @@ namespace pu
 
         for (auto it = m_message.begin(); it != m_message.end();) {
             if (std::chrono::duration_cast<std::chrono::seconds>(now - it->first).count() >= 2) {
-                Logger->log<logger::Level::Info>("Cleaning message:", it->second);
+                // Logger->log<logger::Level::Info>("Cleaning message:", it->second);
                 it = m_message.erase(it);
                 cleaned++;
             } else {

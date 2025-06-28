@@ -9,8 +9,8 @@ namespace ipc::msg
     {
         std::string symbol;
         std::string orderId;
-        float price;
-        float quantity;
+        Price price;
+        Quantity quantity;
         OrderType type;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const OrderSingle &_order);

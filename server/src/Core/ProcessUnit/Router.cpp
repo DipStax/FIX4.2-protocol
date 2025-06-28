@@ -27,6 +27,8 @@ namespace pu
         std::pair<bool, fix::Reject> reject;
 
         reject = fix::Header::Verify(_input.Message, _input.Client->getUserId(), PROVIDER_NAME, _input.Client->getSeqNumber());
+
+        _input.Client->nextSeqNumber();
         if (reject.first) {
             if (reject.second.contains(fix::Tag::Text))
                 Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
@@ -35,7 +37,6 @@ namespace pu
             m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
             return;
         }
-        _input.Client->nextSeqNumber();
 
         Logger->log<logger::Level::Debug>("Header verification validated");
         Logger->log<logger::Level::Info>("Message from: (", *(_input.Client), ") with type: ", _input.Message.at(fix::Tag::MsgType));

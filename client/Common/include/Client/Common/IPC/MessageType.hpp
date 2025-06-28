@@ -8,7 +8,9 @@ namespace ipc
     {
         Status,
         Logon,
-        OrderSingle
+        OrderSingle,
+        ExecNew,
+        ExecEvent,
     };
 
     net::Buffer &operator<<(net::Buffer &_buffer, const MessageType &_type);

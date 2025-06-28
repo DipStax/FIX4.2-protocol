@@ -10,7 +10,7 @@ namespace pu
     class Router : public AInputProcess<TransitMessage>
     {
         public:
-            Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth);
+            Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth, QueueTransit &_exec);
             virtual ~Router() = default;
 
         protected:
@@ -18,12 +18,13 @@ namespace pu
 
         private:
             bool unknownMessage(const InputType &_input);
-            bool treatReject(const InputType &_input);
 
-            QueueTransit m_input;
+            bool treatReject(const InputType &_input);
+            bool treatBusinessReject(InputType &_input);
 
             QueueMessage &m_tcp_output;
             QueueTransit &m_heartbeat;
             QueueTransit &m_auth;
+            QueueTransit &m_execution;
     };
 }

@@ -45,15 +45,16 @@ namespace pu
 
         User &user = User::Instance();
         User::HeartBeatInfo &hb_info = user.getHeartBeatInfo();
-        ipc::msg::Logon ipc_logon{};
 
         hb_info.Elapsing = utils::to<float>(_input.at(fix::Tag::HeartBtInt));
         Logger->log<logger::Level::Debug>("Using Elapsing as: ", hb_info.Elapsing);
         user.login(_input.at(fix::Tag::TargetCompId));
 
-        ipc_logon.UserId = user.getUserId();
-        ipc_logon.SeqNum = static_cast<uint32_t>(user.getSeqNumber());
-        ipc_logon.HeartBeat = hb_info.Elapsing;
+        ipc::msg::Logon ipc_logon{
+            user.getUserId(),
+            static_cast<uint32_t>(user.getSeqNumber()),
+            hb_info.Elapsing
+        };
         FrontManager::Instance().notify(ipc::Helper::Logon(ipc_logon));
         return true;
     }

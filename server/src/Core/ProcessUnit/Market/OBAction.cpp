@@ -55,20 +55,14 @@ namespace pu::market
 
         Logger->log<logger::Level::Info>("(New) New order: ", info.order, " at price: ", info.price, " on side: ", static_cast<int>(info.side)); // todo log
 
-        std::pair<OrderStatus, Quantity> result = m_ob.add(info);
-        switch (result.first) {
-            case OrderStatus::Filled:
-            case OrderStatus::PartiallyFilled:
-            case OrderStatus::New:
-                orderValidated(_input, info, result);
-                break;
-            case OrderStatus::Rejected: rejectOrderIdExist(_input, info);
-                return false;
-            default:
-                Logger->log<logger::Level::Warning>("Not supposed to have other OrderStatus");
-                return false;
+        if (!m_ob.has(info.order.orderId)) {
+            acknowledgeOrder(_input, info);
+            m_ob.add(info);
+            return true;
+        } else {
+            rejectOrderIdExist(_input, info);
+            return false;
         }
-        return true;
     }
 
     void OBAction::rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order)
@@ -84,22 +78,23 @@ namespace pu::market
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
     }
 
-    void OBAction::orderValidated(InputType &_input, const obs::OrderInfo &_order, const std::pair<OrderStatus, Quantity> &_result)
+    void OBAction::acknowledgeOrder(InputType &_input, const obs::OrderInfo &_order)
     {
         fix::ExecutionReport report{};
 
-        report.set14_cumQty(std::to_string(_order.order.quantity - _result.second));
+        report.set6_avgPx("0");
+        report.set14_cumQty("0");
         report.set17_execID();
         report.set20_execTransType("0");
         report.set38_orderQty(std::to_string(_order.order.quantity));
         report.set37_orderID(_order.order.orderId);
-        report.set39_ordStatus(std::to_string(static_cast<uint8_t>(_result.first)));
+        report.set39_ordStatus(std::to_string(static_cast<char>(OrderStatus::New)));
         report.set40_ordType("2");
         report.set44_price(std::to_string(_order.price));
         report.set54_side((_order.side == OrderType::Ask) ? "4" : "3");
         report.set55_symbol(m_ob.getSymbol());
-        report.set151_leavesQty(std::to_string(_result.second));
-        report.set150_execType(std::to_string(static_cast<uint8_t>(_result.first)));
+        report.set150_execType(std::to_string(static_cast<char>(OrderStatus::New)));
+        report.set151_leavesQty(std::to_string(_order.order.quantity));
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(report));
     }
 

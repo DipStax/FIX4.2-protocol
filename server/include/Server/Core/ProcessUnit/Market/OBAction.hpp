@@ -32,7 +32,7 @@ namespace pu::market
             // bool runCancel(const InputType &_data);
 
             void rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order);
-            void orderValidated(InputType &_input, const obs::OrderInfo &_order, const std::pair<OrderStatus, Quantity> &_result);
+            void acknowledgeOrder(InputType &_input, const obs::OrderInfo &_order);
 
             InputNetworkOutput &m_tcp_output;
 

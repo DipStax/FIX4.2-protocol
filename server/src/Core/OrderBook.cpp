@@ -9,12 +9,10 @@ OrderBook::OrderBook(const std::string &_name)
 {
 }
 
-std::pair<OrderStatus, Quantity> OrderBook::add(const obs::OrderInfo &_order)
+bool OrderBook::add(const obs::OrderInfo &_order)
 {
     Quantity qty = 0;
 
-    if (has(_order.order.orderId))
-        return { OrderStatus::Rejected, 0 };
     if (_order.side == OrderType::Ask) {
         qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
         if (qty != 0) {
@@ -29,11 +27,9 @@ std::pair<OrderStatus, Quantity> OrderBook::add(const obs::OrderInfo &_order)
         }
     } else {
         Logger->log<logger::Level::Error>("Order side not supported: ", static_cast<int>(_order.side));
-        return { OrderStatus::Rejected, 0 };
+        return false;
     }
-    if (qty != 0)
-        return { OrderStatus::New, qty };
-    return { OrderStatus::Filled, 0 };
+    return true;
 }
 
 bool OrderBook::has(const OrderId &_orderId)

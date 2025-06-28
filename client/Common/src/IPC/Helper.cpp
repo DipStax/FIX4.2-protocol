@@ -31,10 +31,23 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::OrderSingle,
-            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(float) * 2 + sizeof(uint8_t))
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(double) * 2 + sizeof(uint8_t))
         };
 
         buffer << header << _order;
         return buffer;
     }
+
+    static net::Buffer ExecutionEvent(const msg::Execution &_exec, ipc::MessageType _type)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            _type,
+            static_cast<uint32_t>(sizeof(Price) + sizeof(Quantity) + _exec.symbol.size() + _exec.orderId.size())
+        };
+
+        buffer << header << _exec;
+        return buffer;
+    }
+
 }

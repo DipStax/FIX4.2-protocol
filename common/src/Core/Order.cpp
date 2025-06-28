@@ -26,5 +26,5 @@ std::ostream &operator<<(std::ostream &_os, OrderType _type)
 
 std::ostream &operator<<(std::ostream &_os, const OrderClient &_order)
 {
-    return _os << "{ symbol: " << _order.symbol << ", id: " << _order.orderId << ", quantity: " << _order.quantity << ", status: " << _order.status << ", type: " << _order.type << " }";
+    return _os << "{ symbol: " << _order.symbol << ", id: " << _order.orderId << ", quantity: " << _order.quantity << ", status: " << static_cast<char>(_order.status) << ", type: " << _order.type << " }";
 }

@@ -6,7 +6,7 @@
 
 using UserId = std::string;
 using OrderId = std::string;
-using Quantity = uint64_t;
+using Quantity = uint32_t;
 using Side = uint8_t;
 
 struct Order
@@ -24,13 +24,13 @@ using OrderList = std::list<Order>;
 /// @brief Available value for OrdStatus [39](https://www.onixs.biz/fix-dictionary/4.2/tagNum_39.html).
 enum OrderStatus
 {
-    New = 0,
+    New = '0',
     PartiallyFilled,
     Filled,
-    Canceld = 4,
+    Canceld = '4',
     Replaced,
     Pending,
-    Rejected = 8
+    Rejected = '8'
 };
 
 enum class OrderType : uint8_t

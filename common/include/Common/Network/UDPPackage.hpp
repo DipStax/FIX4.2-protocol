@@ -35,5 +35,5 @@ namespace data
     };
     #pragma pack (pop)
 
-    std::ostream &operator<<(std::ostream &_os, const UDPPackage &_package);
+    // std::ostream &operator<<(std::ostream &_os, const UDPPackage &_package);
 }
