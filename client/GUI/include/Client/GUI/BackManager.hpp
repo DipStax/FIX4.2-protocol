@@ -4,9 +4,12 @@
 #include <QThread>
 #include <memory>
 
+#include "Common/Container/ProcessUnit.hpp"
 #include "Common/Network/Socket.hpp"
 #include "Common/Network/Buffer.hpp"
 #include "Common/Log/ILogger.hpp"
+
+#include "Client/Common/IPC/Message/Message.hpp"
 
 class BackManager : public QObject
 {
@@ -20,17 +23,20 @@ class BackManager : public QObject
         void send(const net::Buffer &_buffer);
 
     signals:
-        void received(net::Buffer _buffer);
-        void closed();
+        void received_Status(PUStatus _status);
+        void received_Logon(ipc::msg::Logon _exec);
+        void received_ExecutionNew(ipc::msg::Execution _exec);
+        void received_ExecutionEvent(ipc::msg::Execution _exec);
 
     protected:
         BackManager(QObject *_parent = nullptr);
 
     private:
+        void ipcReceived(net::Buffer &_buffer);
+
         std::shared_ptr<net::UnixStream> m_socket = nullptr;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 
         inline static BackManager *m_instance = nullptr;
-void extra(int &error, int &retFlag);
 };

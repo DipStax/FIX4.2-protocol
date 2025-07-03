@@ -7,8 +7,11 @@
 #include <QPushButton>
 #include <QProgressBar>
 
-#include "Common/Network/Buffer.hpp"
+#include "Client/Common/IPC/Message/Logon.hpp"
+
+#include "Common/Container/ProcessUnit.hpp"
 #include "Common/Log/ILogger.hpp"
+#include "Common/Network/Buffer.hpp"
 
 namespace ui
 {
@@ -21,12 +24,14 @@ namespace ui
             ~LoginScreen() = default;
 
         public slots:
-            void backNotification(net::Buffer _buffer);
+            void backNotifyStatus(PUStatus _status);
+            void backNotifyLogon(ipc::msg::Logon _logon);
 
         signals:
             void requestConnection();
 
         private:
+
             void onSubmit();
 
             QVBoxLayout *m_layout = nullptr;

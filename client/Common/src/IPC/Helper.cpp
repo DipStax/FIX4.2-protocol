@@ -38,7 +38,7 @@ namespace ipc
         return buffer;
     }
 
-    static net::Buffer ExecutionEvent(const msg::Execution &_exec, ipc::MessageType _type)
+    net::Buffer Helper::ExecutionEvent(const msg::Execution &_exec, ipc::MessageType _type)
     {
         net::Buffer buffer;
         ipc::Header header{

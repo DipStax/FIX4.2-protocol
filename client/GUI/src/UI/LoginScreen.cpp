@@ -8,7 +8,6 @@
 #include "Client/Common/IPC/Header.hpp"
 #include "Client/Common/IPC/Helper.hpp"
 
-#include "Common/Container/ProcessUnit.hpp"
 #include "Common/Log/Manager.hpp"
 
 namespace ui
@@ -44,42 +43,39 @@ namespace ui
         setWindowTitle("FIX4.2 Login");
     }
 
-    void LoginScreen::backNotification(net::Buffer _buffer)
+    void LoginScreen::backNotifyStatus(PUStatus _status)
     {
-        ipc::Header header;
+        ipc::msg::Logon logon{};
 
-        Logger->log<logger::Level::Verbose>("New notification from backend");
-        _buffer >> header;
-        Logger->log<logger::Level::Debug>("Message received: (MsgType: ", static_cast<int>(header.MsgType), ", length: ", header.BodySize, ")");
-        if (header.MsgType == ipc::MessageType::Status) {
-            uint8_t status;
-            PUStatus pustatus;
-
-            _buffer >> status;
-            pustatus = static_cast<PUStatus>(status);
-            Logger->log<logger::Level::Info>("Back status: ", static_cast<int>(pustatus));
-            m_progress->setValue(status);
-            if (pustatus == PUStatus::Running) {
-                ipc::msg::Logon logon{
+        m_progress->setValue(static_cast<uint8_t>(_status));
+        switch (_status) {
+            case PUStatus::Initialize: m_progress->setValue(1);
+                break;
+            case PUStatus::Running:
+                m_progress->setValue(2);
+                logon = {
                     m_uid_entry->text().toStdString(),
                     static_cast<uint32_t>(std::stoul(m_seqnum_entry->text().toStdString())),
                     std::stof(m_hb_entry->text().toStdString())
                 };
 
                 Logger->log<logger::Level::Info>("Sending request to login to the backend");
+                disconnect(BackManager::Instance(), &BackManager::received_Status, this, &LoginScreen::backNotifyStatus);
+                connect(BackManager::Instance(), &BackManager::received_Logon, this, &LoginScreen::backNotifyLogon);
                 BackManager::Instance()->send(ipc::Helper::Logon(logon));
-                m_progress->setValue(3);
-            }
-        } else if (header.MsgType == ipc::MessageType::Logon) {
-            ipc::msg::Logon logon;
-
-            _buffer >> logon;
-            Logger->log<logger::Level::Info>("Received validation of logon with: { userId: ", logon.UserId, ", seqnum: ", logon.SeqNum, ", heartbeat: ", logon.HeartBeat, " }");
-            m_progress->setValue(4);
-            accept();
-        } else {
-            Logger->log<logger::Level::Warning>("Unknow signal from back during login setup");
+                break;
+            case PUStatus::Unknown:
+            case PUStatus::Stop:
+                Logger->log<logger::Level::Warning>("Backend isn't start proprely");
+                break;
         }
+    }
+
+    void LoginScreen::backNotifyLogon(ipc::msg::Logon _logon)
+    {
+        Logger->log<logger::Level::Info>("Received validation of logon with: { userId: ", _logon.UserId, ", seqnum: ", _logon.SeqNum, ", heartbeat: ", _logon.HeartBeat, " }");
+        m_progress->setValue(4);
+        accept();
     }
 
     void LoginScreen::onSubmit()
@@ -89,6 +85,6 @@ namespace ui
         m_layout->addWidget(m_progress);
 
         emit requestConnection();
-        connect(BackManager::Instance(), &BackManager::received, this, &LoginScreen::backNotification);
+        connect(BackManager::Instance(), &BackManager::received_Status, this, &LoginScreen::backNotifyStatus);
     }
 }

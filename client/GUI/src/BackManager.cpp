@@ -5,6 +5,7 @@
 #include "Common/Log/Manager.hpp"
 #include "Common/Network/Selector.hpp"
 
+
 BackManager *BackManager::Instance()
 {
     if (!m_instance) {
@@ -65,7 +66,7 @@ void BackManager::startConnection()
             buffer.reset();
 
             Logger->log<logger::Level::Debug>("Received new data from backend");
-            emit received(buffer);
+            ipcReceived(buffer);
         }
     }
 }
@@ -78,4 +79,36 @@ void BackManager::send(const net::Buffer &_buffer)
 BackManager::BackManager(QObject *_parent)
     : QObject(_parent), Logger(logger::Manager::newLogger("BackManager"))
 {
+}
+
+void BackManager::ipcReceived(net::Buffer &_buffer)
+{
+    ipc::Header header;
+
+    ipc::msg::Logon logon{};
+    ipc::msg::Execution exec;
+    uint8_t status;
+
+    _buffer >> header;
+    switch (header.MsgType) {
+        case ipc::MessageType::Status:
+            _buffer >> status;
+            emit received_Status(static_cast<PUStatus>(status));
+            break;
+        case ipc::MessageType::Logon:
+            _buffer >> logon;
+            emit received_Logon(logon);
+            break;
+        case ipc::MessageType::ExecNew:
+            _buffer >> exec;
+            emit received_ExecutionNew(exec);
+            break;
+        case ipc::MessageType::ExecEvent:
+            _buffer >> exec;
+            emit received_ExecutionEvent(exec);
+            break;
+        default:
+            Logger->log<logger::Level::Error>("Unknown received message type: ", static_cast<int>(header.MsgType));
+            break;
+    }
 }
