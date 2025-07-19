@@ -41,7 +41,10 @@ namespace pu
         ipc::msg::Execution exec{
             _input.at(fix::Tag::Symbol),
             _input.at(fix::Tag::OrderID),
+            _input.at(fix::Tag::ExecId),
             std::stod(_input.at(fix::Tag::Price)),
+            utils::to<Side>(_input.at(fix::Tag::Side)),
+            utils::to<Quantity>(_input.at(fix::Tag::OrderQty)),
             utils::to<Quantity>(_input.at(fix::Tag::LeavesQty))
         };
 

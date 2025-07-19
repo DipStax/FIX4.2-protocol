@@ -8,8 +8,11 @@ namespace ipc::msg
     struct Execution
     {
         std::string symbol;
-        std::string orderId;
+        OrderId orderId;
+        std::string execId;
         Price price;
+        Side side;
+        Quantity quantity;
         Quantity remainQty;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const Execution &_exec);

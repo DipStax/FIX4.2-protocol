@@ -48,7 +48,7 @@ class OrderBook
         OrderBook(const std::string &_name);
         virtual ~OrderBook() = default;
 
-        [[nodiscard]] bool add(const obs::OrderInfo &_order);
+        bool add(const obs::OrderInfo &_order);
 
         [[nodiscard]] bool has(const OrderId &_orderId);
 

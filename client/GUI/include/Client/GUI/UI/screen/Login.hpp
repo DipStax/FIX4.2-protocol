@@ -13,15 +13,15 @@
 #include "Common/Log/ILogger.hpp"
 #include "Common/Network/Buffer.hpp"
 
-namespace ui
+namespace ui::screen
 {
-    class LoginScreen : public QDialog
+    class Login : public QDialog
     {
         Q_OBJECT
 
         public:
-            LoginScreen(QWidget *parent = nullptr);
-            ~LoginScreen() = default;
+            Login(QWidget *parent = nullptr);
+            ~Login() = default;
 
         public slots:
             void backNotifyStatus(PUStatus _status);

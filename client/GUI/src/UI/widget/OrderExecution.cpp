@@ -1,7 +1,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-#include "Client/GUI/UI/OrderExecution.hpp"
+#include "Client/GUI/UI/widget/OrderExecution.hpp"
 #include "Client/GUI/BackManager.hpp"
 
 #include "Client/Common/IPC/Helper.hpp"
@@ -10,7 +10,7 @@
 #include "Common/Log/Manager.hpp"
 #include "Common/Core/Order.hpp"
 
-namespace ui
+namespace ui::widget
 {
     OrderExecution::OrderExecution(QWidget *_parent)
         : QWidget(_parent),
@@ -66,7 +66,7 @@ namespace ui
             m_cb_symbol->currentText().toStdString(),
             m_entry_orderid->text().toStdString(),
             std::stof(m_entry_price->text().toStdString()),
-            std::stof(m_entry_qty->text().toStdString()),
+            static_cast<Quantity>(std::stoul(m_entry_qty->text().toStdString())),
             static_cast<OrderType>(m_cb_side->currentData().toInt())
         };
 

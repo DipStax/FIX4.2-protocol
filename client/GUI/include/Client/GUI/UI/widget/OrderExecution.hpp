@@ -8,7 +8,7 @@
 
 #include "Common/Log/ILogger.hpp"
 
-namespace ui
+namespace ui::widget
 {
     class OrderExecution : public QWidget
     {

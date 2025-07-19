@@ -2,7 +2,7 @@
 #include <QIntValidator>
 #include <QDoubleValidator>
 
-#include "Client/GUI/UI/LoginScreen.hpp"
+#include "Client/GUI/UI/screen/Login.hpp"
 #include "Client/GUI/BackManager.hpp"
 
 #include "Client/Common/IPC/Header.hpp"
@@ -10,9 +10,9 @@
 
 #include "Common/Log/Manager.hpp"
 
-namespace ui
+namespace ui::screen
 {
-    LoginScreen::LoginScreen(QWidget *parent)
+    Login::Login(QWidget *parent)
         : QDialog(parent),
         m_layout(new QVBoxLayout()),
         m_uid_entry(new QLineEdit()),
@@ -20,7 +20,7 @@ namespace ui
         m_seqnum_entry(new QLineEdit()),
         m_button(new QPushButton("Submit")),
         m_progress(new QProgressBar()),
-        Logger(logger::Manager::newLogger("LoginScreen"))
+        Logger(logger::Manager::newLogger("Screen/Login"))
     {
         m_hb_entry->setValidator(new QDoubleValidator(0, 100, 2));
         m_hb_entry->setText("5.00");
@@ -37,13 +37,13 @@ namespace ui
         m_layout->addWidget(m_button);
         setLayout(m_layout);
 
-        connect(m_button, &QPushButton::clicked, this, &LoginScreen::onSubmit);
-        connect(this, &LoginScreen::requestConnection, BackManager::Instance(), &BackManager::startConnection, Qt::QueuedConnection);
+        connect(m_button, &QPushButton::clicked, this, &Login::onSubmit);
+        connect(this, &Login::requestConnection, BackManager::Instance(), &BackManager::startConnection, Qt::QueuedConnection);
 
         setWindowTitle("FIX4.2 Login");
     }
 
-    void LoginScreen::backNotifyStatus(PUStatus _status)
+    void Login::backNotifyStatus(PUStatus _status)
     {
         ipc::msg::Logon logon{};
 
@@ -60,8 +60,8 @@ namespace ui
                 };
 
                 Logger->log<logger::Level::Info>("Sending request to login to the backend");
-                disconnect(BackManager::Instance(), &BackManager::received_Status, this, &LoginScreen::backNotifyStatus);
-                connect(BackManager::Instance(), &BackManager::received_Logon, this, &LoginScreen::backNotifyLogon);
+                disconnect(BackManager::Instance(), &BackManager::received_Status, this, &Login::backNotifyStatus);
+                connect(BackManager::Instance(), &BackManager::received_Logon, this, &Login::backNotifyLogon);
                 BackManager::Instance()->send(ipc::Helper::Logon(logon));
                 break;
             case PUStatus::Unknown:
@@ -71,20 +71,20 @@ namespace ui
         }
     }
 
-    void LoginScreen::backNotifyLogon(ipc::msg::Logon _logon)
+    void Login::backNotifyLogon(ipc::msg::Logon _logon)
     {
         Logger->log<logger::Level::Info>("Received validation of logon with: { userId: ", _logon.UserId, ", seqnum: ", _logon.SeqNum, ", heartbeat: ", _logon.HeartBeat, " }");
         m_progress->setValue(4);
         accept();
     }
 
-    void LoginScreen::onSubmit()
+    void Login::onSubmit()
     {
         m_uid_entry->setEnabled(false);
         m_button->setEnabled(false);
         m_layout->addWidget(m_progress);
 
         emit requestConnection();
-        connect(BackManager::Instance(), &BackManager::received_Status, this, &LoginScreen::backNotifyStatus);
+        connect(BackManager::Instance(), &BackManager::received_Status, this, &Login::backNotifyStatus);
     }
 }
