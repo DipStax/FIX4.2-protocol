@@ -26,7 +26,7 @@ namespace ui::widget
 
     void OrderHistoric::newOrder(ipc::msg::Execution _order)
     {
-        Logger->log<logger::Level::Info>("New order");
+        Logger->log<logger::Level::Info>("New order: ", _order);
         QList<QStandardItem*> row;
 
         row << new QStandardItem(QString::fromStdString(_order.orderId))

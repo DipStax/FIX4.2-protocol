@@ -43,7 +43,7 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             _type,
-            static_cast<uint32_t>(sizeof(Price) + sizeof(Quantity) + _exec.symbol.size() + _exec.orderId.size())
+            static_cast<uint32_t>(sizeof(uint32_t) * 3 + _exec.symbol.size() + _exec.orderId.size() + _exec.execId.size() + sizeof(Price) + sizeof(Side) + sizeof(Quantity) * 2)
         };
 
         buffer << header << _exec;
