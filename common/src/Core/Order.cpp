@@ -23,8 +23,3 @@ std::ostream &operator<<(std::ostream &_os, OrderType _type)
         default: return _os << "unknow";
     }
 }
-
-std::ostream &operator<<(std::ostream &_os, const OrderClient &_order)
-{
-    return _os << "{ symbol: " << _order.symbol << ", id: " << _order.orderId << ", quantity: " << _order.quantity << ", status: " << static_cast<char>(_order.status) << ", type: " << _order.type << " }";
-}

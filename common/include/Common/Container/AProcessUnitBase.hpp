@@ -18,10 +18,9 @@ namespace pu
         protected:
             virtual void runtime(std::stop_token _st) = 0;
 
+            std::unique_ptr<logger::ILogger> Logger = nullptr;
+
         private:
             const std::string m_name;
-
-        protected:
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

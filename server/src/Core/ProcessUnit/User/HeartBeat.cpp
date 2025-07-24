@@ -14,6 +14,8 @@ namespace pu::user
         : AInputProcess<InputType>("Server/User/HeartBeat"),
         m_tcp_output(_tcp_output)
     {
+        Logger = logger::Manager::newLogger("file", "Server/User/HeartBeat");
+
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {
             _client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
         });

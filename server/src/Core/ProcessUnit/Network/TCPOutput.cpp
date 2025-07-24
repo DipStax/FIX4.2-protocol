@@ -26,7 +26,6 @@ namespace pu
                 else
                     Logger->log<logger::Level::Error>("[Responce] Error occured when sending data");
                 // todo log timing
-                Logger->log<logger::Level::Info>("[Responce] Updated client status: { UserId: ", _input.Client->getUserId(), " }"); // todo log
                 if (_input.Client->shouldDisconnect()) {
                     _input.Client->disconnect();
                     ClientStore::Instance().removeClient(_input.Client);

@@ -88,12 +88,12 @@ namespace pu::market
         report.set20_execTransType("0");
         report.set38_orderQty(std::to_string(_order.order.quantity));
         report.set37_orderID(_order.order.orderId);
-        report.set39_ordStatus(std::to_string(static_cast<char>(OrderStatus::New)));
+        report.set39_ordStatus(std::string(1, static_cast<char>(OrderStatusValue::New)));
         report.set40_ordType("2");
         report.set44_price(std::to_string(_order.price));
         report.set54_side((_order.side == OrderType::Ask) ? "4" : "3");
         report.set55_symbol(m_ob.getSymbol());
-        report.set150_execType(std::to_string(static_cast<char>(OrderStatus::New)));
+        report.set150_execType(std::string(1, static_cast<char>(ExecTypeValue::New)));
         report.set151_leavesQty(std::to_string(_order.order.quantity));
         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(report));
     }

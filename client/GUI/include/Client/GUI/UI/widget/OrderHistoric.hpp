@@ -4,9 +4,10 @@
 #include <QStandardItemModel>
 #include <QStandardItem>
 
-#include "Common/Core/Order.hpp"
-
 #include "Client/Common/IPC/Message/Execution.hpp"
+
+#include "Common/Core/Order.hpp"
+#include "Common/Log/ILogger.hpp"
 
 namespace ui::widget
 {
@@ -25,5 +26,7 @@ namespace ui::widget
             QStandardItemModel m_model;
 
             std::map<OrderId, QList<QStandardItem *>> m_root;
+
+            std::unique_ptr<logger::ILogger> Logger;
     };
 }

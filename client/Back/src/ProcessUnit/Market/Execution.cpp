@@ -18,6 +18,9 @@ namespace pu
     {
         // std::pair<bool, fix::Reject> reject = fix::ExecutionReport::Verify(_input);
 
+        Logger->log<logger::Level::Verbose>("ExecTransType used: ", _input.at(fix::Tag::ExecTransType)[0]);
+        Logger->log<logger::Level::Verbose>("ExecType used: ", _input.at(fix::Tag::ExecType));
+
         switch (_input.at(fix::Tag::ExecTransType)[0]) {
             case '0': treatNewOrder(_input);
                 break;
@@ -27,10 +30,10 @@ namespace pu
     void Execution::treatNewOrder(const InputType &_input)
     {
         switch (_input.at(fix::Tag::ExecType)[0]) {
-            case OrderStatus::New: sendNotificationNew(_input, ipc::MessageType::ExecNew);
+            case ExecTypeValue::New: sendNotificationNew(_input, ipc::MessageType::ExecNew);
                 break;
-            case OrderStatus::PartiallyFilled:
-            case OrderStatus::Filled:
+            case ExecTypeValue::PartiallyFilled:
+            case ExecTypeValue::Filled:
                 sendNotificationNew(_input, ipc::MessageType::ExecEvent);
                 break;
         }
@@ -48,6 +51,7 @@ namespace pu
             utils::to<Quantity>(_input.at(fix::Tag::LeavesQty))
         };
 
+        Logger->log<logger::Level::Info>("Notifying frontend of validated new order");
         FrontManager::Instance().notify(ipc::Helper::ExecutionEvent(exec, _msgtype));
     }
 }

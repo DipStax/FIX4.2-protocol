@@ -13,6 +13,8 @@ namespace pu
         : AInputProcess<InputType>("Client/HeartBeat"),
         m_tcp_output(_tcp_output)
     {
+        // Logger = logger::Manager::newLogger("file", getProcessName());
+
         m_thread = std::jthread(&HeartBeatHandler::heartbeatLoop, this);
     }
 

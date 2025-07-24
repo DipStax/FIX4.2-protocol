@@ -96,6 +96,7 @@ namespace fix
             Logon::cMsgType,
             HeartBeat::cMsgType,
             NewOrderSingle::cMsgType,
+            ExecutionReport::cMsgType,
             // OrderCancelRequest::cMsgType,
             // OrderCancelReplaceRequest::cMsgType,
             // MarketDataRequest::cMsgType,

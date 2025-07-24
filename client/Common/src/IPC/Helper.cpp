@@ -31,7 +31,7 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::OrderSingle,
-            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(double) * 2 + sizeof(uint8_t))
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(Price) + sizeof(Quantity) + sizeof(uint8_t))
         };
 
         buffer << header << _order;

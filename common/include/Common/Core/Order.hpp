@@ -22,7 +22,7 @@ using Price = double;
 using OrderList = std::list<Order>;
 
 /// @brief Available value for OrdStatus [39](https://www.onixs.biz/fix-dictionary/4.2/tagNum_39.html).
-enum OrderStatus
+enum OrderStatusValue
 {
     New = '0',
     PartiallyFilled,
@@ -32,6 +32,7 @@ enum OrderStatus
     Pending,
     Rejected = '8'
 };
+using ExecTypeValue = OrderStatusValue;
 
 enum class OrderType : uint8_t
 {
@@ -41,15 +42,3 @@ enum class OrderType : uint8_t
 
 std::istream &operator>>(std::istream &_is, OrderType &_type);
 std::ostream &operator<<(std::ostream &_os, OrderType _type);
-
-struct OrderClient
-{
-    OrderId orderId;
-    Quantity quantity;
-    OrderStatus status;
-    OrderType type;
-    Price price;
-    std::string symbol;
-};
-
-std::ostream &operator<<(std::ostream &_os, const OrderClient &_order);
