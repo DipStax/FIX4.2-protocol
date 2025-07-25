@@ -97,7 +97,8 @@ void Core::market_init()
     for (std::string &_name : name) {
         m_markets.emplace(std::piecewise_construct,
             std::forward_as_tuple(_name),
-            std::forward_as_tuple(_name, m_udp_output.getInput(), m_tcp_output.getInput()));
+            std::forward_as_tuple(_name, m_tcp_output.getInput())
+        );
 
         m_router.registerMarket(_name, m_markets.at(_name).getInput());
     }

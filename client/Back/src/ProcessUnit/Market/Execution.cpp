@@ -45,6 +45,7 @@ namespace pu
             _input.at(fix::Tag::Symbol),
             _input.at(fix::Tag::OrderID),
             _input.at(fix::Tag::ExecId),
+            std::stod(_input.at(fix::Tag::AvgPx)),
             std::stod(_input.at(fix::Tag::Price)),
             utils::to<Side>(_input.at(fix::Tag::Side)),
             utils::to<Quantity>(_input.at(fix::Tag::OrderQty)),

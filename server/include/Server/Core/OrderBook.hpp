@@ -33,6 +33,19 @@ namespace obs
         OrderList::iterator Order;
         Price price;
     };
+
+    struct Event
+    {
+        OrderType side;
+        OrderId orderId;
+        UserId userId;
+        Price price;
+        Price avgPrice;
+        Quantity remainQty;
+        Quantity orgQty;
+        OrderStatusValue ordStatus;
+        ExecTypeValue execStatus;
+    };
 }
 
 template<class T>
@@ -45,7 +58,7 @@ class OrderBook
         using BidBook = std::map<Price, obs::OrderListBundle, std::less<Price>>;
         using OrderIdMap = std::unordered_map<OrderId, obs::OrderIdInfo>;
 
-        OrderBook(const std::string &_name);
+        OrderBook(const std::string &_name, ts::Queue<obs::Event> &_event);
         virtual ~OrderBook() = default;
 
         bool add(const obs::OrderInfo &_order);
@@ -85,6 +98,8 @@ class OrderBook
 
     private:
         const std::string m_name;
+
+        ts::Queue<obs::Event> &m_event_output;
 
         OrderIdMapBundle m_bid_id;
         OrderIdMapBundle m_ask_id;

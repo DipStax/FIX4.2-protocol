@@ -10,6 +10,7 @@ namespace ipc::msg
         std::string symbol;
         OrderId orderId;
         std::string execId;
+        Price avgPrice;
         Price price;
         Side side;
         Quantity quantity;

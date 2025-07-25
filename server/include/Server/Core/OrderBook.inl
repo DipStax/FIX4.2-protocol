@@ -4,12 +4,27 @@
 
 #include "Server/Core/OrderBook.hpp"
 
+
+
 template<class Comparator, IsBook BookType>
 Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_idmap, const obs::OrderInfo &_order)
 {
     Comparator cmp{};
     Quantity qty = _order.order.quantity;
     std::shared_lock lock_book(_book.Mutex);
+
+    obs::Event event{
+        _order.side,
+        _order.order.orderId,
+        _order.order.userId,
+        _order.price,
+        0.f,
+        _order.order.quantity,
+        _order.order.quantity,
+        OrderStatusValue::New,
+        ExecTypeValue::New
+    };
+
 
     for (auto &[_price, _list] : _book.Book) {
         if (!cmp(_price, _order.price)) {
@@ -27,14 +42,18 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
                 Logger->log<logger::Level::Verbose>("Skipping order because same user: ", order);
                 continue;
             }
-            if (order.quantity <= qty) {
-                if (order.quantity == qty) {
-                    qty = 0;
+            if (order.quantity <= event.remainQty) {
+                const uint32_t diff = event.orgQty - event.remainQty;
+
+                if (order.quantity == event.remainQty) {
+                    event.avgPrice = (event.avgPrice * diff + _price * event.remainQty) / (diff + order.quantity);
+                    event.remainQty = 0;
                     Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
                     Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
                 } else {
-                    qty -= order.quantity;
-                    Logger->log<logger::Level::Info>("Partially filled order: ", _order.order, ", new quantity: ", qty);
+                    event.avgPrice = (event.avgPrice * diff + _price * order.quantity) / (diff + order.quantity);
+                    event.remainQty -= order.quantity;
+                    Logger->log<logger::Level::Info>("Partially filled order: ", _order.order, ", new quantity: ", event.remainQty);
                     Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
                 }
                 _list.List.erase(iterator);
@@ -43,13 +62,18 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
             } else {
                 Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
                 Logger->log<logger::Level::Debug>("From other side, partially filled order: ", order);
-                order.quantity -= qty;
-                qty = 0;
+                order.quantity -= event.remainQty;
+                event.remainQty = 0;
             }
-            if (qty == 0)
+            if (event.remainQty == 0) {
+                event.ordStatus = OrderStatusValue::Filled;
+                m_event_output.push(std::move(event));
                 return 0;
+            }
         }
     }
+    event.ordStatus = OrderStatusValue::PartiallyFilled;
+    m_event_output.push(std::move(event));
     return qty;
 }
 
@@ -63,5 +87,6 @@ void OrderBook::addToBook(BookBundle<BookType> &_book, OrderIdMapBundle &_idmap,
     orderlist.List.push_back(_order);
     std::unique_lock lock_idmap(_idmap.Mutex);
 
+    Logger->log<logger::Level::Info>("New order place at price: ", _price, ", with order: ", _order);
     _idmap.IdList[_order.orderId] = { orderlist.List.end(), _price };
 }

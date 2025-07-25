@@ -1,11 +1,12 @@
 #include <numeric>
 
 #include "Server/Core/OrderBook.hpp"
+
 #include "Common/Message/ExecutionReport.hpp"
 #include "Common/Log/Manager.hpp"
 
-OrderBook::OrderBook(const std::string &_name)
-    : m_name(_name)
+OrderBook::OrderBook(const std::string &_name, ts::Queue<obs::Event> &_event)
+    : m_name(_name), m_event_output(_event), Logger(logger::Manager::newLogger("Market/" + m_name + "/OrderBook"))
 {
 }
 
