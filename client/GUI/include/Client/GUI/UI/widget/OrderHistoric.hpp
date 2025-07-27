@@ -21,6 +21,7 @@ namespace ui::widget
 
         public slots:
             void newOrder(ipc::msg::Execution _order);
+            void eventOrder(ipc::msg::Execution _order);
 
         private:
             QStandardItemModel m_model;

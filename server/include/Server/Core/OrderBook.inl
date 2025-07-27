@@ -10,9 +10,7 @@ template<class Comparator, IsBook BookType>
 Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_idmap, const obs::OrderInfo &_order)
 {
     Comparator cmp{};
-    Quantity qty = _order.order.quantity;
     std::shared_lock lock_book(_book.Mutex);
-
     obs::Event event{
         _order.side,
         _order.order.orderId,
@@ -66,15 +64,19 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
                 event.remainQty = 0;
             }
             if (event.remainQty == 0) {
-                event.ordStatus = OrderStatusValue::Filled;
+                event.execStatus = ExecTypeValue::Filled;
+                Logger->log<logger::Level::Debug>("Set event as execution type as: Filled");
                 m_event_output.push(std::move(event));
                 return 0;
             }
         }
     }
-    event.ordStatus = OrderStatusValue::PartiallyFilled;
-    m_event_output.push(std::move(event));
-    return qty;
+    if (event.remainQty != _order.order.quantity) {
+        event.execStatus = ExecTypeValue::PartiallyFilled;
+        Logger->log<logger::Level::Debug>("Set event as execution type as: PartiallyFilled");
+        m_event_output.push(std::move(event));
+    }
+    return event.remainQty;
 }
 
 template<IsBook BookType>

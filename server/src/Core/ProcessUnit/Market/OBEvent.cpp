@@ -36,8 +36,8 @@ namespace pu::market
         report.set44_price(std::to_string(_input.price));
         report.set54_side((_input.side == OrderType::Ask) ? "4" : "3");
         report.set55_symbol(m_symbol);
+        report.set150_execType(std::string(1, static_cast<char>(_input.execStatus)));
         report.set151_leavesQty(std::to_string(_input.remainQty));
-        report.set150_execType(std::to_string(static_cast<uint8_t>(_input.execStatus)));
         m_tcp_output.append(client, std::chrono::system_clock::now(), std::move(report));
         Logger->log<logger::Level::Debug>("[OBEvent] (TCP) Report created: "); // todo log
         return true;

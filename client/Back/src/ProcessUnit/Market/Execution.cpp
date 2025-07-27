@@ -52,7 +52,7 @@ namespace pu
             utils::to<Quantity>(_input.at(fix::Tag::LeavesQty))
         };
 
-        Logger->log<logger::Level::Info>("Notifying frontend of validated new order: ", exec);
+        Logger->log<logger::Level::Info>("Notifying frontend of validated new order {", static_cast<int>(_msgtype), "}: ", exec);
         FrontManager::Instance().notify(ipc::Helper::ExecutionEvent(exec, _msgtype));
     }
 }
