@@ -4,10 +4,10 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/AProcessUnitBase.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Selector.hpp"
-#include "Common/Network/Socket.hpp"
+#include "Shared/ProcessUnit/AProcessUnitBase.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Selector.hpp"
+#include "Shared/Network/Socket.hpp"
 
 namespace pu
 {

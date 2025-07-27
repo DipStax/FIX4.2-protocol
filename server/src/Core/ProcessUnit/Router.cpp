@@ -4,10 +4,10 @@
 #include "Server/Core/ProcessUnit/Router.hpp"
 #include "Server/Core/meta.hpp"
 
-#include "Common/Utils.hpp"
-#include "Common/Message/Message.hpp"
-#include "Common/Message/Tag.hpp"
-#include "Common/Log/Manager.hpp"
+#include "Shared/Utils/Utils.hpp"
+#include "Shared/Message/Message.hpp"
+#include "Shared/Message/Tag.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu
 {

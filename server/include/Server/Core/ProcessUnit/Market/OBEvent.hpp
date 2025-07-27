@@ -3,8 +3,8 @@
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 #include "Server/Core/OrderBook.hpp"
 
-#include "Common/Container/AInputProcess.hpp"
-#include "Common/Thread/Pool.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/Thread/Pool.hpp"
 
 #if !defined(TS_SIZE_OBEVENT) || TS_SIZE_OBEVENT <= 0
     #define TS_SIZE_OBEVENT 1

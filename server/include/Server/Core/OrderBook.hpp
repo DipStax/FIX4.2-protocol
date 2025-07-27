@@ -8,9 +8,9 @@
 
 #include "Server/Core/meta.hpp"
 
-#include "Common/Core/Order.hpp"
-#include "Common/Thread/Queue.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Core/Order.hpp"
+#include "Shared/Thread/Queue.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 
 namespace obs

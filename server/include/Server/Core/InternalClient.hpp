@@ -7,8 +7,8 @@
 
 #include "Server/Core/OrderBook.hpp"
 
-#include "Common/Core/Order.hpp"
-#include "Common/Network/Socket.hpp"
+#include "Shared/Core/Order.hpp"
+#include "Shared/Network/Socket.hpp"
 
 class InternalClient
 {

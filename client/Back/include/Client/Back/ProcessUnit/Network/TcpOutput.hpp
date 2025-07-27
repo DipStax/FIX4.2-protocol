@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common/Container/AInputProcess.hpp"
-#include "Common/Message/Fix.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Socket.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/Message/Fix.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Socket.hpp"
 
 namespace pu
 {

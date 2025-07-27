@@ -1,7 +1,7 @@
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Message/Reject.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Message/Reject.hpp"
 
 namespace pu
 {

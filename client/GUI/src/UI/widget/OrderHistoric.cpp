@@ -4,7 +4,7 @@
 #include "Client/GUI/UI/widget/OrderHistoric.hpp"
 #include "Client/GUI/BackManager.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace ui::widget
 {

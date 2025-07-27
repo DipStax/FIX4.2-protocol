@@ -1,9 +1,9 @@
 #include "Client/Back/Core.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Log/Imp/Console.hpp"
-#include "Common/Log/Imp/File.hpp"
-#include "Common/Log/Imp/Buffer.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Log/Imp/Console.hpp"
+#include "Shared/Log/Imp/File.hpp"
+#include "Shared/Log/Imp/Buffer.hpp"
 
 #include "Client/Back/FrontManager.hpp"
 

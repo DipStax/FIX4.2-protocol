@@ -2,10 +2,10 @@
 
 #include <chrono>
 
-#include "Common/Container/AProcessUnit.hpp"
+#include "Shared/ProcessUnit/AProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #ifndef UDP_TICK
     #define UDP_TICK 1

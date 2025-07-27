@@ -4,9 +4,9 @@
 
 #include "Server/Core/ProcessUnit/User/HeartBeat.hpp"
 
-#include "Common/Message/HeartBeat.hpp"
-#include "Common/Message/Tag.hpp"
-#include "Common/Log/Manager.hpp"
+#include "Shared/Message/HeartBeat.hpp"
+#include "Shared/Message/Tag.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu::user
 {

@@ -2,8 +2,8 @@
 
 #include "Client/Common/IPC/Header.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Network/Selector.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Network/Selector.hpp"
 
 
 BackManager *BackManager::Instance()

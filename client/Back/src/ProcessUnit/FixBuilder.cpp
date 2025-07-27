@@ -4,7 +4,7 @@
 #include "Client/Common/IPC/Header.hpp"
 #include "Client/Common/IPC/Message/Message.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu
 {

@@ -1,9 +1,9 @@
 #include "Client/Back/ProcessUnit/Router.hpp"
 #include "Client/Back/User.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Message/Message.hpp"
-#include "Common/Message/Tag.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Message/Message.hpp"
+#include "Shared/Message/Tag.hpp"
 
 namespace pu
 {

@@ -12,9 +12,9 @@
 
 #include "Server/Core/ProcessUnit/Router.hpp"
 
-#include "Common/Container/ProcessUnit.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 class Core
 {

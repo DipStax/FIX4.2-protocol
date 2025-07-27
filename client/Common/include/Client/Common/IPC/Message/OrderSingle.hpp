@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common/Network/Buffer.hpp"
-#include "Common/Core/Order.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/Core/Order.hpp"
 
 namespace ipc::msg
 {

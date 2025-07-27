@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Common/Container/AInputProcess.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 namespace pu
 {

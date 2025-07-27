@@ -5,9 +5,9 @@
 
 #include "Server/Core/InternalClient.hpp"
 
-#include "Common/Network/Acceptor.hpp"
-#include "Common/Network/Socket.hpp"
-#include "Common/Thread/Pool.hpp"
+#include "Shared/Network/Acceptor.hpp"
+#include "Shared/Network/Socket.hpp"
+#include "Shared/Thread/Pool.hpp"
 
 class ClientStore
 {

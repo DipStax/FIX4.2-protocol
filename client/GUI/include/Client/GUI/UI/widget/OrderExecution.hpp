@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 namespace ui::widget
 {

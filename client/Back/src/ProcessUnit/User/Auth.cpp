@@ -5,8 +5,8 @@
 #include "Client/Common/IPC/Helper.hpp"
 #include "Client/Common/IPC/Message/Logon.hpp"
 
-#include "Common/Message/Tag.hpp"
-#include "Common/Log/Manager.hpp"
+#include "Shared/Message/Tag.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu
 {

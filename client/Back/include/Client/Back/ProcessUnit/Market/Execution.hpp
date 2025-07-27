@@ -4,7 +4,7 @@
 
 #include "Client/Common/IPC/MessageType.hpp"
 
-#include "Common/Container/AInputProcess.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 
 namespace pu
 {

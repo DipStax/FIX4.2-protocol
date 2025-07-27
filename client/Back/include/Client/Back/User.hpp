@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 class User
 {

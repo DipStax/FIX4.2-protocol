@@ -23,5 +23,5 @@ if (ClientBuild)
 endif()
 
 if (CommonBuild)
-    include(common/CMakeLists.txt)
+    include(shared/CMakeLists.txt)
 endif()

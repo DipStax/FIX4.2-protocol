@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Common/Container/AInputProcess.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
-#include "Common/Thread/Pool.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Thread/Pool.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #if !defined(PU_LOGOUT_TP_SIZE) || PU_LOGOUT_TP_SIZE <= 0
     #define PU_LOGOUT_TP_SIZE 1

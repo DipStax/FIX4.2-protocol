@@ -5,7 +5,7 @@
 
 #include "Client/Back/User.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 User &User::Instance()
 {

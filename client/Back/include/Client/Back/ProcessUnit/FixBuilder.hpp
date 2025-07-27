@@ -2,9 +2,9 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/AProcessUnitBase.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Buffer.hpp"
+#include "Shared/ProcessUnit/AProcessUnitBase.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Buffer.hpp"
 
 namespace pu
 {

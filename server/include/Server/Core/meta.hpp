@@ -4,9 +4,9 @@
 #include <memory>
 #include <type_traits>
 
-#include "Common/meta.hpp"
-#include "Common/Core/Order.hpp"
-#include "Common/Thread/Queue.hpp"
+#include "Shared/Utils/meta.hpp"
+#include "Shared/Core/Order.hpp"
+#include "Shared/Thread/Queue.hpp"
 
 namespace meta
 {

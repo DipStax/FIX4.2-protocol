@@ -2,8 +2,8 @@
 
 #include "Server/Core/ProcessUnit/Network/TCPInput.hpp"
 
-#include "Common/Message/Message.hpp"
-#include "Common/Log/Manager.hpp"
+#include "Shared/Message/Message.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu
 {

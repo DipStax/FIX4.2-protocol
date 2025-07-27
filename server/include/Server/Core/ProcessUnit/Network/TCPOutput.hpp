@@ -3,9 +3,9 @@
 #include "Server/Core/meta.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
-#include "Common/Container/AInputProcess.hpp"
-#include "Common/Thread/Pool.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/Thread/Pool.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #ifndef TS_SIZE_ON
     #define TS_SIZE_ON 10

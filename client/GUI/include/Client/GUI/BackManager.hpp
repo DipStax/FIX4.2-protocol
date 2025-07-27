@@ -4,10 +4,10 @@
 #include <QThread>
 #include <memory>
 
-#include "Common/Container/ProcessUnit.hpp"
-#include "Common/Network/Socket.hpp"
-#include "Common/Network/Buffer.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
+#include "Shared/Network/Socket.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #include "Client/Common/IPC/Message/Message.hpp"
 

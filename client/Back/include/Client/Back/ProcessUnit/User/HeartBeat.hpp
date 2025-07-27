@@ -2,9 +2,9 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/AInputProcess.hpp"
-#include "Common/Container/IProcessUnitStopable.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #if !defined(PU_HEARTBEAT_TO) || PU_HEARTBEAT_TO < 1
     #define PU_HEARTBEAT_TO 1.f

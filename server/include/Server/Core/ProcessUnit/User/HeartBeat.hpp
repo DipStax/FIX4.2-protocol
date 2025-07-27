@@ -3,12 +3,12 @@
 #include <thread>
 #include <optional>
 
-#include "Common/Container/AInputProcess.hpp"
-#include "Common/Container/IProcessUnitStopable.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
-#include "Common/Thread/Pool.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Thread/Pool.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 #if !defined(PU_HEARTBEAT_TP_SIZE) || PU_HEARTBEAT_TP_SIZE <= 0
     #define PU_HEARTBEAT_TP_SIZE 1

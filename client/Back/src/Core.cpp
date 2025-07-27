@@ -1,6 +1,6 @@
 #include "Client/Back/Core.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 #include "Client/Back/FrontManager.hpp"
 #include "Client/Common/IPC/Helper.hpp"
 

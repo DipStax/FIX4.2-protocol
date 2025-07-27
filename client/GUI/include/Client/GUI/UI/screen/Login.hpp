@@ -9,9 +9,9 @@
 
 #include "Client/Common/IPC/Message/Logon.hpp"
 
-#include "Common/Container/ProcessUnit.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Buffer.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Buffer.hpp"
 
 namespace ui::screen
 {

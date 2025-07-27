@@ -4,10 +4,10 @@
 #include "Client/GUI/UI/screen/Login.hpp"
 #include "Client/GUI/UI/screen/Main.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Log/Imp/Console.hpp"
-#include "Common/Log/Imp/File.hpp"
-#include "Common/Log/Imp/Buffer.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Log/Imp/Console.hpp"
+#include "Shared/Log/Imp/File.hpp"
+#include "Shared/Log/Imp/Buffer.hpp"
 
 int main(int argc, char *argv[])
 {

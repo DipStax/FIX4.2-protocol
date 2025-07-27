@@ -3,8 +3,8 @@
 #include "Client/Common/IPC/Message/Message.hpp"
 #include "Client/Common/IPC/MessageType.hpp"
 
-#include "Common/Network/Buffer.hpp"
-#include "Common/Container/ProcessUnit.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
 
 namespace ipc
 {

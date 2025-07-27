@@ -5,8 +5,8 @@
 #include "Server/Core/ProcessUnit/Market/Notification.hpp"
 #include "Server/Core/ProcessUnit/Market/Router.hpp"
 
-#include "Common/Container/ProcessUnit.hpp"
-#include "Common/Container/AProcessUnit.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
+#include "Shared/ProcessUnit/AProcessUnit.hpp"
 
 namespace pu
 {

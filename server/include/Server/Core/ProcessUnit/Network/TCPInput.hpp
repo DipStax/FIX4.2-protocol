@@ -5,8 +5,8 @@
 #include "Server/Core/ClientStore.hpp"
 #include "Server/Core/meta.hpp"
 
-#include "Common/Container/AProcessUnitBase.hpp"
-#include "Common/Network/Selector.hpp"
+#include "Shared/ProcessUnit/AProcessUnitBase.hpp"
+#include "Shared/Network/Selector.hpp"
 
 #ifndef NET_RECV_SIZE
     #define NET_RECV_SIZE 4096

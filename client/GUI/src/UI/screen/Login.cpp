@@ -8,7 +8,7 @@
 #include "Client/Common/IPC/Header.hpp"
 #include "Client/Common/IPC/Helper.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace ui::screen
 {

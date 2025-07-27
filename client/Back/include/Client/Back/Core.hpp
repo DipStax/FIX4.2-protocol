@@ -8,9 +8,9 @@
 #include "Client/Back/ProcessUnit/FixBuilder.hpp"
 #include "Client/Back/ProcessUnit/Router.hpp"
 
-#include "Common/Container/ProcessUnit.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Socket.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Socket.hpp"
 
 class Core
 {

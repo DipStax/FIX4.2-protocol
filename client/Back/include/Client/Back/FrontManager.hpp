@@ -2,12 +2,12 @@
 
 #include <thread>
 
-#include "Common/Container/ProcessUnit.hpp"
-#include "Common/Log/ILogger.hpp"
-#include "Common/Network/Acceptor.hpp"
-#include "Common/Network/Buffer.hpp"
-#include "Common/Network/Socket.hpp"
-#include "Common/Thread/Queue.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Acceptor.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/Network/Socket.hpp"
+#include "Shared/Thread/Queue.hpp"
 
 class FrontManager
 {

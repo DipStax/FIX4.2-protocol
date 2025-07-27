@@ -3,7 +3,7 @@
 
 #include "Server/Core/ClientStore.hpp"
 
-#include "Common/Log/Manager.hpp"
+#include "Shared/Log/Manager.hpp"
 
 ClientStore &ClientStore::Instance()
 {

@@ -1,9 +1,9 @@
 #include "Server/Core/ProcessUnit/User/Logon.hpp"
 
-#include "Common/Utils.hpp"
-#include "Common/Message/Logon.hpp"
-#include "Common/Message/Tag.hpp"
-#include "Common/Log/Manager.hpp"
+#include "Shared/Utils/Utils.hpp"
+#include "Shared/Message/Logon.hpp"
+#include "Shared/Message/Tag.hpp"
+#include "Shared/Log/Manager.hpp"
 
 namespace pu::user
 {
