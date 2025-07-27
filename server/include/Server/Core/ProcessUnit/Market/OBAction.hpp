@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
 #include "Common/Thread/Pool.hpp"
@@ -9,7 +9,7 @@
 namespace pu::market
 {
     /// @brief Pipeline managing the OrderBook.
-    class OBAction : public IProcessUnit<Context<data::OBActionInput>>
+    class OBAction : public AInputProcess<Context<data::OBActionInput>>
     {
         public:
             /// @brief Construct the pipeline.
@@ -19,27 +19,27 @@ namespace pu::market
             OBAction(OrderBook &_ob, InputNetworkOutput &_output);
             virtual ~OBAction() = default;
 
-            [[nodiscard]] QueueInputType &getInput();
-
         protected:
-            void runtime(std::stop_token _st);
+            void onInput(InputType _input) final;
 
         private:
-            void process(InputType &_data);
 
-            bool runAdd(const InputType &_data);
-            bool runModify(const InputType &_data);
-            bool runCancel(const InputType &_data);
+            bool treatNewOrderSingle(InputType &_input);
+            // void process(InputType &_data);
 
-            const std::string m_name;
+            // bool runAdd(const InputType &_data);
+            // bool runModify(const InputType &_data);
+            // bool runCancel(const InputType &_data);
 
-            QueueInputType m_input;
+            void rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order);
+            void acknowledgeOrder(InputType &_input, const obs::OrderInfo &_order);
+
             InputNetworkOutput &m_tcp_output;
-
-            ThreadPool<1> m_tp;
 
             OrderBook &m_ob;
 
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
+            const std::string m_symbol;
+
+            ThreadPool<1> m_tp{};
     };
 }

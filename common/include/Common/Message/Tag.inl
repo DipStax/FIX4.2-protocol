@@ -96,11 +96,13 @@ namespace fix
             Logon::cMsgType,
             HeartBeat::cMsgType,
             NewOrderSingle::cMsgType,
-            OrderCancelRequest::cMsgType,
-            OrderCancelReplaceRequest::cMsgType,
-            MarketDataRequest::cMsgType,
+            ExecutionReport::cMsgType,
+            // OrderCancelRequest::cMsgType,
+            // OrderCancelReplaceRequest::cMsgType,
+            // MarketDataRequest::cMsgType,
             Logout::cMsgType,
             TestRequest::cMsgType,
+            BusinessMessageReject::cMsgType,
             Reject::cMsgType
         };
         constexpr const size_t size_type = sizeof(type);
@@ -119,15 +121,9 @@ namespace fix
     template<>
     std::pair<bool, Reject> verify<Tag::ClOrdID>(const std::string &_value)
     {
-        std::pair<bool, fix::Reject> reject = { false, {} };
+        std::ignore = _value;
 
-        if (!utils::is_numeric(_value)) {
-            reject.first = true;
-            reject.second.set371_refTagId(Tag::ClOrdID);
-            reject.second.set373_sessionRejectReason(Reject::IncorrectFormat);
-            reject.second.set58_text("Not supported order Id");
-        }
-        return reject;
+        return { false, {}};
     }
 
     template<>

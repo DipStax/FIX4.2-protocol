@@ -10,13 +10,15 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
     m_auth(m_tcp_output.getInput()),
+    m_execution(m_tcp_output.getInput()),
     m_router(
         m_tcp_output.getInput(),
         m_heartbeat.getInput(),
-        m_auth.getInput()
+        m_auth.getInput(),
+        m_execution.getInput()
     ),
     m_tcp_input(m_server, m_router.getInput()),
-    Logger(logger::Manager::newLogger("Core"))
+    Logger(logger::Manager::newLogger("Client/Core"))
 {
     if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
         Logger->log<logger::Level::Fatal>("Failed to connect to server");
@@ -38,6 +40,7 @@ bool Core::start()
     m_builder.start();
     m_heartbeat.start();
     m_auth.start();
+    m_execution.start();
     m_router.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Debug>("Notifying front of running status");
@@ -49,6 +52,7 @@ bool Core::start()
             m_builder.status();
             m_heartbeat.status();
             m_auth.status();
+            m_execution.status();
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
@@ -73,6 +77,7 @@ void Core::stop()
         m_tcp_input.stop();
         m_builder.stop();
         m_router.stop();
+        m_execution.stop();
         m_auth.stop();
         m_heartbeat.stop();
         m_tcp_output.stop();

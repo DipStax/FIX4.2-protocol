@@ -63,8 +63,8 @@ void Core::stop()
         m_logon.stop();
         m_logout.stop();
         m_heartbeat.stop();
-        // for (auto &[_name, _pip] : m_markets)
-        //     _pip.stop();
+        for (auto &[_name, _pip] : m_markets)
+            _pip.stop();
         m_tcp_output.stop();
         // m_udp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
@@ -81,8 +81,8 @@ bool Core::internal_start()
     m_logout.start();
     m_heartbeat.start();
 
-    // for (auto &[_name, _pip] : m_markets)
-    //     _pip.start();
+    for (auto &[_name, _pip] : m_markets)
+        _pip.start();
 
     m_router.start();
     m_tcp_input.start();
@@ -91,14 +91,15 @@ bool Core::internal_start()
 
 void Core::market_init()
 {
-    // std::vector<std::string> name{ MARKET_NAME };
+    std::vector<std::string> name{ MARKET_NAME };
 
 
-    // for (std::string &_name : name) {
-    //     m_markets.emplace(std::piecewise_construct,
-    //         std::forward_as_tuple(_name),
-    //         std::forward_as_tuple(_name, m_udp_output.getInput(), m_tcp_output.getInput()));
+    for (std::string &_name : name) {
+        m_markets.emplace(std::piecewise_construct,
+            std::forward_as_tuple(_name),
+            std::forward_as_tuple(_name, m_tcp_output.getInput())
+        );
 
-    //     m_router.registerMarket(_name, m_markets.at(_name).getInput());
-    // }
+        m_router.registerMarket(_name, m_markets.at(_name).getInput());
+    }
 }

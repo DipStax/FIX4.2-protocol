@@ -2,31 +2,29 @@
 
 #include "Client/Back/ProcessUnit/TransitName.hpp"
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Common/Log/ILogger.hpp"
 
 namespace pu
 {
-    class Router : public IProcessUnit<TransitMessage>
+    class Router : public AInputProcess<TransitMessage>
     {
         public:
-            Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth);
-
-            QueueTransit &getInput() override;
+            Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth, QueueTransit &_exec);
+            virtual ~Router() = default;
 
         protected:
-            void runtime(std::stop_token _st) override;
+            void onInput(InputType _input) final;
 
         private:
-            bool unknownMessage(InputType &_input);
-            bool treatReject(InputType &_input);
+            bool unknownMessage(const InputType &_input);
 
-            QueueTransit m_input;
+            bool treatReject(const InputType &_input);
+            bool treatBusinessReject(InputType &_input);
 
             QueueMessage &m_tcp_output;
             QueueTransit &m_heartbeat;
             QueueTransit &m_auth;
-
-            std::unique_ptr<logger::ILogger> Logger;
+            QueueTransit &m_execution;
     };
 }

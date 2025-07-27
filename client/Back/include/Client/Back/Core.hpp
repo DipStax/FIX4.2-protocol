@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Client/Back/ProcessUnit/Market/Execution.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
 #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
@@ -30,6 +31,7 @@ class Core
 
         ProcessUnit<pu::HeartBeatHandler> m_heartbeat;
         ProcessUnit<pu::AuthHandler> m_auth;
+        ProcessUnit<pu::Execution> m_execution;
 
         ProcessUnit<pu::Router> m_router;
 

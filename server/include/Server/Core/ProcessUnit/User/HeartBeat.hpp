@@ -3,7 +3,7 @@
 #include <thread>
 #include <optional>
 
-#include "Common/Container/IProcessUnit.hpp"
+#include "Common/Container/AInputProcess.hpp"
 #include "Common/Container/IProcessUnitStopable.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
@@ -21,18 +21,16 @@ namespace data
 
 namespace pu::user
 {
-    class HeartBeatHandler : public IProcessUnit<Context<data::HeartBeatInput>>, public IProcessUnitStopable
+    class HeartBeatHandler : public AInputProcess<Context<data::HeartBeatInput>>, public IProcessUnitStopable
     {
         public:
             HeartBeatHandler(InputNetworkOutput &_tcp_output);
             virtual ~HeartBeatHandler() = default;
 
-            QueueInputType &getInput();
-
         protected:
-            void runtime(std::stop_token _st);
+            void onInput(InputType _input) final;
 
-            void onStop();
+            void onStop() final;
 
         private:
             bool processHeartBeat(const InputType &_input);
@@ -41,12 +39,8 @@ namespace pu::user
 
             std::jthread m_thread;
 
-            QueueInputType m_input;
-
             InputNetworkOutput &m_tcp_output;
 
             ThreadPool<PU_HEARTBEAT_TP_SIZE> m_tp;
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

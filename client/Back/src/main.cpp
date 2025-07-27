@@ -11,7 +11,8 @@ int main()
 {
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
-    logger::Manager::registerDefaultLogger<logger::imp::Console>();
+    logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
+    logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     if (!FrontManager::Instance().wait_frontend())
         return 1;

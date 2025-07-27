@@ -37,7 +37,7 @@ class Core
 
         std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
-        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output{};
+        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
         ProcessUnit<pu::UdpOutputNetwork> m_udp_output;
 
         ProcessUnit<pu::user::LogonHandler> m_logon;

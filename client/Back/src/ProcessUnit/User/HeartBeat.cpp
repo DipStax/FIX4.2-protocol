@@ -10,31 +10,21 @@
 namespace pu
 {
     HeartBeatHandler::HeartBeatHandler(QueueMessage &_tcp_output)
-        : m_tcp_output(_tcp_output), Logger(logger::Manager::newLogger("HeartBeat-handler"))
+        : AInputProcess<InputType>("Client/HeartBeat"),
+        m_tcp_output(_tcp_output)
     {
+        // Logger = logger::Manager::newLogger("file", getProcessName());
+
         m_thread = std::jthread(&HeartBeatHandler::heartbeatLoop, this);
     }
 
-    HeartBeatHandler::QueueInputType &HeartBeatHandler::getInput()
+    void HeartBeatHandler::onInput(InputType _input)
     {
-        return m_input;
-    }
-
-    void HeartBeatHandler::runtime(std::stop_token _st)
-    {
-        Logger->log<logger::Level::Info>("Starting process unit...");
-        InputType input;
-
-        while (!_st.stop_requested()) {
-            while (!m_input.empty()) {
-                input = m_input.pop_front();
-                switch (input.at("35")[0]) {
-                    case fix::TestRequest::cMsgType: handleTestRequest(input);
-                        break;
-                    case fix::HeartBeat::cMsgType: handleHeartBeat(input);
-                        break;
-                }
-            }
+        switch (_input.at("35")[0]) {
+            case fix::TestRequest::cMsgType: handleTestRequest(_input);
+                break;
+            case fix::HeartBeat::cMsgType: handleHeartBeat(_input);
+                break;
         }
     }
 

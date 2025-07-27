@@ -8,7 +8,8 @@
 namespace pu
 {
     TCPInputNetwork::TCPInputNetwork(InputRouter &_output, InputNetworkOutput &_error, uint32_t _port)
-        : m_output(_output), m_error(_error), Logger(logger::Manager::newLogger("TCP-Input"))
+        : AProcessUnitBase("Server/NET/TCP-Input"),
+        m_output(_output), m_error(_error)
     {
         (void)m_acceptor.listen(_port);
         (void)m_acceptor.setBlocking(false);
@@ -25,7 +26,8 @@ namespace pu
 
     void TCPInputNetwork::runtime(std::stop_token _st)
     {
-        Logger->log<logger::Level::Info>("Starting process unit...");
+        Logger->log<logger::Level::Info>("Launching process unit runtime");
+
         ClientStore::ClientSocket accept = nullptr;
         std::vector<ClientStore::ClientSocket> clients;
 
@@ -52,7 +54,7 @@ namespace pu
                 }
             }
         }
-        Logger->log<logger::Level::Warning>("Exiting process unit...");
+        Logger->log<logger::Level::Info>("Exiting process unit runtime");
     }
 
     bool TCPInputNetwork::process(const ClientStore::Client &_client)

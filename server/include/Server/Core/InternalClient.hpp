@@ -13,8 +13,6 @@
 class InternalClient
 {
     public:
-        using Subs = std::vector<OrderBook::Subscription>;
-
         struct HeartBeatInfo
         {
             std::shared_ptr<InternalClient> Client = nullptr;
@@ -43,10 +41,6 @@ class InternalClient
 
         [[nodiscard]] HeartBeatInfo &getHeartBeatInfo();
 
-        [[nodiscard]] bool isSubscribeTo(const std::string &_symbol);
-        [[nodiscard]] Subs &subscribe(const std::string &_symbol);
-        void unsubscribe(const std::string &_symbol);
-
         bool operator==(const InternalClient &_client) const;
 
         friend std::ostream &operator<<(std::ostream &_os, const InternalClient &_client);
@@ -57,10 +51,7 @@ class InternalClient
         UserId m_user_id = "";
         size_t m_seq_num = 0;
 
-        using SubcribeMap = std::unordered_map<std::string, InternalClient::Subs>;
-
         std::shared_ptr<net::INetTcp> m_socket = nullptr;
         std::unordered_map<size_t, std::chrono::system_clock::time_point> m_request{};
-        SubcribeMap m_subscribe{};
         HeartBeatInfo m_hb_info{};
 };

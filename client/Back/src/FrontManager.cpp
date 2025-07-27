@@ -41,7 +41,7 @@ ts::Queue<net::Buffer> &FrontManager::getMessageQueue()
 }
 
 FrontManager::FrontManager()
-    : Logger(logger::Manager::newLogger("FrontManager"))
+    : Logger(logger::Manager::newLogger("Client/FrontManager"))
 {
 }
 

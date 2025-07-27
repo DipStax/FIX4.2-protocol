@@ -1,7 +1,8 @@
 #include <QApplication>
 #include <QThread>
 
-#include "Client/GUI/UI/LoginScreen.hpp"
+#include "Client/GUI/UI/screen/Login.hpp"
+#include "Client/GUI/UI/screen/Main.hpp"
 
 #include "Common/Log/Manager.hpp"
 #include "Common/Log/Imp/Console.hpp"
@@ -17,9 +18,11 @@ int main(int argc, char *argv[])
     qRegisterMetaType<net::Buffer>();
 
     QApplication app(argc, argv);
-    ui::LoginScreen login;
+    ui::screen::Login login;
+    ui::screen::Main main;
 
-    login.show();
-
+    if (login.exec() == QDialog::Accepted) {
+        main.show();
+    }
     return app.exec();
 }

@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Common/Network/Selector.hpp"
 
-#include "Common/Container/IProcessUnit.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 #include "Server/Core/ClientStore.hpp"
 #include "Server/Core/meta.hpp"
 
-#include "Common/Log/ILogger.hpp"
+#include "Common/Container/AProcessUnitBase.hpp"
+#include "Common/Network/Selector.hpp"
 
 #ifndef NET_RECV_SIZE
     #define NET_RECV_SIZE 4096
@@ -15,14 +14,14 @@
 
 namespace pu
 {
-    class TCPInputNetwork : public IProcessUnitBase
+    class TCPInputNetwork : public AProcessUnitBase
     {
         public:
             TCPInputNetwork(InputRouter &_output, InputNetworkOutput &_error, uint32_t _port);
             virtual ~TCPInputNetwork() = default;
 
         protected:
-            void runtime(std::stop_token _st);
+            void runtime(std::stop_token _st) final;
 
         private:
             bool process(const ClientStore::Client &_client);
@@ -32,7 +31,5 @@ namespace pu
 
             net::Acceptor<net::INetTcp> m_acceptor{};
             net::Selector<net::INetTcp> m_selector{};
-
-            std::unique_ptr<logger::ILogger> Logger = nullptr;
     };
 }

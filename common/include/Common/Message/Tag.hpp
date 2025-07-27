@@ -54,9 +54,11 @@ namespace fix
         constexpr const char MDEntryPx[] = "270";               ///< Tag [270](https://www.onixs.biz/fix-dictionary/4.2/tagNum_270.html).
         constexpr const char MDUpdateAction[] = "279";          ///< Tag [279](https://www.onixs.biz/fix-dictionary/4.2/tagNum_279.html).
         constexpr const char MDentryRefID[] = "280";            ///< Tag [280](https://www.onixs.biz/fix-dictionary/4.2/tagNum_280.html).
-        constexpr const char RefTagId[] = "371";                ///< Tag [371](https://www.onixs.biz/fix-dictionary/4.2/tagNum_371.html).
         constexpr const char RefMsgType[] = "352";              ///< Tag [352](https://www.onixs.biz/fix-dictionary/4.2/tagNum_352.html).
+        constexpr const char RefTagId[] = "371";                ///< Tag [371](https://www.onixs.biz/fix-dictionary/4.2/tagNum_371.html).
         constexpr const char SessionRejectReason[] = "373";     ///< Tag [373](https://www.onixs.biz/fix-dictionary/4.2/tagNum_373.html).
+        constexpr const char BusinessRejectRefId[] = "379";     ///< Tag [379](https://www.onixs.biz/fix-dictionary/4.2/tagNum_379.html).
+        constexpr const char BusinessRejectReason[] = "380";     ///< Tag [380](https://www.onixs.biz/fix-dictionary/4.2/tagNum_380.html).
     };
 
     /// @brief Verify the value of all the fix::Tag passed as template.

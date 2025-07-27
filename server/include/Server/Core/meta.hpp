@@ -76,21 +76,10 @@ concept IsBookOf = std::is_same_v<typename T::key_type, Price> &&
         { _map.at(_price) } -> std::same_as<typename T::mapped_type &>;
     };
 
-template<class T>
-concept IsBook = IsBookOf<T, OrderList>;
-
-template<class T>
-concept IsBookCache = IsBookOf<T, Quantity>;
-
 // template<class T, class _T>
 // concept SocketClient = IsSocket<_T> && (std::is_same_v<std::shared_ptr<_T>, T> || requires (std::shared_ptr<_T> _s) {
 //     { T(_s) };
 // });
-
-template<class T, class ...Ts>
-concept IsProcessor = requires (Ts... _args) {
-    { T::run(std::forward<Ts>(_args)...) } -> std::same_as<bool>;
-};
 
 template<class T>
 concept IsTSQueue = meta::is_base_of_template<ts::Queue, T>::type::value;
