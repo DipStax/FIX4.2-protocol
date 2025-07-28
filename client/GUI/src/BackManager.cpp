@@ -1,6 +1,6 @@
 #include "Client/GUI/BackManager.hpp"
 
-#include "Client/Common/IPC/Header.hpp"
+#include "Client/Shared/IPC/Header.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Network/Selector.hpp"

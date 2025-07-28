@@ -5,8 +5,8 @@
 #include "Client/GUI/UI/screen/Login.hpp"
 #include "Client/GUI/BackManager.hpp"
 
-#include "Client/Common/IPC/Header.hpp"
-#include "Client/Common/IPC/Helper.hpp"
+#include "Client/Shared/IPC/Header.hpp"
+#include "Client/Shared/IPC/Helper.hpp"
 
 #include "Shared/Log/Manager.hpp"
 

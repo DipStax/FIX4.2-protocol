@@ -9,7 +9,7 @@
 #include "Shared/Network/Buffer.hpp"
 #include "Shared/Log/ILogger.hpp"
 
-#include "Client/Common/IPC/Message/Message.hpp"
+#include "Client/Shared/IPC/Message/Message.hpp"
 
 class BackManager : public QObject
 {

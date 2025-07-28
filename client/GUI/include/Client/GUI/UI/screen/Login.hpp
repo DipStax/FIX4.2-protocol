@@ -7,7 +7,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 
-#include "Client/Common/IPC/Message/Logon.hpp"
+#include "Client/Shared/IPC/Message/Logon.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 #include "Shared/Log/ILogger.hpp"
