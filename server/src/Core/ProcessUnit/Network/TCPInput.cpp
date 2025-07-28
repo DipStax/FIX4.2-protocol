@@ -67,7 +67,7 @@ namespace pu
             Logger->log<logger::Level::Info>("Client socket not found or closed");
             return true;
         }
-        std::vector<std::byte> bytes = _client->getSocket()->receive(MAX_RECV_SIZE, error);
+        std::vector<std::byte> bytes = _client->getSocket()->receive(2048, error);
         std::string data(reinterpret_cast<const char*>(bytes.data()), + bytes.size());
 
         Logger->log<logger::Level::Info>("Received from the client: (", _client->getUserId(), "), data:", data);

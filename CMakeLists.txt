@@ -14,14 +14,14 @@ option(ClientBuild "Build the Client library" FALSE)
 
 if (ServerBuild)
     set(CommonBuild TRUE)
-    include(server/server.cmake)
+    add_subdirectory(server)
 endif()
 
 if (ClientBuild)
     set(CommonBuild TRUE)
-    include(client/CMakeLists.txt)
+    add_subdirectory(client)
 endif()
 
 if (CommonBuild)
-    include(shared/CMakeLists.txt)
+    add_subdirectory(shared)
 endif()

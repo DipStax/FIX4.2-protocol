@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Global.hpp"
 
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Thread/Pool.hpp"
 #include "Shared/Log/ILogger.hpp"
 

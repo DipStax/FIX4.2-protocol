@@ -16,21 +16,6 @@ The project is currently, both the client and the server, under heavy refactor t
 
 ## Project Structure:
 
-```
-FIX4.2-protocol/
-├── client/             # Client-side application code
-|   ├── Back            # Backend solution for the client GUI
-|   └── GUI             # User Interface of the client connected to the backend
-├── server/             # Server-side application code
-├── common/             # Shared utilities and definitions
-├── test/               # Unit and integration tests
-├── schema.drawio       # Architectural diagrams
-├── Dockerfile          # Docker configuration for containerization
-├── docker-compose.yml  # Docker Compose setup for multi-container deployment
-├── CMakeLists.txt      # Build configuration using CMake
-├── Doxyfile            # Configuration for Doxygen documentation generation
-└── README.md           # Project documentation (this file)
-```
 ## Getting Started
 
 ### Prerequisites
@@ -50,6 +35,8 @@ cd FIX4.2-protocol
 ```
 
 2. Build with CMake:
+
+To build the client use set the cmake optiona `ClientBuild` to **true** and for the server use `ServerBuild`.
 
 ```bash
 mkdir build

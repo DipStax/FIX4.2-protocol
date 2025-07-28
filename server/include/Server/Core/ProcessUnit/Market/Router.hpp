@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Server/Core/ProcessUnit/data/Market.hpp"
 
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Message/Message.hpp"
 #include "Shared/Log/ILogger.hpp"
 
