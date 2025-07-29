@@ -1,5 +1,11 @@
 # Log
 
+## Define
+
+| Name | Description | Type | Default |
+|---|---|---|---|
+| LOG_BUFFER_TP | Number of global thread is used by the `logger::imp::Buffer` | `uint` | 1 |
+
 ## Registration
 
 Before any use, you must declare the available type of `ILogger` and their name for the entier application.
@@ -26,6 +32,7 @@ After registering your logger types, you can create logger instances as needed.
 There are two main ways to create a logger:
 
 - **Default Logger**: Creates a logger using the default registered type. The string you pass (e.g, `"Name"`) is used as the logger's identifier (and, for file loggers, as the filename)
+
 ```cpp
 std::unique_ptr<logger::ILogger> Logger = logger::Manager::newLogger("Name");
 ```
