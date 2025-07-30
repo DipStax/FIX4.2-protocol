@@ -115,7 +115,7 @@ selector.erase(socket);     // Remove a client
 
 ## Example
 
-Certainly! Here is a **full example** demonstrating how to use your network library to create a simple TCP server that accepts multiple clients, uses a selector to monitor them, and echoes back any received messages. This example covers declaration, acceptor, selector, adding/removing clients, and basic data handling.
+Here is a **full example** demonstrating how to use the network library to create a simple TCP server that accepts multiple clients, uses a selector to monitor them, and echoes back any received messages. This example covers declaration, acceptor, selector, adding/removing clients, and basic data handling.
 
 ```cpp
 int main() {

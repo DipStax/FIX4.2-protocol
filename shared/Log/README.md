@@ -69,6 +69,7 @@ During the convertion to string, if a log level isn't unknow the display will be
 
 The logger handles formatting and type conversion automatically.
 If you pass an unsupported type, ensure it can be converted to a string (e.g., via `operator<<`).
+
 ## Example Usage
 
 ```cpp
