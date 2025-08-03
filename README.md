@@ -10,11 +10,17 @@ The project is currently, both the client and the server, under heavy refactor t
 
 - **Client-Server Architecture**: Facilitates communication between clients and a central server using the FIX 4.2 protocol.
 - **User interface (UI)**: Allows users to interact with the system through QT UI.
-- **Market Data Simulation**: Supports subscribing to market data feeds and refreshing market information.
 - **Order Management**: Enables users to log in, log out, and manage their trading status.
-- **Modular Codebase**: Structured into distinct modules for client, server, common utilities, scripts, and tests.
+- **Modular Codebase**: Structured into distinct modules for client, server, common utilities, tools, and tests.
 
 ## Project Structure:
+
+- [Client](./client/README.md): Contains the client-side components for interacting with the server, submitting orders, and viewing market data.
+    - [Backend](./client/back/README.md): Provides the core backend logic for the client, including process units, network communication, and order management.
+    - [GUI](./client/GUI/README.md): Implements the graphical user interface for the client, allowing users to interact with the trading system visually.
+    - [Shared](./client/shared/README.md): Defines shared types, utilities, and protocol definitions used by both the client backend and GUI.
+- [Server](./server/README.md): Implements the server-side logic for the FIX 4.2 protocol, including order book management, client session handling, and message routing.
+- [Shared](./shared/README.md): Offers common libraries and abstractions (such as containers, logging, networking, threading, and process units) used throughout both client and server components.
 
 ## Getting Started
 
@@ -22,8 +28,9 @@ The project is currently, both the client and the server, under heavy refactor t
 
 - C++20 compatible compiler
 - CMake 3.10 or higher
-- Docker and Docker Compose (for containerized deployement)
 - Qt6 developement tool kit
+- Doxygen (optional)
+- Draw.io extension (optional)
 
 ### Building the project
 
@@ -51,6 +58,10 @@ This project is licensed under the [MIT License](LICENSE)
 
 ---
 
-_Note: This project is a forl of [gabirel1/Epitech-Principe-financier-de-base-et-architecture](https://github.com/gabirel1/Epitech-Principe-financier-de-base-et-architecture) and has been adapted for educational purposes_
+_Note: This project is a fork of [gabirel1/Epitech-Principe-financier-de-base-et-architecture](https://github.com/gabirel1/Epitech-Principe-financier-de-base-et-architecture) wich has been adapted for educational purposes, but this version is a complete rewrite and aim to be a **PoC** of a server/client_
 
 ---
+
+## Maintenair
+
+Maintened by [@DipStax](https://github.com/DipStax)
