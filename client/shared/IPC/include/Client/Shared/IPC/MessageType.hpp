@@ -6,6 +6,7 @@ namespace ipc
 {
     enum class MessageType : uint8_t
     {
+        Identify,
         Status,
         Logon,
         OrderSingle,

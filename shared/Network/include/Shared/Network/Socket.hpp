@@ -8,7 +8,6 @@
 
 #include "Shared/Network/BaseSocket.hpp"
 #include "Shared/Network/Ip.hpp"
-#include "Shared/Network/Buffer.hpp"
 
 template<class T>
 concept IsSocketType = requires (T _sock, const std::byte *_data1, size_t _size, std::string _data2, int &_err) {

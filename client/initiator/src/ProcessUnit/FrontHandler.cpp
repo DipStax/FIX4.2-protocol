@@ -1,0 +1,63 @@
+#include "Client/Initiator/Configuration.hpp"
+#include "Client/Initiator/Config.hpp"
+#include "Client/Initiator/Session.hpp"
+#include "Client/Initiator/ProcessUnit/FrontHandler.hpp"
+
+#include "Client/Shared/IPC/Header.hpp"
+
+namespace pu
+{
+    FrontHandler::FrontHandler()
+    {
+        m_acceptor.listen(Configuration<config::Global>::Get().Config.Front.Port);
+        m_acceptor.setBlocking(false);
+    }
+
+    void FrontHandler::runtime(std::stop_token _st)
+    {
+        std::shared_ptr<net::INetTcp> client;
+        std::vector<std::shared_ptr<net::INetTcp>> clients;
+
+        while (_st.stop_requested()) {
+            client = m_acceptor.accept();
+            if (client != nullptr) {
+                m_selector.client(client);
+                // add to session manager
+                SessionManager::Instance().newSession(client);
+            }
+            clients = m_selector.pull();
+            for (const std::shared_ptr<net::INetTcp> &_client : clients) {
+                SessionManager::Session session = SessionManager::Instance().findSession(_client);
+
+                if (process(_client, session)) {
+                    // disconnect client
+                }
+            }
+        }
+    }
+
+    bool FrontHandler::process(const std::shared_ptr<net::INetTcp> &_socket, SessionManager::SharedSession &_session)
+    {
+        ipc::Header header;
+        std::vector<std::byte> bytes = clients[0]->receive(sizeof(ipc::Header), error);
+
+        if (error != sizeof(ipc::Header)) {
+            if (error == -1)
+                Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
+            else if (error == 0)
+                Logger->log<logger::Level::Fatal>("Backend disconnected");
+            else
+                Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
+            return false;
+        }
+        net::Buffer buffer;
+        ipc::Header header;
+
+        buffer.append(bytes.data(), bytes.size());
+        buffer >> header;
+        m_tp.enqueue([_session, _header = std::move(header), _buffer = std::move(buffer)] () {
+            _session->received(header, _buffer, Session::Side::Front);
+        });
+        return true;
+    }
+}
