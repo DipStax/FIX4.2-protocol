@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Client/Initiator/Config.hpp"
+#include "Client/Initiator/Session.hpp"
 
 #include "Shared/ProcessUnit/AProcessUnitBase.hpp"
 #include "Shared/Network/Acceptor.hpp"
@@ -17,12 +18,14 @@ namespace pu
     {
         public:
             FrontHandler();
-            virtual ~FrontHandler();
+            virtual ~FrontHandler() = default;
 
         protected:
             void runtime(std::stop_token _st);
 
         private:
+            bool process(const std::shared_ptr<net::INetTcp> &_socket, std::shared_ptr<Session> &_session);
+
             net::Acceptor<net::INetTcp> m_acceptor{};
             net::Selector<net::INetTcp> m_selector{};
 

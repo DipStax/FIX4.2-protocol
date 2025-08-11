@@ -33,3 +33,11 @@ bool Core::start()
     stop();
     return true;
 }
+
+void Core::stop()
+{
+    if (m_running) {
+        m_front_handler.stop();
+        m_running = false;
+    }
+}

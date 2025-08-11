@@ -18,4 +18,4 @@ class Configuration
         Configuration() = default;
 };
 
-#include "Client/Initiator/Configuration.hpp"
+#include "Client/Initiator/Configuration.inl"

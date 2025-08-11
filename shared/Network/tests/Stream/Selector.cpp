@@ -5,6 +5,7 @@
 #include <errno.h>
 
 #include "Shared/Network/Selector.hpp"
+#include "Shared/Network/Acceptor.hpp"
 
 #define TEST_TO_SELECTOR 1000
 #define TEST_IP_TCP (127 << 24 | 1)

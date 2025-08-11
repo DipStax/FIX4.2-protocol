@@ -3,6 +3,8 @@
 #include <memory>
 #include <vector>
 
+#include "Client/Initiator/Session.hpp"
+
 class SessionManager
 {
     public:

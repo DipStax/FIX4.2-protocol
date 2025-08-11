@@ -1,6 +1,6 @@
 #include "Client/Initiator/Configuration.hpp"
 #include "Client/Initiator/Config.hpp"
-#include "Client/Initiator/Session.hpp"
+#include "Client/Initiator/SessionManager.hpp"
 #include "Client/Initiator/ProcessUnit/FrontHandler.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
@@ -8,6 +8,7 @@
 namespace pu
 {
     FrontHandler::FrontHandler()
+        : AProcessUnitBase("Initiator/Session/FrontHandler")
     {
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Front.Port);
         m_acceptor.setBlocking(false);
@@ -27,7 +28,7 @@ namespace pu
             }
             clients = m_selector.pull();
             for (const std::shared_ptr<net::INetTcp> &_client : clients) {
-                SessionManager::Session session = SessionManager::Instance().findSession(_client);
+                std::shared_ptr<Session> session = SessionManager::Instance().findSession(_client);
 
                 if (process(_client, session)) {
                     // disconnect client
@@ -36,10 +37,12 @@ namespace pu
         }
     }
 
-    bool FrontHandler::process(const std::shared_ptr<net::INetTcp> &_socket, SessionManager::SharedSession &_session)
+    bool FrontHandler::process(const std::shared_ptr<net::INetTcp> &_socket, std::shared_ptr<Session> &_session)
     {
         ipc::Header header;
-        std::vector<std::byte> bytes = clients[0]->receive(sizeof(ipc::Header), error);
+        int error = 0;
+        std::vector<std::byte> bytes = _socket->receive(sizeof(ipc::Header), error);
+        net::Buffer buffer;
 
         if (error != sizeof(ipc::Header)) {
             if (error == -1)
@@ -50,13 +53,11 @@ namespace pu
                 Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
             return false;
         }
-        net::Buffer buffer;
-        ipc::Header header;
 
         buffer.append(bytes.data(), bytes.size());
         buffer >> header;
-        m_tp.enqueue([_session, _header = std::move(header), _buffer = std::move(buffer)] () {
-            _session->received(header, _buffer, Session::Side::Front);
+        m_tp.enqueue([_session, _header = std::move(header), _buffer = std::move(buffer)] () mutable {
+            _session->received(_header, _buffer, Session::Side::Front);
         });
         return true;
     }

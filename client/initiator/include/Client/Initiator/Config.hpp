@@ -22,8 +22,8 @@ namespace config
         BackendConfig Back;
     };
 
-    inline void from_json(const nlohmann::json &_json, config::Global &_config);
-    inline void to_json(nlohmann::json &_json, const config::Global &_config);
+    void from_json(const nlohmann::json &_json, config::Global &_config);
+    void to_json(nlohmann::json &_json, const config::Global &_config);
 }
 
 
