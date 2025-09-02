@@ -21,12 +21,13 @@ int main(int _ac, const char **_av)
     if (_ac != 2)
         return help(1);
 
-    if (std::strcmp(_av[1], "-h"))
+    if (!std::strcmp(_av[1], "-h"))
         return help(0);
 
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
+    logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
 

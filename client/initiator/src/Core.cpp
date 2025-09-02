@@ -21,7 +21,7 @@ bool Core::start()
     while (m_running)
     {
         try {
-            m_front_handler.status();
+            // m_front_handler.status();
         } catch (std::future_error &_e) {
             Logger->log<logger::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
             return false;

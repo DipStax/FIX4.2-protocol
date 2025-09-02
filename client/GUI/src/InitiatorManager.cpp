@@ -1,17 +1,16 @@
 #include <QThread>
 
-#include "Client/GUI/BackManager.hpp"
+#include "Client/GUI/InitiatorManager.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Network/Selector.hpp"
 
-
-BackManager *BackManager::Instance()
+InitiatorManager *InitiatorManager::Instance()
 {
     if (!m_instance) {
-        m_instance = new BackManager();
+        m_instance = new InitiatorManager();
 
         QThread *thread = new QThread();
         m_instance->moveToThread(thread);
@@ -22,24 +21,24 @@ BackManager *BackManager::Instance()
     return m_instance;
 }
 
-void BackManager::startConnection()
+void InitiatorManager::startConnection()
 {
-    net::Selector<net::UnixStream> selector;
-    const std::string socket_address = "/tmp/fix-backend.socket";
+    net::Selector<net::INetTcp> selector;
 
-    m_socket = std::make_shared<net::UnixStream>();
-    Logger->log<logger::Level::Debug>("Connecting to: ", socket_address);
-    while (!m_socket->connect(socket_address)) {
+    m_socket = std::make_shared<net::INetTcp>();
+    Logger->log<logger::Level::Debug>("Connecting to: 127.0.0.1:8082"); // todo use config
+    while (!m_socket->connect("127.0.0.1", 8082)) { // todo use config
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000)); // todo use config
     }
-    Logger->log<logger::Level::Info>("Successfully connected to backend");
+    Logger->log<logger::Level::Info>("Successfully connected to Initiator");
+    emit connectionReady();
 
     selector.timeout(1000);
     selector.client(m_socket);
 
     while (true) {
-        std::vector<net::Selector<net::UnixStream>::Client> clients = selector.pull();
+        std::vector<net::Selector<net::INetTcp>::Client> clients = selector.pull();
 
         if (!clients.empty()) {
             int error = 0;
@@ -73,41 +72,27 @@ void BackManager::startConnection()
     }
 }
 
-void BackManager::send(const net::Buffer &_buffer)
+void InitiatorManager::send(const net::Buffer &_buffer)
 {
     m_socket->send(_buffer.data(), _buffer.size());
 }
 
-BackManager::BackManager(QObject *_parent)
-    : QObject(_parent), Logger(logger::Manager::newLogger("BackManager"))
+InitiatorManager::InitiatorManager(QObject *_parent)
+    : QObject(_parent), Logger(logger::Manager::newLogger("InitiatorManager"))
 {
 }
 
-void BackManager::ipcReceived(net::Buffer &_buffer)
+void InitiatorManager::ipcReceived(net::Buffer &_buffer)
 {
     ipc::Header header;
 
-    ipc::msg::Logon logon{};
-    ipc::msg::Execution exec;
-    uint8_t status;
+    ipc::msg::IdentifyFront identify{};
 
     _buffer >> header;
     switch (header.MsgType) {
-        case ipc::MessageType::Status:
-            _buffer >> status;
-            emit received_Status(static_cast<PUStatus>(status));
-            break;
-        case ipc::MessageType::Logon:
-            _buffer >> logon;
-            emit received_Logon(logon);
-            break;
-        case ipc::MessageType::ExecNew:
-            _buffer >> exec;
-            emit received_ExecutionNew(exec);
-            break;
-        case ipc::MessageType::ExecEvent:
-            _buffer >> exec;
-            emit received_ExecutionEvent(exec);
+        case ipc::MessageType::Identify:
+            _buffer >> identify;
+            emit received_IdentifyFront(identify);
             break;
         default:
             Logger->log<logger::Level::Error>("Unknown received message type: ", static_cast<int>(header.MsgType));

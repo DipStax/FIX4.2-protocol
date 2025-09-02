@@ -22,11 +22,13 @@ namespace pu
         while (_st.stop_requested()) {
             client = m_acceptor.accept();
             if (client != nullptr) {
+                Logger->log<logger::Level::Info>("New client connected");
                 m_selector.client(client);
-                // add to session manager
                 SessionManager::Instance().newSession(client);
             }
             clients = m_selector.pull();
+            if (clients.size() != 0)
+                Logger->log<logger::Level::Info>("Event pulled from: ", clients.size(), " client(s)");
             for (const std::shared_ptr<net::INetTcp> &_client : clients) {
                 std::shared_ptr<Session> session = SessionManager::Instance().findSession(_client);
 
@@ -48,7 +50,7 @@ namespace pu
             if (error == -1)
                 Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
             else if (error == 0)
-                Logger->log<logger::Level::Fatal>("Backend disconnected");
+                Logger->log<logger::Level::Fatal>("Frontend client disconnected");
             else
                 Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
             return false;

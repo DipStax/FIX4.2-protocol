@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QObject>
-#include <QThread>
 #include <memory>
 
-#include "Shared/ProcessUnit/ProcessUnit.hpp"
-#include "Shared/Network/Socket.hpp"
-#include "Shared/Network/Buffer.hpp"
-#include "Shared/Log/ILogger.hpp"
+#include <QObject>
 
 #include "Client/Shared/IPC/Message/Message.hpp"
+
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/Network/Socket.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
 
 class BackManager : public QObject
 {

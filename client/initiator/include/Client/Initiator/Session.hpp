@@ -24,16 +24,23 @@ class Session
 
         static std::string GetSessionId();
 
+        std::shared_ptr<net::INetTcp> getFrontSocket() const;
+
     private:
+        struct SessionFrontend
+        {
+            std::string apikey{};
+            bool apikey_set = false;
+
+            std::shared_ptr<net::INetTcp> socket = nullptr;
+        };
+
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
         void IdentifyFrontend(const ipc::Header &_header, net::Buffer &_buffer);
 
-        const std::string m_session_id{};
-        std::string m_apikey;
+        const std::string m_session_id;
 
-        bool m_apikey_set = false;
-
-        std::shared_ptr<net::INetTcp> m_front_socket = nullptr;
+        SessionFrontend m_frontend{};
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

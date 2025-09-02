@@ -3,6 +3,17 @@
 
 namespace ipc
 {
+    net::Buffer Helper::FrontIdentification(const msg::IdentifyFront &_identify)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::Identify,
+            static_cast<uint32_t>(sizeof(uint32_t) + _identify.apiKey.size())
+        };
+
+        return buffer << header << _identify;
+    }
+
     net::Buffer Helper::Status(PUStatus _status)
     {
         net::Buffer buffer;

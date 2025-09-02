@@ -10,6 +10,7 @@ add_executable(Fix_Client_Initiator
 
 target_link_libraries(Fix_Client_Initiator PRIVATE
     Client_Shared_IPC
+    Shared_Core
     Shared_Network
     Shared_ProcessUnit
     nlohmann_json::nlohmann_json

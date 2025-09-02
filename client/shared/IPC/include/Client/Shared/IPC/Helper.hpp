@@ -10,6 +10,7 @@ namespace ipc
 {
     struct Helper
     {
+        static net::Buffer FrontIdentification(const msg::IdentifyFront &_identify);
         static net::Buffer Status(PUStatus _status);
         static net::Buffer Logon(const msg::Logon &_logon);
         static net::Buffer OrderSingle(const msg::OrderSingle &_order);

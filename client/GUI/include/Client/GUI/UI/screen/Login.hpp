@@ -7,7 +7,7 @@
 #include <QPushButton>
 #include <QProgressBar>
 
-#include "Client/Shared/IPC/Message/Logon.hpp"
+#include "Client/Shared/IPC/Message/Identify.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 #include "Shared/Log/ILogger.hpp"
@@ -23,15 +23,16 @@ namespace ui::screen
             Login(QWidget *parent = nullptr);
             ~Login() = default;
 
-        public slots:
-            void backNotifyStatus(PUStatus _status);
-            void backNotifyLogon(ipc::msg::Logon _logon);
-
         signals:
             void requestConnection();
 
-        private:
+        private slots:
+            // void backNotifyStatus(PUStatus _status);
+            // void backNotifyLogon(ipc::msg::Logon _logon);
+            void sendIdentification();
+            void validatedIdentification(ipc::msg::IdentifyFront _identify);
 
+        private:
             void onSubmit();
 
             QVBoxLayout *m_layout = nullptr;
