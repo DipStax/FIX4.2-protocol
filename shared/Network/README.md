@@ -113,6 +113,53 @@ selector.client(socket);    // Add a client
 selector.erase(socket);     // Remove a client
 ```
 
+## Buffer
+
+The library provides a built-in Buffer class designed to efficiently store and send arbitrary data in a generic way.
+
+### Supported Data Type
+
+- **Boolean**: stored using 1 byte (`bool`)
+- **Signed integers**: from 1 to 4 bytes (`int8_t`, `int16_t`, `int32_t`)
+- **Unsigned integers**: from 1 to 4 bytes (`uint8_t`, `uint16_t`, `uint32_t`)
+- **Floating-point numbers**: (`float`, `double`)
+- `std::string` → up to a maximum length of **2^32**
+- **C-style strings** (`char *`) → null-terminated (`0x00`), also up to **2^32** characters
+
+> Strings longer than the maximum length may result in undefined behavior.
+
+### Usage
+
+You interact with the buffer using the stream operators:
+
+- `<<` write (serialize) data into the buffer
+- `>>` read (deserialize) data back out of the buffer
+
+```cpp
+net::Buffer buffer{};
+
+// write to the buffer
+buffer << 1 << "string" << 2.5f;
+
+int integer = 0;
+std::string string{};
+float fpnumber = 0.0f;
+
+// read from the buffer
+buffer >> integer >> string >> fpnumber;
+```
+
+### Custom type
+
+To support your custom type you need to create 2 operators:
+
+```cpp
+// To write into the buffer
+std::Buffer &operator<<(std::Buffer &_buffer, const T &_data);
+// To read from the buffer
+std::BUffer &operator>>(std::Buffer &_buffer, T &_data);
+```
+
 ## Example
 
 Here is a **full example** demonstrating how to use the network library to create a simple TCP server that accepts multiple clients, uses a selector to monitor them, and echoes back any received messages. This example covers declaration, acceptor, selector, adding/removing clients, and basic data handling.
