@@ -9,6 +9,7 @@ namespace ipc::msg
     struct IdentifyFront
     {
         std::string apiKey;
+        uint32_t backport;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const IdentifyFront &_identify);
         friend net::Buffer &operator>>(net::Buffer &_buffer, IdentifyFront &_identify);

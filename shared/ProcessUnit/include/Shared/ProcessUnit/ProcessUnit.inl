@@ -61,4 +61,5 @@ void ProcessUnit<T>::process(std::stop_token _st)
         this->Logger->template log<logger::Level::Debug>("Calling OnStop function for gracefull exit");
         this->onStop();
     }
+    this->Logger->template log<logger::Level::Info>("Process unit exit");
 }

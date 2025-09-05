@@ -13,7 +13,7 @@ target_link_libraries(Fix_Client_Initiator PRIVATE
     Shared_Core
     Shared_Network
     Shared_ProcessUnit
-    nlohmann_json::nlohmann_json
+    Shared_Configuration
 )
 
 target_include_directories(Fix_Client_Initiator PUBLIC include)

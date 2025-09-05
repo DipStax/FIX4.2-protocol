@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include "Shared/Configuration/Configuration.hpp"
 
 namespace config
 {

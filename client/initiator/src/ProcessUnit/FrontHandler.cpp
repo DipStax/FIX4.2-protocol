@@ -1,16 +1,18 @@
-#include "Client/Initiator/Configuration.hpp"
 #include "Client/Initiator/Config.hpp"
 #include "Client/Initiator/SessionManager.hpp"
 #include "Client/Initiator/ProcessUnit/FrontHandler.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
 
+#include "Shared/Configuration/Configuration.hpp"
+
 namespace pu
 {
     FrontHandler::FrontHandler()
-        : AProcessUnitBase("Initiator/Session/FrontHandler")
+        : AProcessUnitBase("Initiator/FrontHandler")
     {
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Front.Port);
+        Logger->log<logger::Level::Debug>("Listening on port: ", Configuration<config::Global>::Get().Config.Front.Port);
         m_acceptor.setBlocking(false);
     }
 
@@ -19,7 +21,7 @@ namespace pu
         std::shared_ptr<net::INetTcp> client;
         std::vector<std::shared_ptr<net::INetTcp>> clients;
 
-        while (_st.stop_requested()) {
+        while (!_st.stop_requested()) {
             client = m_acceptor.accept();
             if (client != nullptr) {
                 Logger->log<logger::Level::Info>("New client connected");

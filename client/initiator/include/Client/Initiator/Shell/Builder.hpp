@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "Client/Initiator/Shell/Command.hpp"
 
 namespace shell
@@ -13,9 +15,9 @@ namespace shell
             Builder &newShellCommand(const std::string &_cmd);
             Builder &setEnvironement(const std::string &_key, const std::string &_value);
             Builder &addArgument(const std::string &_arg);
-            Command result() const;
+            std::unique_ptr<Command> result();
 
         private:
-            Command m_cmd{};
+            std::unique_ptr<Command> m_cmd{};
     };
 }

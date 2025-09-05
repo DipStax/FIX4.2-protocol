@@ -66,7 +66,7 @@ void InitiatorManager::startConnection()
             buffer.append(bytes.data(), bytes.size());
             buffer.reset();
 
-            Logger->log<logger::Level::Debug>("Received new data from backend");
+            Logger->log<logger::Level::Debug>("Received new data from initiator");
             ipcReceived(buffer);
         }
     }

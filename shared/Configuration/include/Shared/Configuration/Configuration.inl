@@ -1,8 +1,6 @@
 #include <fstream>
 
-#include <nlohmann/json.hpp>
-
-#include "Client/Initiator/Configuration.hpp"
+#include "Shared/Configuration/Configuration.hpp"
 
 template<class T>
 void Configuration<T>::Load(const std::filesystem::path &_path, Configuration<T> &_config)

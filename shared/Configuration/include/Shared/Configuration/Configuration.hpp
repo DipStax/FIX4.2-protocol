@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <nlohmann/json.hpp>
 
 template<class T>
 class Configuration
@@ -18,4 +19,4 @@ class Configuration
         Configuration() = default;
 };
 
-#include "Client/Initiator/Configuration.inl"
+#include "Shared/Configuration/Configuration.inl"

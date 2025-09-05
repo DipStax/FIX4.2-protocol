@@ -1,10 +1,12 @@
 #include "Client/Initiator/Core.hpp"
 
+#include "Shared/Configuration/Configuration.hpp"
 #include "Shared/Log/Manager.hpp"
 
 Core::Core()
     : Logger(logger::Manager::newLogger("Core"))
 {
+    Logger->log<logger::Level::Info>(Configuration<config::Global>::Get().Config);
 }
 
 Core::~Core()

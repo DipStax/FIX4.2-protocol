@@ -93,6 +93,8 @@ namespace ui::screen
 
     void Login::validatedIdentification(ipc::msg::IdentifyFront _identify)
     {
+        std::ignore = _identify;
+
         m_progress->setValue(1);
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
     }

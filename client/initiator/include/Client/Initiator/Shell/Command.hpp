@@ -46,20 +46,22 @@ namespace shell
 
                     for (const auto& [key, value] : m_env) {
                         std::string combined = key + "=" + value;
-                        char* cstr = strdup(combined.c_str());
+                        char *cstr = strdup(combined.c_str());
 
                         env.push_back(cstr);
                     }
                     for (const std::string &_arg : m_arg) {
-                        char* cstr = strdup(_arg.c_str());
+                        char *cstr = strdup(_arg.c_str());
 
-                        env.push_back(cstr);
+                        args.push_back(cstr);
                     }
 
                     execvpe(m_cmd.c_str(), args.data(), env.data());
 
                     for (char *_env : env)
                         free(_env);
+                    for (char *_arg : args)
+                        free(_arg);
                     exit(0);
                 } else if (m_pid > 0) {
                     m_launch = true;
@@ -107,6 +109,17 @@ namespace shell
             void addArgument(const std::string &_arg)
             {
                 m_arg.push_back(_arg);
+            }
+
+            friend std::ostream &operator<<(std::ostream &_os, const Command &_cmd)
+            {
+                _os << "Command: \"" << _cmd.m_cmd;
+                for (const std::string &_arg : _cmd.m_arg)
+                    _os << " " << _arg;
+                _os << "\"";
+                for (const auto &[_key, _value] : _cmd.m_env)
+                    _os << "\n\tENV: " << _key << "=" << _value;
+                return _os;
             }
 
         private:

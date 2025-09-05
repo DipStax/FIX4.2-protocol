@@ -34,7 +34,7 @@ class BackManager : public QObject
     private:
         void ipcReceived(net::Buffer &_buffer);
 
-        std::shared_ptr<net::UnixStream> m_socket = nullptr;
+        std::shared_ptr<net::TcpStream> m_socket = nullptr;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 

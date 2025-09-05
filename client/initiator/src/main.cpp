@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "Client/Initiator/Configuration.hpp"
 #include "Client/Initiator/Config.hpp"
 
 #include "Client/Initiator/Core.hpp"
@@ -30,8 +29,6 @@ int main(int _ac, const char **_av)
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
-
-    std::cout << Configuration<config::Global>::Get().Config << std::endl;
 
     Core core{};
 
