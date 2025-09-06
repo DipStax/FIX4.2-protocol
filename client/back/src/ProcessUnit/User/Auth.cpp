@@ -55,7 +55,7 @@ namespace pu
             static_cast<uint32_t>(user.getSeqNumber()),
             hb_info.Elapsing
         };
-        FrontManager::Instance().notify(ipc::Helper::Logon(ipc_logon));
+        FrontManager::Instance().send(ipc::Helper::Logon(ipc_logon));
         return true;
     }
 

@@ -1,11 +1,11 @@
 #include "Client/Back/Core.hpp"
+#include "Client/Back/FrontManager.hpp"
+#include "Client/Back/InitiatorManager.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Console.hpp"
 #include "Shared/Log/Imp/File.hpp"
 #include "Shared/Log/Imp/Buffer.hpp"
-
-#include "Client/Back/FrontManager.hpp"
 
 int main()
 {
@@ -14,10 +14,10 @@ int main()
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
-    if (!FrontManager::Instance().wait_frontend())
-        return 1;
+    InitiatorManager::Instance().connect();
+    FrontManager::Instance().wait_frontend();
 
-    Core core{8080, 8081};
+    Core core{};
 
     core.start();
     return 0;

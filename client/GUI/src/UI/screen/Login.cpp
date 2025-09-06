@@ -83,15 +83,15 @@ namespace ui::screen
 
     void Login::sendIdentification()
     {
-        ipc::msg::IdentifyFront identifier;
+        ipc::msg::AuthFrontToInitiator identifier;
 
-        identifier.apiKey = "api-key"; // todo use configuration
+        identifier.apikey = "api-key"; // todo use configuration
         Logger->log<logger::Level::Info>("Sending request to identify frontend to initiator");
         connect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
-        InitiatorManager::Instance()->send(ipc::Helper::FrontIdentification(identifier));
+        InitiatorManager::Instance()->send(ipc::Helper::Auth::FrontToInitiator(identifier));
     }
 
-    void Login::validatedIdentification(ipc::msg::IdentifyFront _identify)
+    void Login::validatedIdentification(ipc::msg::AuthInitiatorToFront _identify)
     {
         std::ignore = _identify;
 

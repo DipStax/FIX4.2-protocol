@@ -24,6 +24,8 @@ class Session
         Session(const std::shared_ptr<net::INetTcp> &_front);
         ~Session() = default;
 
+        void send(const net::Buffer &_buffer, Side _side);
+
         void received(const ipc::Header &_header, net::Buffer &_buffer, Side _side);
 
         static std::string GetSessionId();

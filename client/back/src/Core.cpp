@@ -4,7 +4,10 @@
 #include "Client/Back/FrontManager.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
 
-Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
+#include "Client/Back/InitiatorManager.hpp"
+#include "Client/Back/FrontManager.hpp"
+
+Core::Core()
     : m_server(std::make_shared<net::INetTcp>()),
     m_tcp_output(m_server),
     m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
@@ -20,10 +23,10 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
     m_tcp_input(m_server, m_router.getInput()),
     Logger(logger::Manager::newLogger("Client/Core"))
 {
-    if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
-        Logger->log<logger::Level::Fatal>("Failed to connect to server");
-    Logger->log<logger::Level::Debug>("Notifying front of initialized status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Initialize));
+    // if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
+    //     Logger->log<logger::Level::Fatal>("Failed to connect to server");
+    // Logger->log<logger::Level::Debug>("Notifying front of initialized status");
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Initialize));
 }
 
 Core::~Core()
@@ -36,6 +39,7 @@ bool Core::start()
     m_running = true;
     Logger->log<logger::Level::Info>("Starting client backend...");
 
+    FrontManager::Instance().wait_frontend();
     m_tcp_output.start();
     m_builder.start();
     m_heartbeat.start();
@@ -44,7 +48,7 @@ bool Core::start()
     m_router.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Debug>("Notifying front of running status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Running));
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Running));
     while (m_running)
     {
         try {
@@ -64,7 +68,7 @@ bool Core::start()
         }
     }
     Logger->log<logger::Level::Debug>("Notifying front of stop status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Stop));
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Stop));
     stop();
     return true;
 }

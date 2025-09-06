@@ -27,7 +27,7 @@ void BackManager::startConnection()
     net::Selector<net::UnixStream> selector;
     const std::string socket_address = "/tmp/fix-backend.socket";
 
-    m_socket = std::make_shared<net::INetTcp>();
+    m_socket = std::make_shared<net::UnixStream>();
     Logger->log<logger::Level::Debug>("Connecting to: ", socket_address);
     while (!m_socket->connect(socket_address)) {
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");

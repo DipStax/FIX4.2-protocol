@@ -4,7 +4,6 @@ namespace shell
 {
     Builder &Builder::newShellCommand(const std::string &_cmd)
     {
-        // m_cmd = Command{_cmd};
         m_cmd = std::make_unique<Command>(Command{_cmd});
         return *this;
     }
@@ -21,7 +20,7 @@ namespace shell
         return *this;
     }
 
-    std::unique_ptr<Command> Builder::result()
+    std::unique_ptr<Command> &&Builder::result()
     {
         return std::move(m_cmd);
     }

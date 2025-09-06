@@ -3,16 +3,43 @@
 
 namespace ipc
 {
-    net::Buffer Helper::FrontIdentification(const msg::IdentifyFront &_identify)
+    net::Buffer Helper::Auth::FrontToInitiator(const msg::AuthFrontToInitiator &_auth)
     {
         net::Buffer buffer;
         ipc::Header header{
-            ipc::MessageType::Identify,
-            static_cast<uint32_t>(sizeof(uint32_t) + _identify.apiKey.size())
+            ipc::MessageType::FrontToInitiatorAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
         };
 
-        return buffer << header << _identify;
+        buffer << header << _auth;
+        return buffer;
     }
+
+
+    net::Buffer Helper::Auth::BackToFront(const msg::AuthBackToFront &_auth)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::BackToFrontAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.token.size())
+        };
+
+        buffer << header << _auth;
+        return buffer;
+    }
+
+    net::Buffer Helper::Auth::BackToInitiator(const msg::AuthBackToInitiator &_auth)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::BackToInitiatorAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+        };
+
+        buffer << header << _auth;
+        return buffer;
+    }
+
 
     net::Buffer Helper::Status(PUStatus _status)
     {

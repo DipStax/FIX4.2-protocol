@@ -6,7 +6,12 @@ namespace ipc
 {
     enum class MessageType : uint8_t
     {
-        Identify,
+        InitiatorToFrontAuth,
+        FrontToInitiatorAuth,
+        InitiatorToBackAuth,
+        BackToInitiatorAuth,
+        FrontToBackAuth,
+        BackToFrontAuth,
         Status,
         Logon,
         OrderSingle,

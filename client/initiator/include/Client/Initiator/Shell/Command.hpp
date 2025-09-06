@@ -95,13 +95,13 @@ namespace shell
 
         protected:
             friend class Builder;
-            Command() = default;
+
             Command(const std::string &_cmd)
                 : m_cmd(_cmd)
             {
             }
 
-            void addEnvironement(const std::string _key, const std::string &_value)
+            void addEnvironement(const std::string &_key, const std::string &_value)
             {
                 m_env.emplace(_key, _value);
             }

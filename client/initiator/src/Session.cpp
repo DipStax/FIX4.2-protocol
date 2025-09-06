@@ -12,6 +12,14 @@ Session::Session(const std::shared_ptr<net::INetTcp> &_front)
     m_frontend.socket = _front;
 }
 
+void Session::send(const net::Buffer &_buffer, Side _side)
+{
+    if (_size == Side::Back)
+        m_backend.socket->send(_buffer.data(), _buffer.size());
+    else
+        m_frontend.socket->send(_buffer.data(), _buffer.size());
+}
+
 void Session::received(const ipc::Header &_header, net::Buffer &_buffer, Side _side)
 {
     switch (_side) {
@@ -41,7 +49,7 @@ void Session::handleFrontend(const ipc::Header &_header, net::Buffer &_buffer)
 {
     Logger->log<logger::Level::Error>("Received new message from frontend: message type: ", (int)_header.MsgType);
     switch (_header.MsgType) {
-        case ipc::MessageType::Identify: identifyFrontend(_header, _buffer);
+        case ipc::MessageType::AuthFrontToInitiator: identifyFrontend(_header, _buffer);
             break;
         default: // send reject message
             break;
@@ -54,30 +62,29 @@ void Session::identifyFrontend(const ipc::Header &_header, net::Buffer &_buffer)
 
     Logger->log<logger::Level::Debug>("Identification of the frond end requested");
     if (!m_frontend.apikey_set) {
-        ipc::msg::IdentifyFront identify;
-        net::Buffer reply = ipc::Helper::FrontIdentification(identify);
+        ipc::msg::AuthFrontToInitiator authfront{};
+        ipc::msg::AuthInitiatorToFront valid_auth{};
 
-        _buffer >> identify;
-        m_frontend.apikey = identify.apiKey;
+        Logger->log<logger::Level::Info>("Frontend identify with info: ", auth);
+        _buffer >> auth;
+        m_frontend.apikey = auth.apiKey;
         m_frontend.apikey_set = true;
-        Logger->log<logger::Level::Info>("Frontend identify with the apikey: ", m_frontend.apikey);
-        m_frontend.socket->send(reply.data(), reply.size());
-
-        setupBackend(identify);
+        valid_auth.apikey = m_frontend.apikey;
+        send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
+        setupBackend(auth);
     } else {
         // send reject message
     }
 }
 
-void Session::setupBackend(const ipc::msg::IdentifyFront &_identify)
+void Session::setupBackend(const ipc::msg::AuthFrontToInitiator &_auth)
 {
+    Logger->log<logger::Level::Info>("info level");
+
     m_backend.cmd = shell::Builder()
         .newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
-        .setEnvironement("FIX42-apikey", _identify.apiKey)
+        .setEnvironement("FIX42-apikey", _auth.apiKey)
         .setEnvironement("FIX42-initiator-address", Configuration<config::Global>::Get().Config.Back.Address + "." + m_session_id)
-        .addArgument("--client-ip=127.0.0.1") // todo get ip socket
-        .addArgument("--client-port=" + std::to_string(_identify.backport))
         .result();
-
     Logger->log<logger::Level::Verbose>("New backend setup: ", *(m_backend.cmd));
 }

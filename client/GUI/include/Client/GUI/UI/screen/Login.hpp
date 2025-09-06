@@ -30,7 +30,7 @@ namespace ui::screen
             // void backNotifyStatus(PUStatus _status);
             // void backNotifyLogon(ipc::msg::Logon _logon);
             void sendIdentification();
-            void validatedIdentification(ipc::msg::IdentifyFront _identify);
+            void validatedIdentification(ipc::msg::AuthInitiatorToFront _identify);
 
         private:
             void onSubmit();

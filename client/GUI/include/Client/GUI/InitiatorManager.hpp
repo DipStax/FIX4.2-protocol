@@ -3,12 +3,13 @@
 #include <QObject>
 
 #include "Client/Shared/IPC/Message/Identify.hpp"
+#include "Client/Shared/IPC/IPCNetworkManager.hpp"
 
 #include "Shared/Log/ILogger.hpp"
 #include "Shared/Network/Buffer.hpp"
 #include "Shared/Network/Socket.hpp"
 
-class InitiatorManager : public QObject
+class InitiatorManager : public QObject, IPCNetworkManager<net::INetTcp>
 {
     Q_OBJECT
 
@@ -21,17 +22,23 @@ class InitiatorManager : public QObject
 
     signals:
         void connectionReady();
-        void received_IdentifyFront(ipc::msg::IdentifyFront _identify);
+        void received_IdentifyFront(ipc::msg::AuthInitiatorToFront _identify);
+
+    public:
+        void stop();
 
     protected:
         InitiatorManager(QObject *_parent = nullptr);
 
+        void onError(int _errno) final;
+        void onDisconnection() final;
+        void onWrongSize(const std::vector<std::byte> &_byte, int _readsize) final;
+        void onWrongBodySize(const std::vector<std::byte> &_byte, int _readsize) final;
+
+        void onReceive(net::Buffer &_buffer) final;
+
     private:
-        void ipcReceived(net::Buffer &_buffer);
-
-        std::shared_ptr<net::INetTcp> m_socket = nullptr;
-
-        std::unique_ptr<logger::ILogger> Logger = nullptr;
+        std::stop_source m_stopsource{};
 
         inline static InitiatorManager *m_instance = nullptr;
 };

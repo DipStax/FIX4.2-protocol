@@ -15,9 +15,9 @@ namespace shell
             Builder &newShellCommand(const std::string &_cmd);
             Builder &setEnvironement(const std::string &_key, const std::string &_value);
             Builder &addArgument(const std::string &_arg);
-            std::unique_ptr<Command> result();
+            std::unique_ptr<Command> &&result();
 
         private:
-            std::unique_ptr<Command> m_cmd{};
+            std::unique_ptr<Command> m_cmd = nullptr;
     };
 }

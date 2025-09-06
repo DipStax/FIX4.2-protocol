@@ -21,6 +21,7 @@ InitiatorManager *InitiatorManager::Instance()
     return m_instance;
 }
 
+
 void InitiatorManager::startConnection()
 {
     net::Selector<net::INetTcp> selector;
@@ -33,43 +34,7 @@ void InitiatorManager::startConnection()
     }
     Logger->log<logger::Level::Info>("Successfully connected to Initiator");
     emit connectionReady();
-
-    selector.timeout(1000);
-    selector.client(m_socket);
-
-    while (true) {
-        std::vector<net::Selector<net::INetTcp>::Client> clients = selector.pull();
-
-        if (!clients.empty()) {
-            int error = 0;
-
-            std::vector<std::byte> bytes = clients[0]->receive(sizeof(ipc::Header), error);
-            if (error != sizeof(ipc::Header)) {
-                if (error == -1)
-                    Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
-                else if (error == 0)
-                    Logger->log<logger::Level::Fatal>("Backend disconnected");
-                else
-                    Logger->log<logger::Level::Warning>("Unable to read ipc::Header from socket, read size: ", error, " != ", sizeof(ipc::Header));
-                continue;
-            }
-            net::Buffer buffer;
-            ipc::Header header;
-
-            buffer.append(bytes.data(), bytes.size());
-            buffer >> header;
-            bytes = clients[0]->receive(header.BodySize, error);
-            if (error != static_cast<int>(header.BodySize)) {
-                Logger->log<logger::Level::Warning>("Unable to read body size from socket expected: ", header.BodySize, ", got: ", error);
-                continue; // continue
-            }
-            buffer.append(bytes.data(), bytes.size());
-            buffer.reset();
-
-            Logger->log<logger::Level::Debug>("Received new data from initiator");
-            ipcReceived(buffer);
-        }
-    }
+    receiveLoop(m_stopsource.get_token());
 }
 
 void InitiatorManager::send(const net::Buffer &_buffer)
@@ -77,20 +42,45 @@ void InitiatorManager::send(const net::Buffer &_buffer)
     m_socket->send(_buffer.data(), _buffer.size());
 }
 
+void InitiatorManager::stop()
+{
+    m_stopsource.request_stop();
+}
+
 InitiatorManager::InitiatorManager(QObject *_parent)
-    : QObject(_parent), Logger(logger::Manager::newLogger("InitiatorManager"))
+    : QObject(_parent), IPCNetworkManager<net::INetTcp>("InitiatorManager")
 {
 }
 
-void InitiatorManager::ipcReceived(net::Buffer &_buffer)
+void InitiatorManager::onError(int _errno)
+{
+    Logger->log<logger::Level::Fatal>("Error when receiving ", strerror(_errno));
+}
+
+void InitiatorManager::onDisconnection()
+{
+    Logger->log<logger::Level::Fatal>("Initiator disconnected");
+}
+
+void InitiatorManager::onWrongSize(const std::vector<std::byte> &_byte, int _readsize)
+{
+    Logger->log<logger::Level::Error>("Wrong header size received from Initiator");
+}
+
+void InitiatorManager::onWrongBodySize(const std::vector<std::byte> &_byte, int _readsize)
+{
+    Logger->log<logger::Level::Error>("Wrong body size received from Initiator");
+}
+
+void InitiatorManager::onReceive(net::Buffer &_buffer)
 {
     ipc::Header header;
 
-    ipc::msg::IdentifyFront identify{};
+    ipc::msg::AuthInitiatorToFront identify{};
 
     _buffer >> header;
     switch (header.MsgType) {
-        case ipc::MessageType::Identify:
+        case ipc::MessageType::InitiatorToFrontAuth:
             _buffer >> identify;
             emit received_IdentifyFront(identify);
             break;
