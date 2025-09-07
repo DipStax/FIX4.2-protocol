@@ -50,7 +50,7 @@ class Session
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyFrontend(const ipc::Header &_header, net::Buffer &_buffer);
 
-        void setupBackend(const ipc::msg::IdentifyFront &_identify);
+        void setupBackend(const ipc::msg::AuthFrontToInitiator &_identify);
 
         const std::string m_session_id;
 

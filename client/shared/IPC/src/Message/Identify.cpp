@@ -32,7 +32,6 @@ namespace ipc::msg
         return _os << "{ Token: " << _auth.token << " }";
     }
 
-
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToBack &_auth)
     {
         return _buffer << _auth.token << _auth.apikey;

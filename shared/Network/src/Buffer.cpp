@@ -6,7 +6,7 @@ namespace net
     {
         const uint32_t length = static_cast<uint32_t>(std::strlen(_data));
 
-        append(&length, sizeof(uint32_t));
+        *this << length;
         append(_data, length * sizeof(char));
         return *this;
     }
@@ -15,9 +15,9 @@ namespace net
     {
         const uint32_t length = static_cast<uint32_t>(_data.size());
 
-        append(&length, sizeof(uint32_t));
+        *this << length;
         if (length > 0)
-            append(_data.c_str(), length);
+            append(_data.c_str(), length * sizeof(char));
         return *this;
     }
 

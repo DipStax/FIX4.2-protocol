@@ -60,6 +60,11 @@ namespace pu
 
         buffer.append(bytes.data(), bytes.size());
         buffer >> header;
+
+        bytes = _socket->receive(header.BodySize, error);
+        buffer.clear();
+        buffer.append(bytes.data(), bytes.size());
+
         m_tp.enqueue([_session, _header = std::move(header), _buffer = std::move(buffer)] () mutable {
             _session->received(_header, _buffer, Session::Side::Front);
         });

@@ -15,6 +15,17 @@ namespace ipc
         return buffer;
     }
 
+    net::Buffer Helper::Auth::InitiatorToFront(const msg::AuthInitiatorToFront &_auth)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::InitiatorToFrontAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+        };
+
+        buffer << header << _auth;
+        return buffer;
+    }
 
     net::Buffer Helper::Auth::BackToFront(const msg::AuthBackToFront &_auth)
     {

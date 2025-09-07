@@ -28,7 +28,7 @@ namespace shell
 
             int stop()
             {
-                if (m_pid)
+                if (m_pid != -1)
                 {
                     kill(m_pid, SIGTERM);
                     (void)status(true);
@@ -69,6 +69,11 @@ namespace shell
                 } else {
                     return false;
                 }
+            }
+
+            [[nodiscard]] pid_t getPID() const
+            {
+                return m_pid;
             }
 
             [[nodiscard]] Status status(bool _block = false)

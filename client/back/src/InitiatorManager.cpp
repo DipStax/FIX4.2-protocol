@@ -69,5 +69,8 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
             _buffer >> auth;
             FrontManager::Instance().setupToken(auth.token);
             break;
+        default:
+            Logger->log<logger::Level::Error>("Received a non-handle message from Initiator: ", static_cast<uint8_t>(header.MsgType));
+            break;
     }
 }
