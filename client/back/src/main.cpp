@@ -14,8 +14,16 @@ int main()
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
-    InitiatorManager::Instance().connect();
-    FrontManager::Instance().wait_frontend();
+    std::cout << std::getenv("FIX42-apikey") << std::endl;
+    std::cout << std::getenv("FIX42-initiator-address") << std::endl;;
+
+    try {
+        InitiatorManager::Instance().connect();
+        // FrontManager::Instance().wait_frontend();
+    } catch (std::exception &_ex) {
+        std::cout << _ex.what() << std::endl;
+        return 1;
+    }
 
     Core core{};
 

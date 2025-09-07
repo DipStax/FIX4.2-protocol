@@ -27,24 +27,36 @@ namespace ipc
         return buffer;
     }
 
-    net::Buffer Helper::Auth::BackToFront(const msg::AuthBackToFront &_auth)
-    {
-        net::Buffer buffer;
-        ipc::Header header{
-            ipc::MessageType::BackToFrontAuth,
-            static_cast<uint32_t>(sizeof(uint32_t) + _auth.token.size())
-        };
-
-        buffer << header << _auth;
-        return buffer;
-    }
-
     net::Buffer Helper::Auth::BackToInitiator(const msg::AuthBackToInitiator &_auth)
     {
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::BackToInitiatorAuth,
             static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+        };
+
+        buffer << header << _auth;
+        return buffer;
+    }
+
+    net::Buffer Helper::Auth::InitiatorToBack(const msg::AuthInitiatorToBack &_auth)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::InitiatorToBackAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size() + _auth.token.size())
+        };
+
+        buffer << header << _auth;
+        return buffer;
+    }
+
+    net::Buffer Helper::Auth::BackToFront(const msg::AuthBackToFront &_auth)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::BackToFrontAuth,
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.token.size())
         };
 
         buffer << header << _auth;

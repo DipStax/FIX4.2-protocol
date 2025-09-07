@@ -18,12 +18,14 @@ bool Core::start()
 {
     Logger->log<logger::Level::Info>("Starting Initiator...");
     m_front_handler.start();
+    m_back_handler.start();
 
     m_running = true;
     while (m_running)
     {
         try {
             // m_front_handler.status();
+            // m_back_handler.status();
         } catch (std::future_error &_e) {
             Logger->log<logger::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
             return false;
@@ -40,6 +42,7 @@ void Core::stop()
 {
     if (m_running) {
         m_front_handler.stop();
+        m_back_handler.stop();
         m_running = false;
     }
 }

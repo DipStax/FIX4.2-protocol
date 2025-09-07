@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Client/Initiator/Config.hpp"
 #include "Client/Initiator/Session.hpp"
 
 #include "Shared/ProcessUnit/AProcessUnitBase.hpp"

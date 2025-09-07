@@ -2,6 +2,13 @@
 
 namespace config
 {
+    std::ostream &operator<<(std::ostream &_os, const config::Global &_config)
+    {
+        nlohmann::json json = _config;
+
+        return _os << "GlobalConfig" << json.dump(2) << std::endl;
+    }
+
     void from_json(const nlohmann::json &_json, config::Global &_config)
     {
         nlohmann::json front = _json.at("front");
@@ -24,11 +31,4 @@ namespace config
             }},
         };
     }
-}
-
-std::ostream &operator<<(std::ostream &_os, const config::Global &_config)
-{
-    nlohmann::json json = _config;
-
-    return _os << "GlobalConfig" << json.dump(2) << std::endl;
 }

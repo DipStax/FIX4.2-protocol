@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "Client/Initiator/Shell/Builder.hpp"
 
@@ -28,29 +29,37 @@ class Session
 
         void received(const ipc::Header &_header, net::Buffer &_buffer, Side _side);
 
-        static std::string GetSessionId();
+        [[nodiscard]] static std::string GetSessionId();
 
-        std::shared_ptr<net::INetTcp> getFrontSocket() const;
+        [[nodiscard]] std::shared_ptr<net::INetTcp> getFrontSocket() const;
+        [[nodiscard]] std::shared_ptr<net::UnixStream> getBackSocket() const;
+
+        [[nodiscard]] const std::string &getApiKey() const;
+
+        static std::string GenerateToken();
 
     private:
         struct SessionFrontend
         {
-            std::string apikey{};
-            bool apikey_set = false;
+            std::optional<std::string> apikey = std::nullopt;
 
             std::shared_ptr<net::INetTcp> socket = nullptr;
         };
 
         struct SessionBackend
         {
+            std::optional<std::string> token = std::nullopt;
+
             std::unique_ptr<shell::Command> cmd = nullptr;
             std::shared_ptr<net::UnixStream> socket = nullptr;
         };
 
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
-        void identifyFrontend(const ipc::Header &_header, net::Buffer &_buffer);
-
+        void identifyFrontend(net::Buffer &_buffer);
         void setupBackend(const ipc::msg::AuthFrontToInitiator &_identify);
+
+        void handleBackend(const ipc::Header &_header, net::Buffer &_buffer);
+        void identifyBackend(net::Buffer &_buffer);
 
         const std::string m_session_id;
 

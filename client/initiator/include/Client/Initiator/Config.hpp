@@ -20,11 +20,11 @@ namespace config
 
         FrontendConfig Front;
         BackendConfig Back;
+
+        friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };
 
     void from_json(const nlohmann::json &_json, config::Global &_config);
     void to_json(nlohmann::json &_json, const config::Global &_config);
 }
 
-
-std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
