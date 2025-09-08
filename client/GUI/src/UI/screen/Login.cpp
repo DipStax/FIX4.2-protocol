@@ -86,7 +86,7 @@ namespace ui::screen
         std::ignore = _token;
 
         m_progress->setValue(4);
-        Logger->log<logger::Level::Info>("Sending token validation to backend: ", token_valid);
+        Logger->log<logger::Level::Info>("Backend synchronized");
         disconnect(BackManager::Instance(), &BackManager::received_TokenValidation, this, &Login::tokenValidated);
         connect(BackManager::Instance(), &BackManager::received_Status, this, &Login::backNotifyStatus);
     }
