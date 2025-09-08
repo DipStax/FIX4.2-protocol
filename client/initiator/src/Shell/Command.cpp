@@ -15,8 +15,8 @@ namespace shell
 
     bool Command::run()
     {
-        int pipefd[2];
-        pipe(pipefd);
+        // int pipefd[2];
+        // pipe(pipefd);
         m_pid = fork();
 
         if (m_pid == 0) {
@@ -38,10 +38,10 @@ namespace shell
             }
             args.push_back(nullptr);
 
-            close(pipefd[0]); // close read end
-            dup2(pipefd[1], STDOUT_FILENO);
-            dup2(pipefd[1], STDERR_FILENO);
-            close(pipefd[1]);
+            // close(pipefd[0]); // close read end
+            // dup2(pipefd[1], STDOUT_FILENO);
+            // dup2(pipefd[1], STDERR_FILENO);
+            // close(pipefd[1]);
 
             execvpe(m_cmd.c_str(), args.data(), env.data());
 
@@ -51,18 +51,18 @@ namespace shell
                 free(_arg);
             exit(1);
         } else if (m_pid > 0) {
-            close(pipefd[1]); // close write end
+            // close(pipefd[1]); // close write end
 
-            char buffer[1024];
-            ssize_t n;
-            while ((n = read(pipefd[0], buffer, sizeof(buffer)-1)) > 0) {
-                buffer[n] = '\0';
-                // Print child's output directly to our stdout
-                fputs(buffer, stdout);
-                fflush(stdout);
-            }
+            // char buffer[1024];
+            // ssize_t n;
+            // while ((n = read(pipefd[0], buffer, sizeof(buffer)-1)) > 0) {
+            //     buffer[n] = '\0';
+            //     // Print child's output directly to our stdout
+            //     fputs(buffer, stdout);
+            //     fflush(stdout);
+            // }
 
-            close(pipefd[0]);
+            // close(pipefd[0]);
 
             m_launch = true;
             return true;

@@ -22,6 +22,7 @@ void Session::send(const net::Buffer &_buffer, Side _side)
 
 void Session::received(const ipc::Header &_header, net::Buffer &_buffer, Side _side)
 {
+    Logger->log<logger::Level::Info>("Received new message from session");
     switch (_side) {
         case Side::Front: handleFrontend(_header, _buffer);
             break;
@@ -31,6 +32,11 @@ void Session::received(const ipc::Header &_header, net::Buffer &_buffer, Side _s
             Logger->log<logger::Level::Error>("Unknow side of the message");
             break;
     }
+}
+
+void Session::setBackendSocket(const std::shared_ptr<net::UnixStream> &_socket)
+{
+    m_backend.socket = _socket;
 }
 
 std::string Session::GetSessionId()
@@ -86,28 +92,26 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         _buffer >> authfront;
         Logger->log<logger::Level::Info>("Frontend identify with info: ", authfront);
         m_frontend.apikey = authfront.apikey;
+
+        m_backend.cmd = shell::Builder()
+            .newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
+            .setEnvironement("FIX42-apikey", authfront.apikey)
+            .setEnvironement("FIX42-initiator-address", Configuration<config::Global>::Get().Config.Back.Address)
+            .result();
+        Logger->log<logger::Level::Verbose>("New backend setup: ", *(m_backend.cmd));
+        m_backend.cmd->run();
+        Logger->log<logger::Level::Info>("New process created for backend, pid: ", m_backend.cmd->getPID());
+
         valid_auth.apikey = authfront.apikey;
         send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
-        setupBackend(valid_auth);
     } else {
         Logger->log<logger::Level::Error>("Frontend try to reauth with the initiator");
     }
 }
 
-void Session::setupBackend(const ipc::msg::AuthFrontToInitiator &_auth)
-{
-    m_backend.cmd = shell::Builder()
-        .newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
-        .setEnvironement("FIX42-apikey", _auth.apikey)
-        .setEnvironement("FIX42-initiator-address", Configuration<config::Global>::Get().Config.Back.Address)
-        .result();
-    Logger->log<logger::Level::Verbose>("New backend setup: ", *(m_backend.cmd));
-    m_backend.cmd->run();
-    Logger->log<logger::Level::Info>("New process created for backend, pid: ", m_backend.cmd->getPID());
-}
-
 void Session::handleBackend(const ipc::Header &_header, net::Buffer &_buffer)
 {
+    Logger->log<logger::Level::Error>("Received new message from backend: message type: ", (int)_header.MsgType);
     switch (_header.MsgType) {
         case ipc::MessageType::BackToInitiatorAuth: identifyBackend(_buffer);
             break;
@@ -121,8 +125,11 @@ void Session::identifyBackend(net::Buffer &_buffer)
     ipc::msg::AuthBackToInitiator auth;
     ipc::msg::AuthInitiatorToBack auth_valid;
 
+    Logger->log<logger::Level::Verbose>("Identiying backend");
     _buffer >> auth;
+    Logger->log<logger::Level::Info>("Backend authenticated with info: ", auth);
     auth_valid.apikey = auth.apikey;
     auth_valid.token = GenerateToken();
+    Logger->log<logger::Level::Debug>("Generated token: ", auth_valid.token);
     send(ipc::Helper::Auth::InitiatorToBack(auth_valid), Side::Back);
 }

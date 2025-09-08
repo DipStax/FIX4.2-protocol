@@ -19,7 +19,7 @@ void InitiatorManager::connect()
 
     m_socket = std::make_shared<net::UnixStream>();
 
-    while (m_socket->connect(address)) {
+    while (!m_socket->connect(address)) {
         Logger->log<logger::Level::Error>("Unable to connect to the initiator, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
@@ -66,6 +66,7 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
     _buffer >> header;
     switch (header.MsgType) {
         case ipc::MessageType::InitiatorToBackAuth:
+            Logger->log<logger::Level::Info>("Received an auth validation from initiator");
             _buffer >> auth;
             FrontManager::Instance().setupToken(auth.token);
             break;

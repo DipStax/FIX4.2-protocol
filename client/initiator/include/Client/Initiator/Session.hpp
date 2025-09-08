@@ -29,6 +29,8 @@ class Session
 
         void received(const ipc::Header &_header, net::Buffer &_buffer, Side _side);
 
+        void setBackendSocket(const std::shared_ptr<net::UnixStream> &_socket);
+
         [[nodiscard]] static std::string GetSessionId();
 
         [[nodiscard]] std::shared_ptr<net::INetTcp> getFrontSocket() const;
@@ -56,7 +58,6 @@ class Session
 
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyFrontend(net::Buffer &_buffer);
-        void setupBackend(const ipc::msg::AuthFrontToInitiator &_identify);
 
         void handleBackend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyBackend(net::Buffer &_buffer);

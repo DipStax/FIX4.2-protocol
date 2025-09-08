@@ -44,7 +44,7 @@ namespace pu
 
         if (error != sizeof(ipc::Header)) {
             if (error == -1)
-                Logger->log<logger::Level::Error>("Error when receivin data from back: ", strerror(errno));
+                Logger->log<logger::Level::Error>("Error when receiving data from back: ", strerror(errno));
             else if (error == 0)
                 Logger->log<logger::Level::Fatal>("Frontend client disconnected");
             else
@@ -60,10 +60,13 @@ namespace pu
         buffer.append(bytes.data(), bytes.size());
 
         if (header.MsgType == ipc::MessageType::BackToInitiatorAuth) {
+            Logger->log<logger::Level::Info>("Received auth request from backend");
             ipc::msg::AuthBackToInitiator auth;
 
             buffer >> auth;
+            Logger->log<logger::Level::Debug>("Looking for info on session with: ", auth);
             session = SessionManager::Instance().findSession(auth.apikey);
+            session->setBackendSocket(_socket);
             buffer.reset();
         } else {
             session = SessionManager::Instance().findSession(_socket);

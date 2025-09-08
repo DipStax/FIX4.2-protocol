@@ -90,12 +90,13 @@ uint32_t FrontManager::initAcceptor()
 
 void FrontManager::setupToken(const std::string &_token)
 {
+    Logger->log<logger::Level::Debug>("Using token: ", _token);
     m_token = _token;
     m_socket = m_acceptor.accept();
     m_thread = std::jthread(&FrontManager::receiveLoop, this);
 }
 
 FrontManager::FrontManager()
-    : IPCNetworkManager<net::INetTcp>("Client/FrontManager")
+    : IPCNetworkManager<net::INetTcp>("Back/FrontManager")
 {
 }
