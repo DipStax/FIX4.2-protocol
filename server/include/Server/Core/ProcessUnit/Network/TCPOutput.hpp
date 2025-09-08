@@ -7,8 +7,8 @@
 #include "Shared/Thread/Pool.hpp"
 #include "Shared/Log/ILogger.hpp"
 
-#ifndef TS_SIZE_ON
-    #define TS_SIZE_ON 10
+#ifndef PU_NETOUT_TP_SIZE
+    #define PU_NETOUT_TP_SIZE 10
 #endif
 
 namespace pu
@@ -25,6 +25,6 @@ namespace pu
             void onInput(InputType _input) final;
 
         private:
-            ThreadPool<TS_SIZE_ON> m_tp;
+            ThreadPool<PU_NETOUT_TP_SIZE> m_tp;
     };
 }

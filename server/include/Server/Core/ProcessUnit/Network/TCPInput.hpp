@@ -8,10 +8,6 @@
 #include "Shared/ProcessUnit/AProcessUnitBase.hpp"
 #include "Shared/Network/Selector.hpp"
 
-#ifndef NET_RECV_SIZE
-    #define NET_RECV_SIZE 4096
-#endif
-
 namespace pu
 {
     class TCPInputNetwork : public AProcessUnitBase
