@@ -41,6 +41,14 @@ namespace ipc::msg
         friend std::ostream &operator<<(std::ostream &_os, const AuthInitiatorToBack &_auth);
     };
 
-    using AuthBackToInitiator = AuthFrontToInitiator;
-    // using AuthInitiatorToFront = AuthFrontToInitiator;
+    struct AuthBackToInitiator
+    {
+        std::string apikey{};
+        uint32_t port = 0;
+
+        friend net::Buffer &operator<<(net::Buffer &_buffer, const AuthBackToInitiator &_auth);
+        friend net::Buffer &operator>>(net::Buffer &_buffer, AuthBackToInitiator &_auth);
+
+        friend std::ostream &operator<<(std::ostream &_os, const AuthBackToInitiator &_auth);
+    };
 }

@@ -2,7 +2,8 @@
 
 #include <QObject>
 
-#include "Client/Shared/IPC/Message/Identify.hpp"
+#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/TokenValidation.hpp"
 #include "Client/Shared/IPC/IPCNetworkManager.hpp"
 
 #include "Shared/Log/ILogger.hpp"
@@ -22,7 +23,9 @@ class InitiatorManager : public QObject, IPCNetworkManager<net::INetTcp>
 
     signals:
         void connectionReady();
-        void received_IdentifyFront(ipc::msg::AuthInitiatorToFront _identify);
+
+        void received_IdentifyFront(ipc::msg::AuthInitiatorToFront _auth);
+        void received_ValidationToken(ipc::msg::InitiatorToFrontValidToken _token);
 
     public:
         void stop();

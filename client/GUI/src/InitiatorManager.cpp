@@ -76,13 +76,18 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
 {
     ipc::Header header;
 
-    ipc::msg::AuthInitiatorToFront identify{};
+    ipc::msg::AuthInitiatorToFront auth{};
+    ipc::msg::InitiatorToFrontValidToken token{};
 
     _buffer >> header;
     switch (header.MsgType) {
         case ipc::MessageType::InitiatorToFrontAuth:
-            _buffer >> identify;
-            emit received_IdentifyFront(identify);
+            _buffer >> auth;
+            emit received_IdentifyFront(auth);
+            break;
+        case ipc::MessageType::InitiatorToFrontValidToken:
+            _buffer >> token;
+            emit received_ValidationToken(token);
             break;
         default:
             Logger->log<logger::Level::Error>("Unknown received message type: ", static_cast<int>(header.MsgType));

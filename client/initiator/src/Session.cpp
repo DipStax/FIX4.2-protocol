@@ -92,7 +92,9 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         _buffer >> authfront;
         Logger->log<logger::Level::Info>("Frontend identify with info: ", authfront);
         m_frontend.apikey = authfront.apikey;
-
+        valid_auth.apikey = authfront.apikey;
+        Logger->log<logger::Level::Debug>("Sending auth validation to frontend: ", valid_auth);
+        send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
         m_backend.cmd = shell::Builder()
             .newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
             .setEnvironement("FIX42-apikey", authfront.apikey)
@@ -101,9 +103,6 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         Logger->log<logger::Level::Verbose>("New backend setup: ", *(m_backend.cmd));
         m_backend.cmd->run();
         Logger->log<logger::Level::Info>("New process created for backend, pid: ", m_backend.cmd->getPID());
-
-        valid_auth.apikey = authfront.apikey;
-        send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
     } else {
         Logger->log<logger::Level::Error>("Frontend try to reauth with the initiator");
     }
@@ -123,13 +122,19 @@ void Session::handleBackend(const ipc::Header &_header, net::Buffer &_buffer)
 void Session::identifyBackend(net::Buffer &_buffer)
 {
     ipc::msg::AuthBackToInitiator auth;
-    ipc::msg::AuthInitiatorToBack auth_valid;
+    ipc::msg::AuthInitiatorToBack valid_auth;
 
     Logger->log<logger::Level::Verbose>("Identiying backend");
     _buffer >> auth;
     Logger->log<logger::Level::Info>("Backend authenticated with info: ", auth);
-    auth_valid.apikey = auth.apikey;
-    auth_valid.token = GenerateToken();
-    Logger->log<logger::Level::Debug>("Generated token: ", auth_valid.token);
-    send(ipc::Helper::Auth::InitiatorToBack(auth_valid), Side::Back);
+    valid_auth.apikey = auth.apikey;
+    m_backend.token = GenerateToken();
+    valid_auth.token = m_backend.token.value();
+    Logger->log<logger::Level::Debug>("Sending auth validation to backend: ", valid_auth);
+    send(ipc::Helper::Auth::InitiatorToBack(valid_auth), Side::Back);
+
+    ipc::msg::InitiatorToFrontValidToken validation_token{valid_auth.token, auth.port};
+
+    Logger->log<logger::Level::Debug>("Sending connection info to frontend: ", validation_token);
+    send(ipc::Helper::ValidationToken::InitiatorToFront(validation_token), Side::Front);
 }

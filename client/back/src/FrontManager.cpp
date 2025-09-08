@@ -49,28 +49,33 @@ void FrontManager::onReceive(net::Buffer &_buffer)
 
     _buffer >> header;
 
-    if (header.MsgType == ipc::MessageType::FrontToBackAuth) {
+    if (header.MsgType == ipc::MessageType::FrontToBackValidToken) {
+        Logger->log<logger::Level::Info>("Received a token ");
         if (m_auth) {
+            Logger->log<logger::Level::Warning>("Frontend already authenticated");
             // send reject
         } else {
             if (m_token.has_value()) {
-                ipc::msg::AuthFrontToBack authfront{};
+                ipc::msg::FrontToBackValidToken token_front{};
 
-                _buffer >> authfront;
-                if (authfront.token == m_token.value()) {
-                    ipc::msg::AuthBackToFront authback{authfront.token};
+                _buffer >> token_front;
+                if (token_front.token == m_token.value()) {
+                    ipc::msg::BackToFrontValidToken token_back{token_front.token};
 
-                    send(ipc::Helper::Auth::BackToFront(authback));
+                    Logger->log<logger::Level::Info>("Token validated sending validation: ", token_back);
+                    send(ipc::Helper::ValidationToken::BackToFront(token_back));
                     m_auth = true;
                 } else {
-                    // send reject
+                    Logger->log<logger::Level::Fatal>("");
                 }
             } else {
+                Logger->log<logger::Level::Error>("Token not set, will frontend try to validate it's token");
                 // send reject
             }
         }
         return;
     } else if (!m_auth) {
+        Logger->log<logger::Level::Error>("Frontend not authenticated, but trying to send other message type");
         // send reject
         return;
     }

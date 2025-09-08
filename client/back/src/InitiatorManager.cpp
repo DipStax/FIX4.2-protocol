@@ -1,7 +1,7 @@
 #include "Client/Back/InitiatorManager.hpp"
 #include "Client/Back/FrontManager.hpp"
 
-#include "Client/Shared/IPC/Message/Identify.hpp"
+#include "Client/Shared/IPC/Message/Authentification.hpp"
 #include "Client/Shared/IPC/Header.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
 
@@ -25,9 +25,9 @@ void InitiatorManager::connect()
     }
     Logger->log<logger::Level::Info>("Successfully connected to initiator");
 
-    uint32_t port = FrontManager::Instance().initAcceptor();
-    ipc::msg::AuthBackToInitiator auth{apikey};
+    ipc::msg::AuthBackToInitiator auth{apikey, FrontManager::Instance().initAcceptor()};
 
+    Logger->log<logger::Level::Debug>("Send auth validation: ", auth);
     send(ipc::Helper::Auth::BackToInitiator(auth));
     m_thread = std::jthread(&InitiatorManager::receiveLoop, this);
 }

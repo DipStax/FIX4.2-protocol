@@ -32,7 +32,7 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::BackToInitiatorAuth,
-            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size())
         };
 
         buffer << header << _auth;
@@ -51,18 +51,41 @@ namespace ipc
         return buffer;
     }
 
-    net::Buffer Helper::Auth::BackToFront(const msg::AuthBackToFront &_auth)
+    net::Buffer Helper::ValidationToken::InitiatorToFront(const msg::InitiatorToFrontValidToken &_validation)
     {
         net::Buffer buffer;
         ipc::Header header{
-            ipc::MessageType::BackToFrontAuth,
-            static_cast<uint32_t>(sizeof(uint32_t) + _auth.token.size())
+            ipc::MessageType::InitiatorToFrontValidToken,
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _validation.token.size())
         };
 
-        buffer << header << _auth;
+        buffer << header << _validation;
         return buffer;
     }
 
+    net::Buffer Helper::ValidationToken::FrontToBack(const msg::FrontToBackValidToken &_validation)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::FrontToBackValidToken,
+            static_cast<uint32_t>(sizeof(uint32_t) + _validation.token.size())
+        };
+
+        buffer << header << _validation;
+        return buffer;
+    }
+
+    net::Buffer Helper::ValidationToken::BackToFront(const msg::BackToFrontValidToken &_validation)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::BackToFrontValidToken,
+            static_cast<uint32_t>(sizeof(uint32_t) + _validation.token.size())
+        };
+
+        buffer << header << _validation;
+        return buffer;
+    }
 
     net::Buffer Helper::Status(PUStatus _status)
     {
