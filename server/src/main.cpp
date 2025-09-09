@@ -1,4 +1,4 @@
-#include "Server/Core/Core.hpp"
+#include "Server/Core.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Console.hpp"

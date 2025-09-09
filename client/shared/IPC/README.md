@@ -111,7 +111,6 @@ Notify the **Frontend** that the connection is authenticated and ready for use.
 
 6. **Status**
 
-
 | Field | Description | Size |
 |---|---|---|
 | **Status** | Status in the backend core of it's process unit | sizeof(`PUStatus`) == **1** |
