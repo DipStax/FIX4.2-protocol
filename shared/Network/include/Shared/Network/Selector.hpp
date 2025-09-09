@@ -4,9 +4,9 @@
 #include <memory>
 #include <vector>
 
-#include "Shared/Network/Acceptor.hpp"
 #include "Shared/Network/BaseSocket.hpp"
 #include "Shared/Network/CEPoll.hpp"
+#include "Shared/Network/Socket.hpp"
 
 #ifndef MAX_EVENT_EPOLL
     #define MAX_EVENT_EPOLL 30
@@ -21,7 +21,7 @@ namespace net
     {
         public:
             /// @brief Type of client.
-            using Client = Acceptor<T>::Client;
+            using Client = std::shared_ptr<T>;
 
             Selector();
             ~Selector() = default;

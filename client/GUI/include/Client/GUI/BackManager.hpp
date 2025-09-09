@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QObject>
-#include <QThread>
 #include <memory>
 
-#include "Shared/ProcessUnit/ProcessUnit.hpp"
-#include "Shared/Network/Socket.hpp"
-#include "Shared/Network/Buffer.hpp"
-#include "Shared/Log/ILogger.hpp"
+#include <QObject>
 
 #include "Client/Shared/IPC/Message/Message.hpp"
+
+#include "Shared/Log/ILogger.hpp"
+#include "Shared/Network/Buffer.hpp"
+#include "Shared/Network/Socket.hpp"
+#include "Shared/ProcessUnit/ProcessUnit.hpp"
 
 class BackManager : public QObject
 {
@@ -18,11 +18,14 @@ class BackManager : public QObject
     public:
         static BackManager *Instance();
 
+        void setTargetPort(uint32_t _port);
+
     public slots:
         void startConnection();
         void send(const net::Buffer &_buffer);
 
     signals:
+        void received_TokenValidation(ipc::msg::BackToFrontValidToken _token);
         void received_Status(PUStatus _status);
         void received_Logon(ipc::msg::Logon _exec);
         void received_ExecutionNew(ipc::msg::Execution _exec);
@@ -34,7 +37,9 @@ class BackManager : public QObject
     private:
         void ipcReceived(net::Buffer &_buffer);
 
-        std::shared_ptr<net::UnixStream> m_socket = nullptr;
+        uint32_t m_port = 0;
+
+        std::shared_ptr<net::INetTcp> m_socket = nullptr;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 

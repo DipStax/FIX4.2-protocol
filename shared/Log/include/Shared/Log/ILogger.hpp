@@ -7,6 +7,8 @@ namespace logger
     class ILogger
     {
         public:
+            virtual ~ILogger() = default;
+
             template<Level Lvl, class ...Ts>
             void log(Ts &&..._args);
 

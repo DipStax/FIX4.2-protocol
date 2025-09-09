@@ -4,7 +4,10 @@
 #include "Client/Back/FrontManager.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
 
-Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
+#include "Client/Back/InitiatorManager.hpp"
+#include "Client/Back/FrontManager.hpp"
+
+Core::Core()
     : m_server(std::make_shared<net::INetTcp>()),
     m_tcp_output(m_server),
     m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
@@ -18,12 +21,14 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
         m_execution.getInput()
     ),
     m_tcp_input(m_server, m_router.getInput()),
-    Logger(logger::Manager::newLogger("Client/Core"))
+    Logger(logger::Manager::newLogger("Back/Core"))
 {
-    if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
-        Logger->log<logger::Level::Fatal>("Failed to connect to server");
+    while (!m_server->connect(net::Ip(127, 0, 0, 1), 8080)) {
+        Logger->log<logger::Level::Error>("Unable to connect to the FIX server, retrying in 5s");
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    }
     Logger->log<logger::Level::Debug>("Notifying front of initialized status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Initialize));
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Initialize));
 }
 
 Core::~Core()
@@ -44,7 +49,7 @@ bool Core::start()
     m_router.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Debug>("Notifying front of running status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Running));
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Running));
     while (m_running)
     {
         try {
@@ -64,7 +69,7 @@ bool Core::start()
         }
     }
     Logger->log<logger::Level::Debug>("Notifying front of stop status");
-    FrontManager::Instance().notify(ipc::Helper::Status(PUStatus::Stop));
+    FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Stop));
     stop();
     return true;
 }

@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(googletest)
 include(GoogleTest)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Thread)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Configuration)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Container)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Core)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Log)

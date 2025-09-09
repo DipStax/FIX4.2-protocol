@@ -13,23 +13,23 @@ namespace net
 
     Buffer &Buffer::operator<<(const std::string &_data)
     {
-        const uint32_t size = static_cast<uint32_t>(_data.size());
+        const uint32_t length = static_cast<uint32_t>(_data.size());
 
-        *this << size;
-        if (size > 0)
-            append(_data.c_str(), size);
+        *this << length;
+        if (length > 0)
+            append(_data.c_str(), length * sizeof(char));
         return *this;
     }
 
     Buffer &Buffer::operator>>(std::string &_data)
     {
-        uint32_t size = 0;
+        uint32_t length = 0;
 
-        *this >> size;
+        *this >> length;
         _data.clear();
-        if (size > 0 && checkSize(size)) {
-            _data.assign(reinterpret_cast<const char *>(&m_data[m_read]), size);
-            m_read += size;
+        if (length > 0 && checkSize(length)) {
+            _data.assign(reinterpret_cast<const char *>(&m_data[m_read]), length);
+            m_read += length;
         }
         return *this;
     }
@@ -62,7 +62,7 @@ namespace net
             const std::byte *begin = reinterpret_cast<const std::byte *>(_data);
             const std::byte *end = begin + _size;
 
-            m_data.insert(m_data.end(), begin, end);
+            m_data.insert(m_data.cend(), begin, end);
         }
     }
 

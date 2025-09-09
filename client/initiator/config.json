@@ -1,0 +1,10 @@
+{
+    "front": {
+        "port": 8082
+    },
+    "back": {
+        "exec-path": "../back/Fix_Client_Back",
+        "api-key": "api-key",
+        "address": "/tmp/fix.initiator.socket"
+    }
+}

@@ -85,6 +85,6 @@ User::HeartBeatInfo &User::getHeartBeatInfo()
 }
 
 User::User()
-    : Logger(logger::Manager::newLogger("Client/UserStore"))
+    : Logger(logger::Manager::newLogger("Back/UserStore"))
 {
 }

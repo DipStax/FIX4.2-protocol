@@ -6,7 +6,7 @@
 namespace pu
 {
     TcpInputNetwork::TcpInputNetwork(TcpInputNetwork::Socket _server, QueueTransit &_output)
-        : AProcessUnitBase("Client/NET/TCP-Input"),
+        : AProcessUnitBase("Back/NET/TCP-Input"),
         m_server(_server), m_output(_output)
     {
         m_selector.timeout(1000);

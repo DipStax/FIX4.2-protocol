@@ -15,7 +15,7 @@
 class Core
 {
     public:
-        Core(uint32_t _tcp_port, uint32_t _udp_port);
+        Core();
         ~Core();
 
         bool start();

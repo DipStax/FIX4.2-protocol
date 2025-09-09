@@ -10,6 +10,21 @@ namespace ipc
 {
     struct Helper
     {
+        struct Auth
+        {
+            static net::Buffer FrontToInitiator(const msg::AuthFrontToInitiator &_auth);
+            static net::Buffer InitiatorToFront(const msg::AuthInitiatorToFront &_auth);
+            static net::Buffer BackToInitiator(const msg::AuthBackToInitiator &_auth);
+            static net::Buffer InitiatorToBack(const msg::AuthInitiatorToBack &_auth);
+        };
+
+        struct ValidationToken
+        {
+            static net::Buffer InitiatorToFront(const msg::InitiatorToFrontValidToken &_validation);
+            static net::Buffer FrontToBack(const msg::FrontToBackValidToken &_validation);
+            static net::Buffer BackToFront(const msg::BackToFrontValidToken &_validation);
+        };
+
         static net::Buffer Status(PUStatus _status);
         static net::Buffer Logon(const msg::Logon &_logon);
         static net::Buffer OrderSingle(const msg::OrderSingle &_order);

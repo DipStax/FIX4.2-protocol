@@ -9,7 +9,7 @@
 namespace pu
 {
     FixBuilder::FixBuilder(ts::Queue<net::Buffer> &_input, QueueMessage &_output)
-        : AProcessUnitBase("Client/FixBuilder"),
+        : AProcessUnitBase("Back/FixBuilder"),
         m_input(_input), m_output(_output)
     {
     }

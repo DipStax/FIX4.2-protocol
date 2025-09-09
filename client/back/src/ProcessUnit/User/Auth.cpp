@@ -11,7 +11,7 @@
 namespace pu
 {
     AuthHandler::AuthHandler(QueueMessage &_tcp_output)
-        : AInputProcess<InputType>("Client/Auth"),
+        : AInputProcess<InputType>("Back/Auth"),
         m_tcp_output(_tcp_output)
     {
     }
@@ -55,7 +55,7 @@ namespace pu
             static_cast<uint32_t>(user.getSeqNumber()),
             hb_info.Elapsing
         };
-        FrontManager::Instance().notify(ipc::Helper::Logon(ipc_logon));
+        FrontManager::Instance().send(ipc::Helper::Logon(ipc_logon));
         return true;
     }
 

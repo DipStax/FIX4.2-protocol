@@ -9,7 +9,7 @@
 namespace pu
 {
     Execution::Execution(QueueMessage &_tcp_output)
-        : AInputProcess<TransitMessage>("Client/Execution"),
+        : AInputProcess<TransitMessage>("Back/Execution"),
         m_tcp_output(_tcp_output)
     {
     }
@@ -53,6 +53,6 @@ namespace pu
         };
 
         Logger->log<logger::Level::Info>("Notifying frontend of validated new order {", static_cast<int>(_msgtype), "}: ", exec);
-        FrontManager::Instance().notify(ipc::Helper::ExecutionEvent(exec, _msgtype));
+        FrontManager::Instance().send(ipc::Helper::ExecutionEvent(exec, _msgtype));
     }
 }

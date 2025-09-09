@@ -6,7 +6,7 @@
 namespace pu
 {
     TcpOutputNetwork::TcpOutputNetwork(Socket _server)
-        : AInputProcess<InputType>("Client/NET/TCP-Output"),
+        : AInputProcess<InputType>("Back/NET/TCP-Output"),
         m_server(_server)
     {
     }

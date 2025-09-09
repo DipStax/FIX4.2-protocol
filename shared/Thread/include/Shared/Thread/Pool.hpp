@@ -16,6 +16,8 @@ template<size_t S = N_THREAD_TP>
 class ThreadPool
 {
     public:
+        static_assert(S > 0, "Number of thread is invalid");
+
         using Task = std::function<void()>;
 
         ThreadPool();

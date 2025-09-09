@@ -11,7 +11,7 @@ namespace net
 
         const T write = static_cast<T>(convert<UnsignedT>(static_cast<UnsignedT>(_data)));
 
-        append(&write, sizeof(T));
+        append(static_cast<const void *>(&write), sizeof(T));
         return *this;
     }
 
@@ -20,7 +20,7 @@ namespace net
     {
         const T write = convert<T>(_data);
 
-        append(&write, sizeof(T));
+        append(static_cast<const void *>(&write), sizeof(T));
         return *this;
     }
 
