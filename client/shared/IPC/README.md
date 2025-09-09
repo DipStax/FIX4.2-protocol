@@ -167,7 +167,7 @@ Notify the backend to create a order with the provided information.
 | **Remaining Quantity** | Remaing quantity on the order (always the same as **Quantity** for `NewExecution`) | `uint32_t` |
 
 - Message code: **9**
-- Related structure: `ipc::msg::Execution` ([OrderSingle.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
+- Related structure: `ipc::msg::Execution` ([Execution.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
 - Way: `front` to `back`
 
 Event notify after a `Single Order` message. This message contain the information about an aknowledge order placed on the server.
@@ -185,7 +185,7 @@ Event notify after a `Single Order` message. This message contain the informatio
 | **Remaining Quantity** | Remaing quantity on the order after sold/buy | `uint32_t` |
 
 - Message code: **10**
-- Related structure: `ipc::msg::Execution` ([OrderSingle.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
+- Related structure: `ipc::msg::Execution` ([Execution.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
 - Way: `back` to `front`
 
 Message transmitted when an event on a placed order is emited by the server.
