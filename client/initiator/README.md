@@ -17,6 +17,32 @@ It coordinates the secure connection and synchronization between the Frontend (G
 - **Token Generation & Synchronization:**
   After both components are authenticated, the Initiator generates a unique session token and distributes it to synchronize the Frontend and Backend.
 
+## Configuration
+
+The configuration is a `json` file provided as the first (and only) program argument. It is composed of two sections:
+
+- `front`:
+   - `port`: Port on which the **Frontend** will connect, using TCP/IP, to the **Initiator**.
+- `back`:
+   - `exec-path`: Path to the **backend** executable, relative to the **Initiator** directory.
+   - `api-key`: Allowed API key.
+   - `address`: Unix socket address on which the **backend** will connect.
+
+#### Example
+
+```json
+{
+    "front": {
+        "port": 8080
+    },
+    "back": {
+        "exec-path": "../back/Fix_Client_Back",
+        "api-key": "api-key",
+        "address": "/tmp/fix.initiator.socket"
+    }
+}
+```
+
 ## Authentication protocol
 
 ### Sequence diagram
