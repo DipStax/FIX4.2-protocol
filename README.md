@@ -18,6 +18,7 @@ The project is currently, both the client and the server, under heavy refactor t
 - [Client](./client/README.md): Contains the client-side components for interacting with the server, submitting orders, and viewing market data.
     - [Backend](./client/back/README.md): Provides the core backend logic for the client, including process units, network communication, and order management.
     - [GUI](./client/GUI/README.md): Implements the graphical user interface for the client, allowing users to interact with the trading system visually.
+    - [Initiator](./client/initiator/README.md): Coordinates authentication and session management between the Frontend (GUI) and Backend components.
     - [Shared](./client/shared/README.md): Defines shared types, utilities, and protocol definitions used by both the client backend and GUI.
 - [Server](./server/README.md): Implements the server-side logic for the FIX 4.2 protocol, including order book management, client session handling, and message routing.
 - [Shared](./shared/README.md): Offers common libraries and abstractions (such as containers, logging, networking, threading, and process units) used throughout both client and server components.
