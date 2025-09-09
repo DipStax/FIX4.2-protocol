@@ -10,7 +10,7 @@
 namespace pu
 {
     HeartBeatHandler::HeartBeatHandler(QueueMessage &_tcp_output)
-        : AInputProcess<InputType>("Client/HeartBeat"),
+        : AInputProcess<InputType>("Back/HeartBeat"),
         m_tcp_output(_tcp_output)
     {
         // Logger = logger::Manager::newLogger("file", getProcessName());

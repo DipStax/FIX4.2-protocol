@@ -49,8 +49,8 @@ void FrontManager::onReceive(net::Buffer &_buffer)
 
     _buffer >> header;
 
+    Logger->log<logger::Level::Info>("Received new data from Frontend, with message type: ", (int)header.MsgType);
     if (header.MsgType == ipc::MessageType::FrontToBackValidToken) {
-        Logger->log<logger::Level::Info>("Received a token ");
         if (m_auth) {
             Logger->log<logger::Level::Warning>("Frontend already authenticated");
             // send reject
@@ -62,7 +62,7 @@ void FrontManager::onReceive(net::Buffer &_buffer)
                 if (token_front.token == m_token.value()) {
                     ipc::msg::BackToFrontValidToken token_back{token_front.token};
 
-                    Logger->log<logger::Level::Info>("Token validated sending validation: ", token_back);
+                    Logger->log<logger::Level::Info>("Token validated, sending validation: ", token_back);
                     send(ipc::Helper::ValidationToken::BackToFront(token_back));
                     m_auth = true;
                 } else {

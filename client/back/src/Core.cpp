@@ -21,11 +21,13 @@ Core::Core()
         m_execution.getInput()
     ),
     m_tcp_input(m_server, m_router.getInput()),
-    Logger(logger::Manager::newLogger("Client/Core"))
+    Logger(logger::Manager::newLogger("Back/Core"))
 {
-    // if (!m_server->connect(net::Ip(127, 0, 0, 1), _tcp_port))
-    //     Logger->log<logger::Level::Fatal>("Failed to connect to server");
-    // Logger->log<logger::Level::Debug>("Notifying front of initialized status");
+    while (!m_server->connect(net::Ip(127, 0, 0, 1), 8080)) {
+        Logger->log<logger::Level::Error>("Unable to connect to the FIX server, retrying in 5s");
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    }
+    Logger->log<logger::Level::Debug>("Notifying front of initialized status");
     FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Initialize));
 }
 
@@ -39,7 +41,6 @@ bool Core::start()
     m_running = true;
     Logger->log<logger::Level::Info>("Starting client backend...");
 
-    FrontManager::Instance().wait_frontend();
     m_tcp_output.start();
     m_builder.start();
     m_heartbeat.start();

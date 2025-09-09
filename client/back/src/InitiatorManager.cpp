@@ -64,6 +64,7 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
     ipc::msg::AuthInitiatorToBack auth{};
 
     _buffer >> header;
+    Logger->log<logger::Level::Info>("Received new data from Initiator, with message type: ", (int)header.MsgType);
     switch (header.MsgType) {
         case ipc::MessageType::InitiatorToBackAuth:
             Logger->log<logger::Level::Info>("Received an auth validation from initiator");

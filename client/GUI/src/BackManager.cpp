@@ -95,6 +95,7 @@ void BackManager::ipcReceived(net::Buffer &_buffer)
     uint8_t status;
 
     _buffer >> header;
+    Logger->log<logger::Level::Info>("Received new data from Backend, with message type: ", (int)header.MsgType);
     switch (header.MsgType) {
         case ipc::MessageType::BackToFrontValidToken:
             _buffer >> token;

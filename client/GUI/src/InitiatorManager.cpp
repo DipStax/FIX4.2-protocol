@@ -80,6 +80,7 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
     ipc::msg::InitiatorToFrontValidToken token{};
 
     _buffer >> header;
+    Logger->log<logger::Level::Info>("Received new data from Initiator, with message type: ", (int)header.MsgType);
     switch (header.MsgType) {
         case ipc::MessageType::InitiatorToFrontAuth:
             _buffer >> auth;

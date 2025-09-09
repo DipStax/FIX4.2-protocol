@@ -41,6 +41,7 @@ namespace ui::screen
 
         connect(m_button, &QPushButton::clicked, this, &Login::onSubmit);
         connect(this, &Login::requestInitiatorConnection, InitiatorManager::Instance(), &InitiatorManager::startConnection, Qt::QueuedConnection);
+        connect(this, &Login::requestBackConnection, BackManager::Instance(), &BackManager::startConnection, Qt::QueuedConnection);
 
         setWindowTitle("FIX4.2 Login");
     }
@@ -75,10 +76,11 @@ namespace ui::screen
         m_progress->setValue(3);
         emit requestBackConnection();
 
-        Logger->log<logger::Level::Info>("Sending token validation to backend: ", token_valid);
-        BackManager::Instance()->send(ipc::Helper::ValidationToken::FrontToBack(token_valid));
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_ValidationToken, this, &Login::tokenAuth);
         connect(BackManager::Instance(), &BackManager::received_TokenValidation, this, &Login::tokenValidated);
+
+        Logger->log<logger::Level::Info>("Sending token validation to backend: ", token_valid);
+        BackManager::Instance()->send(ipc::Helper::ValidationToken::FrontToBack(token_valid));
     }
 
     void Login::tokenValidated(ipc::msg::BackToFrontValidToken _token)

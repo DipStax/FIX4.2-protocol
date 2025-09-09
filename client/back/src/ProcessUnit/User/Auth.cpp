@@ -11,7 +11,7 @@
 namespace pu
 {
     AuthHandler::AuthHandler(QueueMessage &_tcp_output)
-        : AInputProcess<InputType>("Client/Auth"),
+        : AInputProcess<InputType>("Back/Auth"),
         m_tcp_output(_tcp_output)
     {
     }

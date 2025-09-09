@@ -54,7 +54,6 @@ void IPCNetworkManager<SocketType>::receiveLoop(std::stop_token _st)
             buffer.append(bytes.data(), bytes.size());
             buffer.reset();
 
-            Logger->log<logger::Level::Debug>("Received new data from initator");
             onReceive(buffer);
         }
     }

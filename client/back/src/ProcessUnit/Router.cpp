@@ -8,7 +8,7 @@
 namespace pu
 {
     Router::Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth, QueueTransit &_exec)
-        : AInputProcess<InputType>("Client/Master-Router"),
+        : AInputProcess<InputType>("Back/Master-Router"),
         m_tcp_output(_tcp_output), m_heartbeat(_heartbeat), m_auth(_auth), m_execution(_exec)
     {
     }
