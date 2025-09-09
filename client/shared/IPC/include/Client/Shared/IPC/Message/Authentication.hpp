@@ -18,18 +18,6 @@ namespace ipc::msg
 
     using AuthInitiatorToFront = AuthFrontToInitiator;
 
-    struct AuthFrontToBack
-    {
-        std::string token{};
-
-        friend net::Buffer &operator<<(net::Buffer &_buffer, const AuthFrontToBack &_auth);
-        friend net::Buffer &operator>>(net::Buffer &_buffer, AuthFrontToBack &_auth);
-
-        friend std::ostream &operator<<(std::ostream &_os, const AuthFrontToBack &_auth);
-    };
-
-    using AuthBackToFront = AuthFrontToBack;
-
     struct AuthInitiatorToBack
     {
         std::string token{};

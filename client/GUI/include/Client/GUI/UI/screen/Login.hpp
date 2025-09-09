@@ -8,7 +8,7 @@
 #include <QProgressBar>
 
 #include "Client/Shared/IPC/Message/Logon.hpp"
-#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/Authentication.hpp"
 #include "Client/Shared/IPC/Message/TokenValidation.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"

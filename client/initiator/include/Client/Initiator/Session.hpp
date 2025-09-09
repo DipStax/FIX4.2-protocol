@@ -6,7 +6,7 @@
 #include "Client/Initiator/Shell/Builder.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
-#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/Authentication.hpp"
 
 #include "Shared/Network/Socket.hpp"
 #include "Shared/Network/Buffer.hpp"

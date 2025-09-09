@@ -62,7 +62,7 @@ namespace ui::screen
         std::ignore = _identify;
 
         m_progress->setValue(2);
-        Logger->log<logger::Level::Info>("Authentification validated, waiting for token approval");
+        Logger->log<logger::Level::Info>("Authentication validated, waiting for token approval");
         connect(InitiatorManager::Instance(), &InitiatorManager::received_ValidationToken, this, &Login::tokenAuth);
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
     }

@@ -1,4 +1,4 @@
-#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/Authentication.hpp"
 
 namespace ipc::msg
 {
@@ -15,21 +15,6 @@ namespace ipc::msg
     std::ostream &operator<<(std::ostream &_os, const AuthFrontToInitiator &_auth)
     {
         return _os << "{ ApiKey: " << _auth.apikey <<" }";
-    }
-
-    net::Buffer &operator<<(net::Buffer &_buffer, const AuthFrontToBack &_auth)
-    {
-        return _buffer << _auth.token;
-    }
-
-    net::Buffer &operator>>(net::Buffer &_buffer, AuthFrontToBack &_auth)
-    {
-        return _buffer >> _auth.token;
-    }
-
-    std::ostream &operator<<(std::ostream &_os, const AuthFrontToBack &_auth)
-    {
-        return _os << "{ Token: " << _auth.token << " }";
     }
 
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToBack &_auth)

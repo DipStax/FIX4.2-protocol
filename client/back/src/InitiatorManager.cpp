@@ -1,7 +1,7 @@
 #include "Client/Back/InitiatorManager.hpp"
 #include "Client/Back/FrontManager.hpp"
 
-#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/Authentication.hpp"
 #include "Client/Shared/IPC/Header.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
 

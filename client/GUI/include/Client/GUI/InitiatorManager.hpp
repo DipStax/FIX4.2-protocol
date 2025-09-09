@@ -2,7 +2,7 @@
 
 #include <QObject>
 
-#include "Client/Shared/IPC/Message/Authentification.hpp"
+#include "Client/Shared/IPC/Message/Authentication.hpp"
 #include "Client/Shared/IPC/Message/TokenValidation.hpp"
 #include "Client/Shared/IPC/IPCNetworkManager.hpp"
 
