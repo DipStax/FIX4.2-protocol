@@ -51,3 +51,6 @@ jobs:
         run: |
           cd build
           cmake --build . -j --target Shared_${{ matrix.target }}_Test
+
+      - name: Run Test
+        run: ./shared/Network/Shared_${{ matrix.target }}_Test
