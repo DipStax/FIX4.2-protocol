@@ -1,13 +1,9 @@
 name: Shared library Unit Test
 
 on:
-  workflow_dispatch:
-    inputs:
-      my-list:
-        description: "Library to test (separeted by comma)"
-        required: true
-        default: "Network"
-
+  push:
+    branches:
+      - '**'
 jobs:
   build:
     runs-on: ubuntu-latest
