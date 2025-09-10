@@ -44,7 +44,7 @@ cd FIX4.2-protocol
 
 2. Build with CMake:
 
-To build the client use set the cmake optiona `ClientBuild` to **true** and for the server use `ServerBuild`.
+To build the client use set the cmake option `ClientBuild` to **true** and for the server use `ServerBuild`.
 
 ```bash
 mkdir build
@@ -59,10 +59,10 @@ This project is licensed under the [MIT License](LICENSE)
 
 ---
 
-_Note: This project is a fork of [gabirel1/Epitech-Principe-financier-de-base-et-architecture](https://github.com/gabirel1/Epitech-Principe-financier-de-base-et-architecture) wich has been adapted for educational purposes, but this version is a complete rewrite and aim to be a **PoC** of a server/client_
+_Note: This project is a fork of [gabirel1/Epitech-Principe-financier-de-base-et-architecture](https://github.com/gabirel1/Epitech-Principe-financier-de-base-et-architecture) which has been adapted for educational purposes, but this version is a complete rewrite and aims to be a **PoC** of a server/client_
 
 ---
 
-## Maintenair
+## Maintainer
 
-Maintened by [@DipStax](https://github.com/DipStax)
+Maintained by [@DipStax](https://github.com/DipStax)
