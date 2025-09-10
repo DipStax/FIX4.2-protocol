@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -54,4 +54,4 @@ jobs:
             docker pull $IMAGE:latest
             docker stop fix-server || true
             docker rm fix-server || true
-            docker run -d --name fix-server -p ${{ vars.SERVER_PORT}}:${{ vars.SERVER_PORT_FORWARD }} $IMAGE:latest
+            sudo docker run -d --name fix-server -p ${{ vars.SERVER_PORT}}:${{ vars.SERVER_PORT_FORWARD }} $IMAGE:latest
