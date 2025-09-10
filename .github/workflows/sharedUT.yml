@@ -27,11 +27,7 @@ jobs:
           name: cmake-build
           path: build
           if-no-files-found: error
-
-      - name: Show available target
-        run: |
-          cd build
-          cmake --build . --target help
+          include-hidden-files: true
 
   build-test:
     needs: build-cmake
@@ -50,11 +46,6 @@ jobs:
         with:
           name: cmake-build
           path: build
-
-      - name: Show available target
-        run: |
-          cd build
-          cmake --build . --target help
 
       - name: Build target
         run: |
