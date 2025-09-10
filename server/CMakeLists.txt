@@ -10,7 +10,15 @@ add_executable(Fix_Server
     ${SRC_Fix_Server}
 )
 
+add_custom_command(
+    TARGET Fix_Server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/config.json
+            $<TARGET_FILE_DIR:Fix_Server>/config.json
+)
+
 target_link_libraries(Fix_Server PRIVATE
+    Shared_Configuration
     Shared_ProcessUnit
     Shared_Message
     Shared_Core

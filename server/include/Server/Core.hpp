@@ -6,7 +6,6 @@
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 #include "Server/ProcessUnit/Network/TCPOutput.hpp"
-#include "Server/ProcessUnit/Network/UDPOutput.hpp"
 
 #include "Server/ProcessUnit/MarketContainer.hpp"
 
@@ -19,7 +18,7 @@
 class Core
 {
     public:
-        Core(uint32_t _tcp_port, uint32_t _udp_port);
+        Core();
         ~Core();
 
         [[nodiscard]] bool start();
@@ -38,7 +37,6 @@ class Core
         std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
-        ProcessUnit<pu::UdpOutputNetwork> m_udp_output;
 
         ProcessUnit<pu::user::LogonHandler> m_logon;
         ProcessUnit<pu::user::LogoutHandler> m_logout;

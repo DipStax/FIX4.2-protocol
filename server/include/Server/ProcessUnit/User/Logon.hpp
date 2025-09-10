@@ -10,10 +10,6 @@
     #define PU_LOGON_TP_SIZE 1
 #endif
 
-#if !defined(PU_LOGON_HB_MAX_TO) || PU_LOGON_HB_MAX_TOw <= 0
-    #define PU_LOGON_HB_MAX_TO 100.f
-#endif
-
 namespace data
 {
     using LogonInput = RouterInput;

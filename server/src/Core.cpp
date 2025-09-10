@@ -1,8 +1,8 @@
 #include "Server/Core.hpp"
+#include "Server/Config.hpp"
 
-Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
-    : m_udp_output(_udp_port),
-    m_logon(m_tcp_output.getInput()),
+Core::Core()
+    : m_logon(m_tcp_output.getInput()),
     m_logout(m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
     m_router(m_tcp_output.getInput(),
@@ -10,7 +10,7 @@ Core::Core(uint32_t _tcp_port, uint32_t _udp_port)
         m_logout.getInput(),
         m_heartbeat.getInput()
     ),
-    m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), _tcp_port),
+    m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
     Logger(logger::Manager::newLogger("Core"))
 {
     market_init();
@@ -32,7 +32,6 @@ bool Core::start()
     while (m_running)
     {
         try {
-            m_udp_output.status();
             // m_tcp_output.status();
             m_logon.status();
             m_logout.status();
@@ -66,7 +65,6 @@ void Core::stop()
         for (auto &[_name, _pip] : m_markets)
             _pip.stop();
         m_tcp_output.stop();
-        // m_udp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
     }
 }
@@ -94,7 +92,7 @@ void Core::market_init()
     std::vector<std::string> name{ MARKET_NAME };
 
 
-    for (std::string &_name : name) {
+    for (std::string &_name : Configuration<config::Global>::Get().Config.Market) {
         m_markets.emplace(std::piecewise_construct,
             std::forward_as_tuple(_name),
             std::forward_as_tuple(_name, m_tcp_output.getInput())

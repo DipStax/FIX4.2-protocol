@@ -1,0 +1,17 @@
+{
+    "user": {
+        "heartbeat": {
+            "max-to": 100
+        }
+    },
+    "network": {
+        "tcp-port": 8080
+    },
+    "market": {
+        "list": [
+            "GOLD",
+            "EURO",
+            "USD"
+        ]
+    }
+}

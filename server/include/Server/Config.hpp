@@ -6,20 +6,24 @@ namespace config
 {
     struct Global
     {
-        struct BackendConfig
+        struct UserConfig
         {
-            std::string Executable{};
-            std::string ApiKey{};
-            std::string Address{};
+            struct HearthBeatConfig
+            {
+                float MaxTO = 0.f;
+            };
+
+            HearthBeatConfig Heartbeat{};
         };
 
-        struct FrontendConfig
+        struct NetworkConfig
         {
-            uint32_t Port = 0;
+            uint32_t TcpPort = 0;
         };
 
-        FrontendConfig Front{};
-        BackendConfig Back{};
+        UserConfig User{};
+        NetworkConfig Network{};
+        std::vector<std::string> Market;
 
         friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };
