@@ -51,7 +51,7 @@ jobs:
             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
             IMAGE=ghcr.io/${{ github.repository_owner }}/fix-server
             IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
-            docker pull $IMAGE:latest
-            docker stop fix-server || true
-            docker rm fix-server || true
+            sudo docker pull $IMAGE:latest
+            sudo docker stop fix-server || true
+            sudo docker rm fix-server || true
             sudo docker run -d --name fix-server -p ${{ vars.SERVER_PORT}}:${{ vars.SERVER_PORT_FORWARD }} $IMAGE:latest
