@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  fix-server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: fix-server
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
