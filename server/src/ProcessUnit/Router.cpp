@@ -11,17 +11,44 @@
 
 namespace pu
 {
+    /**
+     * @brief Constructs the central message router
+     * @param _tcp_output Output queue for sending responses to clients
+     * @param _logon Queue for logon message processing
+     * @param _logout Queue for logout message processing  
+     * @param _heartbeat Queue for heartbeat/test request processing
+     */
     Router::Router(InputNetworkOutput &_tcp_output, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat)
         : AInputProcess<InputType>("Server/Master-Router"),
         m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat)
     {
     }
 
+    /**
+     * @brief Registers a market handler for a specific trading symbol
+     * @param _name Trading symbol (e.g., "GOLD", "EUR/USD")
+     * @param _input Queue for market-specific message processing
+     * 
+     * Called during initialization to map symbols to their processing pipelines
+     */
     void Router::registerMarket(const std::string &_name, QueueInputType &_input)
     {
         m_market_input.emplace(_name, _input);
     }
 
+    /**
+     * @brief Main message routing logic - distributes FIX messages to appropriate handlers
+     * @param _input Incoming message with client context and timing information
+     * 
+     * Processing flow:
+     * 1. Verify FIX header (sequence numbers, comp IDs, etc.)
+     * 2. Route based on message type:
+     *    - Logon → Logon handler
+     *    - Session messages → Appropriate session handler
+     *    - Trading messages → Market-specific handler
+     *    - Unknown → Reject with appropriate error
+     * 3. Enforce login requirements for protected message types
+     */
     void Router::onInput(InputType _input)
     {
         std::pair<bool, fix::Reject> reject;
@@ -67,8 +94,17 @@ namespace pu
         }
     }
 
+    /**
+     * @brief Routes trading messages to the appropriate market handler
+     * @param _input Order message containing symbol information
+     * @return true if message was successfully routed, false if symbol unknown
+     * 
+     * Validates that the trading symbol exists and has a registered handler.
+     * Generates reject message for unknown symbols.
+     */
     bool Router::redirectToMarket(const InputType &_input)
     {
+        // Check if we have a handler for this symbol
         if (!m_market_input.contains(_input.Message.at(fix::Tag::Symbol))) {
             fix::Reject reject{};
 
@@ -80,6 +116,7 @@ namespace pu
             return false;
         }
 
+        // Route to appropriate market processor
         Logger->log<logger::Level::Debug>("(Market Order) Redirecting to correct market router");
         m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(_input));
         return true;
