@@ -2,7 +2,7 @@
 
 ## FIX specification
 
-You can find the specification of the supported message and their feild in the [`spec`](./spec/README.md) folder.
+You can find the specification of the supported message and their field in the [`spec`](./spec/README.md) folder.
 This provide a table as:
 
 | Tag | Field Name | Required | Comments |
@@ -12,13 +12,13 @@ This provide a table as:
 - `Tag`: the tag reference by the field.
 - `Field Name`: the name of the field, the link is a reference to the FIX4.2 protocol manual followed by the server (as the title).
 - `Required`: specify if it is required (most of the time it is, because this **PoC**)
-- `Comments`: additionnal comment on the field and what it representes.
+- `Comments`: additional comment on the field and what it represents.
 
 ## Implementation
 
 ### Login
 
-You can login using the [`Logon`](./spec/Logon.md) message, if the login is valid the server will respond with a `Logon` Message that aknowledge the login. A session will be open until you send the `Logout` (see next section) or disconnect the socket.
+You can login using the [`Logon`](./spec/Logon.md) message, if the login is valid the server will respond with a `Logon` Message that acknowledges the login. A session will be open until you send the `Logout` (see next section) or disconnect the socket.
 
 > Currently no verification are done on the `Sender Id`, no database and no in memory verification for duplicate.
 
@@ -45,11 +45,11 @@ Order management includes validation, routing, and matching against the order bo
 
 ### Rejection
 
-Their is 2 available rejection type:
-- [`Buisness`](./spec/BusinessMessageReject.md): reject on message/transaction made at the buisness level (e.g., order book or trading logic errors).
+There are 2 available rejection types:
+- [`Business`](./spec/BusinessMessageReject.md): reject on message/transaction made at the business level (e.g., order book or trading logic errors).
 - [`Standard`](./spec/Reject.md): reject message made at the system level (e.g., logon failures, invalid headers, protocol violations)
 
-> Not all case of rejection are coverade, so if you don't receive a respond after sending a message, consider it to be rejected (the `Message Sequence Number` is not incremented for the reply)
+> Not all cases of rejection are covered, so if you don't receive a response after sending a message, consider it to be rejected (the `Message Sequence Number` is not incremented for the reply)
 
 ## Configuration
 

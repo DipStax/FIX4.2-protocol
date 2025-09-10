@@ -33,6 +33,4 @@ The Initiator provides the Backend with necessary configuration, including:
 
 - The allowed API key for session validation
 - The Unix socket address for IPC communication with the Initiator
-- The session token for secure synchronization with the Backend
-
-The **Backend** is the core processing engine of the FIX 4.2 protocol client.
+- The session token for secure synchronization with the Frontend
