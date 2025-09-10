@@ -45,6 +45,7 @@ jobs:
                 ((i++))
             done
             sudo mv "$SRC" "$DEST_PATH"
+            sudo mkdir "$SRC"
 
 
       - name: Deploy to VPS
