@@ -1,0 +1,23 @@
+name: Shared library Unit Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      my-list:
+        description: "Library to test (separeted by comma)"
+        required: true
+        default: "Network"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Process list
+        run: |
+          IFS=',' read -ra ITEMS <<< "${{ github.event.inputs.my-list }}"
+          for item in "${ITEMS[@]}"; do
+            echo "Item: $item"
+          done

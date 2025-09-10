@@ -64,7 +64,6 @@ namespace net
         std::memset(&addr, 0, sizeof(addr));
         addr.sun_family = T::Domain;
         std::strncpy(addr.sun_path, this->m_path.c_str(), sizeof(addr.sun_path) - 1);
-        std::cout << addr.sun_path << std::endl;
 
         if (!recreate())
             return false;
