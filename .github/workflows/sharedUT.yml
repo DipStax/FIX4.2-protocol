@@ -28,6 +28,11 @@ jobs:
           path: build
           if-no-files-found: error
 
+      - name: Show available target
+        run: |
+          cd build
+          cmake --build . --target help
+
   build-test:
     needs: build-cmake
     runs-on: ubuntu-latest
@@ -46,7 +51,12 @@ jobs:
           name: cmake-build
           path: build
 
+      - name: Show available target
+        run: |
+          cd build
+          cmake --build . --target help
+
       - name: Build target
         run: |
           cd build
-          cmake --build . --target Shared_${{ matrix.target }}_Test
+          cmake --build . -j --target Shared_${{ matrix.target }}_Test
