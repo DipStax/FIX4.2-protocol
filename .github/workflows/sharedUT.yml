@@ -41,6 +41,9 @@ jobs:
     name: Build & Run Unit-Test (${{ matrix.target }})
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Download CMake build directory
         uses: actions/download-artifact@v5
         with:
