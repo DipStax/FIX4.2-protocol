@@ -48,7 +48,7 @@ The configuration is a `json` file provided as the first (and only) program argu
 ### Sequence diagram
 
 <div align="center">
-  <img src="./asset/auth-protocol.png" alt="Sequence Diagram" width="600"/>
+  <img src="./asset/auth-protocol.png" alt="Sequence Diagram" />
   <br/>
   <hr style="width:60%;margin:auto;"/>
   <sub>Figure 1: UML Sequence Diagram of the login flow</sub>
