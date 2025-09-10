@@ -55,6 +55,8 @@ Their is 2 available rejection type:
 
 ### Define
 
+This is all the compiler definition available for the server configuration.
+
 | Name | Description | Type | Default |
 |---|---|---|---|
 | **PU_LOGON_TP_SIZE** | Number of thread in the threadpool of the **logon** process unit, represent the number of message that can be process simultaneously | `uint` | 1 |

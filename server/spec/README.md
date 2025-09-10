@@ -1,5 +1,9 @@
 # Server message specification
 
+This specification defines the structure and required fields for all FIX 4.2 protocol messages supported by the server.
+It serves as a reference for developers implementing FIX clients or integrating with the server, ensuring that all messages conform to the FIX standard and are correctly interpreted by both parties.
+Each message type is described with its required fields, tags, and any server-specific comments or constraints.
+
 ## Header
 
 | Tag | Field Name | Required | Comments |
