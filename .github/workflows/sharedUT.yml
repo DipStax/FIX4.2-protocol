@@ -5,15 +5,47 @@ on:
     branches:
       - '**'
 jobs:
-  build:
+  build-cmake:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Process list
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake build-essential
+
+      - name: Configure CMake
         run: |
-          IFS=',' read -ra ITEMS <<< "${{ github.event.inputs.my-list }}"
-          for item in "${ITEMS[@]}"; do
-            echo "Item: $item"
-          done
+          mkdir -p build
+          cd build
+          cmake -DBuildCommon=TRUE ..
+
+      - name: Upload build directory
+        uses: actions/upload-artifact@v3
+        with:
+          name: cmake-build
+          path: build
+
+  build-test:
+    needs: build-cmake
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [Network]
+    name: Build Unit-Test ${{ matrix.target }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download CMake build directory
+        uses: actions/download-artifact@v3
+        with:
+          name: cmake-build
+          path: build
+
+      - name: Build target
+        run: |
+          cd build
+          cmake --build . --target Shared_${{ matrix.target }}_Test
