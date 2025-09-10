@@ -10,6 +10,7 @@ on:
 jobs:
   build-cmake:
     runs-on: ubuntu-latest
+    name: Building cmake & dependency
 
     steps:
       - name: Checkout
@@ -40,9 +41,6 @@ jobs:
     name: Build Unit-Test ${{ matrix.target }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-
       - name: Download CMake build directory
         uses: actions/download-artifact@v5
         with:
@@ -51,8 +49,8 @@ jobs:
 
       - name: Build target
         run: |
-          cd build
+          cd build ${{ matrix.target }}
           cmake --build . -j --target Shared_${{ matrix.target }}_Test
 
-      - name: Run Test
+      - name: Run Test ${{ matrix.target }}
         run: ./build/shared/Network/Shared_${{ matrix.target }}_Test

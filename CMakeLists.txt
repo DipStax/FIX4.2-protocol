@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 
-add_compile_options(-Wall -Wextra -Wpedantic -03)
+add_compile_options(-Wall -Wextra -Wpedantic)
 
 option(CommonBuild "Build the Common library" FALSE)
 option(ServerBuild "Build the Server library" FALSE)
