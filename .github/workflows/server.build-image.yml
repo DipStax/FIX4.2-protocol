@@ -18,6 +18,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Replace VARS
+        env:
+          VARS_JSON: ${{ toJSON(vars) }}
+        run: |
+          python3 .github/workflows/script/replace.py server/config.json
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:

@@ -5,7 +5,7 @@
         }
     },
     "network": {
-        "tcp-port": 8080
+        "tcp-port": "{{ SERVER_PORT }}"
     },
     "market": {
         "list": [
