@@ -33,6 +33,7 @@ jobs:
             DEST_DIR="/backup"
 
             if [ ! -d "$SRC" ]; then
+                sudo mkdir "$SRC"
                 exit 0
             fi
             sudo mkdir -p "$DEST_DIR"
