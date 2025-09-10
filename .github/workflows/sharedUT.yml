@@ -17,8 +17,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          mkdir -p build
-          cd build
+          mkdir -p build && cd build
           cmake -DCommonBuild=TRUE ..
 
       - name: Upload build directory
@@ -52,5 +51,8 @@ jobs:
           cd build
           cmake --build . -j --target Shared_${{ matrix.target }}_Test
 
+      - name: Display file recusive
+        run: ls -R
+
       - name: Run Test
-        run: ./shared/Network/Shared_${{ matrix.target }}_Test
+        run: ./build/shared/Network/Shared_${{ matrix.target }}_Test
