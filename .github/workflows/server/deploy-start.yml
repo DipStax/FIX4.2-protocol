@@ -1,0 +1,34 @@
+name: Deploy & Start Server
+
+on:
+  workflow_run:
+    workflows: ["Build Server image"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Pull image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate image name
+        id: image_generator
+        run: |
+          IMAGE=ghcr.io/${{ github.actor }}/fix-server
+          IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
+          echo "image_name=$IMAGE" >> $GITHUB_OUTPUT
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            sudo docker pull ${{ steps.image_generator.outputs.image_name }}:latest
+            sudo docker stop fix-server || true
+            sudo docker rm fix-server || true
+            sudo docker run -d --name fix-server -p ${{ vars.SERVER_PORT}}:${{ vars.SERVER_PORT_FORWARD }} ${{ steps.image_generator.outputs.image_name }}:latest
