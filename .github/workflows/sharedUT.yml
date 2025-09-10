@@ -19,7 +19,7 @@ jobs:
         run: |
           mkdir -p build
           cd build
-          cmake -DBuildCommon=TRUE ..
+          cmake -DCommonBuild=TRUE ..
 
       - name: Upload build directory
         uses: actions/upload-artifact@v4.6.2
