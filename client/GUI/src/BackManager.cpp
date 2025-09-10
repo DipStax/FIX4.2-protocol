@@ -1,9 +1,11 @@
+#include <QThread>
+
 #include "Client/GUI/BackManager.hpp"
 
-#include "Client/Common/IPC/Header.hpp"
+#include "Client/Shared/IPC/Header.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Network/Selector.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Network/Selector.hpp"
 
 
 BackManager *BackManager::Instance()
@@ -20,24 +22,26 @@ BackManager *BackManager::Instance()
     return m_instance;
 }
 
-void BackManager::startConnection()
+void BackManager::setTargetPort(uint32_t _port)
 {
-    net::Selector<net::UnixStream> selector;
-    const std::string socket_address = "/tmp/fix-backend.socket";
-
-    m_socket = std::make_shared<net::UnixStream>();
-    Logger->log<logger::Level::Debug>("Connecting to: ", socket_address);
-    while (!m_socket->connect(socket_address)) {
+    m_socket = std::make_shared<net::INetTcp>();
+    Logger->log<logger::Level::Debug>("Connecting to: 127.0.0.1:", _port);
+    while (!m_socket->connect("127.0.0.1", _port)) {
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     Logger->log<logger::Level::Info>("Successfully connected to backend");
+}
+
+void BackManager::startConnection()
+{
+    net::Selector<net::INetTcp> selector;
 
     selector.timeout(1000);
     selector.client(m_socket);
 
     while (true) {
-        std::vector<net::Selector<net::UnixStream>::Client> clients = selector.pull();
+        std::vector<net::Selector<net::INetTcp>::Client> clients = selector.pull();
 
         if (!clients.empty()) {
             int error = 0;
@@ -87,10 +91,16 @@ void BackManager::ipcReceived(net::Buffer &_buffer)
 
     ipc::msg::Logon logon{};
     ipc::msg::Execution exec;
+    ipc::msg::BackToFrontValidToken token;
     uint8_t status;
 
     _buffer >> header;
+    Logger->log<logger::Level::Info>("Received new data from Backend, with message type: ", (int)header.MsgType);
     switch (header.MsgType) {
+        case ipc::MessageType::BackToFrontValidToken:
+            _buffer >> token;
+            emit received_TokenValidation(token);
+            break;
         case ipc::MessageType::Status:
             _buffer >> status;
             emit received_Status(static_cast<PUStatus>(status));

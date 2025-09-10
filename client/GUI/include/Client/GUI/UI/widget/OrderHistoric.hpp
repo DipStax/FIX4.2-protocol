@@ -4,10 +4,10 @@
 #include <QStandardItemModel>
 #include <QStandardItem>
 
-#include "Client/Common/IPC/Message/Execution.hpp"
+#include "Client/Shared/IPC/Message/Execution.hpp"
 
-#include "Common/Core/Order.hpp"
-#include "Common/Log/ILogger.hpp"
+#include "Shared/Core/Order.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 namespace ui::widget
 {

@@ -4,11 +4,11 @@
 #include "Client/GUI/UI/widget/OrderExecution.hpp"
 #include "Client/GUI/BackManager.hpp"
 
-#include "Client/Common/IPC/Helper.hpp"
-#include "Client/Common/IPC/Message/OrderSingle.hpp"
+#include "Client/Shared/IPC/Helper.hpp"
+#include "Client/Shared/IPC/Message/OrderSingle.hpp"
 
-#include "Common/Log/Manager.hpp"
-#include "Common/Core/Order.hpp"
+#include "Shared/Log/Manager.hpp"
+#include "Shared/Core/Order.hpp"
 
 namespace ui::widget
 {
