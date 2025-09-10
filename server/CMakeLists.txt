@@ -10,7 +10,6 @@ add_executable(Fix_Server
     ${SRC_Fix_Server}
 )
 
-
 target_link_libraries(Fix_Server PRIVATE
     Shared_ProcessUnit
     Shared_Message
@@ -19,8 +18,6 @@ target_link_libraries(Fix_Server PRIVATE
     Shared_Log
     Shared_Network
 )
-
-message(STATUS "INCLUDE PATHS: $<TARGET_PROPERTY:Fix_Server,INCLUDE_DIRECTORIES>")
 
 target_include_directories(Fix_Server PRIVATE include)
 

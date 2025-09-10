@@ -1,0 +1,62 @@
+name: Shared library Unit Test
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build-cmake:
+    runs-on: ubuntu-latest
+    name: Building cmake & dependency
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Removing man-db auto-update
+        run: sudo rm -f /var/lib/man-db/auto-update
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake g++ make
+
+      - name: Configure CMake
+        run: |
+          mkdir -p build && cd build
+          cmake -DCommonBuild=TRUE ..
+
+      - name: Upload build directory
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: cmake-build
+          path: build
+          if-no-files-found: error
+          include-hidden-files: true
+
+  build-test:
+    needs: build-cmake
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [Network]
+    name: Build & Run Unit-Test (${{ matrix.target }})
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Download CMake build directory
+        uses: actions/download-artifact@v5
+        with:
+          name: cmake-build
+          path: build
+
+      - name: Build target
+        working-directory: build
+        run: cmake --build . -j --target Shared_${{ matrix.target }}_Test
+
+      - name: Run Test ${{ matrix.target }}
+        working-directory: build/shared/${{ matrix.target }}
+        run: ./Shared_${{ matrix.target }}_Test
