@@ -5,6 +5,10 @@ on:
     workflows: ["Build Server image"]
     types:
       - completed
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
