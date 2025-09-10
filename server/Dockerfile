@@ -18,5 +18,6 @@ FROM debian:stable-slim
 WORKDIR /app
 
 COPY --from=build /fix42-build/build/server/Fix_Server .
+COPY --from=build /fix42-build/build/server/config.json .
 
-CMD ["./Fix_Server"]
+CMD ["./Fix_Server", "config.json"]
