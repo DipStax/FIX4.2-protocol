@@ -10,7 +10,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake build-essential
@@ -22,10 +22,11 @@ jobs:
           cmake -DBuildCommon=TRUE ..
 
       - name: Upload build directory
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.6.2
         with:
           name: cmake-build
           path: build
+          if-no-files-found: error
 
   build-test:
     needs: build-cmake
@@ -37,10 +38,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Download CMake build directory
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
         with:
           name: cmake-build
           path: build
