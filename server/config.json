@@ -5,7 +5,7 @@
         }
     },
     "network": {
-        "tcp-port": "{{ SERVER_PORT }}"
+        "tcp-port": {{ SERVER_PORT }}
     },
     "market": {
         "list": [
