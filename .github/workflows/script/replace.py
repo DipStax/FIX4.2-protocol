@@ -10,14 +10,7 @@ def replace(text: str, vars_map: Dict[str, Any]) -> str:
 
     def replacer(match):
         var_name = match.group(1)
-        value = vars_map.get(var_name)
-
-        if value is not None:
-            print(f"Replacing {{ {var_name} }} with '{value}'")
-            return str(value)
-        else:
-            print(f"No value for {{ {var_name} }}, keeping original")
-            return match.group(0)
+        return str(vars_map.get(var_name, match.group(0)))
 
     return pattern.sub(replacer, text)
 
@@ -33,7 +26,7 @@ def main(arg: List[str]) -> int:
         with open(filename, "w") as file:
             file.write(replaced)
 
-        print(f"Processed {filename}:\n{replaced}")
+        print(f"Processed {filename}")
     return 0
 
 if __name__ == '__main__':
