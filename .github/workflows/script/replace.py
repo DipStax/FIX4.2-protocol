@@ -33,7 +33,7 @@ def main(arg: List[str]) -> int:
         with open(filename, "w") as file:
             file.write(replaced)
 
-        print(f"Processed {filename}")
+        print(f"Processed {filename}:\n{replace}")
     return 0
 
 if __name__ == '__main__':
