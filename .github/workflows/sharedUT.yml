@@ -49,7 +49,7 @@ jobs:
 
       - name: Build target
         run: |
-          cd build ${{ matrix.target }}
+          cd build
           cmake --build . -j --target Shared_${{ matrix.target }}_Test
 
       - name: Run Test ${{ matrix.target }}
