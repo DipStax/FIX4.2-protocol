@@ -32,5 +32,6 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE=ghcr.io/${{ github.repository_owner }}/fix-server
-          docker build . -t $IMAGE:latest
+          IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
+          docker build -f server/Dockerfile -t $IMAGE:latest .
           docker push $IMAGE:latest

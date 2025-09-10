@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         target: [Network]
-    name: Build Unit-Test ${{ matrix.target }}
+    name: Build & Run Unit-Test (${{ matrix.target }})
 
     steps:
       - name: Download CMake build directory
@@ -48,9 +48,9 @@ jobs:
           path: build
 
       - name: Build target
-        run: |
-          cd build
-          cmake --build . -j --target Shared_${{ matrix.target }}_Test
+        working-directory: build
+        run: cmake --build . -j --target Shared_${{ matrix.target }}_Test
 
       - name: Run Test ${{ matrix.target }}
-        run: ./build/shared/Network/Shared_${{ matrix.target }}_Test
+        working-directory: build/shared/${{ matrix.target }}
+        run: ./Shared_${{ matrix.target }}_Test
