@@ -5,22 +5,18 @@ on:
     workflows: ["Build Server image"]
     types:
       - completed
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - master
   workflow_dispatch:
 
 jobs:
   deploy:
-    name: Pull image
+    name: Deploy image
     runs-on: ubuntu-latest
 
     steps:
       - name: Generate image name
         id: image_generator
         run: |
-          IMAGE=ghcr.io/${{ github.actor }}/fix-server
+          IMAGE=ghcr.io/${{ github.repository_owner }}/fix-server
           IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
           echo "image_name=$IMAGE" >> $GITHUB_OUTPUT
 
@@ -31,7 +27,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo ${{ secrets.GITHUB_TOKEN }} | sudo docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             sudo docker pull ${{ steps.image_generator.outputs.image_name }}:latest
             sudo docker stop fix-server || true
             sudo docker rm fix-server || true

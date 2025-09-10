@@ -16,6 +16,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Removing man-db auto-update
+        run: sudo rm -f /var/lib/man-db/auto-update
+
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y cmake g++ make
 
