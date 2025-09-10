@@ -9,6 +9,10 @@ def replace(text: str, vars_map: Dict[str, Any]) -> str:
     pattern = re.compile(r"\{\{\s*([A-Za-z0-9_]+)\s*\}\}")
 
     def replacer(match):
+        value: str | None = os.getenv(var_name)
+
+        if value is not None:
+            return str(value)
         var_name = match.group(1)
         return str(vars_map.get(var_name, match.group(0)))
 
