@@ -1,6 +1,7 @@
 #include <QThread>
 
 #include "Client/GUI/BackManager.hpp"
+#include "Client/GUI/Config.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
 
@@ -25,8 +26,8 @@ BackManager *BackManager::Instance()
 void BackManager::setTargetPort(uint32_t _port)
 {
     m_socket = std::make_shared<net::INetTcp>();
-    Logger->log<logger::Level::Debug>("Connecting to: 127.0.0.1:", _port);
-    while (!m_socket->connect("127.0.0.1", _port)) {
+    Logger->log<logger::Level::Debug>("Connecting to: ", Configuration<config::Global>::Get().Config.Back.Ip, ":", _port);
+    while (!m_socket->connect(Configuration<config::Global>::Get().Config.Back.Ip, _port)) {
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }

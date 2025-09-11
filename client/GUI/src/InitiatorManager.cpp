@@ -1,6 +1,7 @@
 #include <QThread>
 
 #include "Client/GUI/InitiatorManager.hpp"
+#include "Client/GUI/Config.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
 
@@ -27,10 +28,10 @@ void InitiatorManager::startConnection()
     net::Selector<net::INetTcp> selector;
 
     m_socket = std::make_shared<net::INetTcp>();
-    Logger->log<logger::Level::Debug>("Connecting to: 127.0.0.1:8082"); // todo use config
-    while (!m_socket->connect("127.0.0.1", 8082)) { // todo use config
+    Logger->log<logger::Level::Debug>("Connecting to: ", Configuration<config::Global>::Get().Config.Initiator.Ip, ":", Configuration<config::Global>::Get().Config.Initiator.Port);
+    while (!m_socket->connect(Configuration<config::Global>::Get().Config.Initiator.Ip, Configuration<config::Global>::Get().Config.Initiator.Port)) {
         Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000)); // todo use config
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     Logger->log<logger::Level::Info>("Successfully connected to Initiator");
     emit connectionReady();
