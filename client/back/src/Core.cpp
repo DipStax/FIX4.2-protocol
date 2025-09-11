@@ -1,11 +1,13 @@
 #include "Client/Back/Core.hpp"
-
-#include "Shared/Log/Manager.hpp"
 #include "Client/Back/FrontManager.hpp"
-#include "Client/Shared/IPC/Helper.hpp"
-
+#include "Client/Back/Signal.hpp"
 #include "Client/Back/InitiatorManager.hpp"
 #include "Client/Back/FrontManager.hpp"
+
+#include "Client/Shared/IPC/Helper.hpp"
+
+#include "Shared/Log/Manager.hpp"
+
 
 Core::Core()
     : m_server(std::make_shared<net::INetTcp>()),
@@ -50,7 +52,7 @@ bool Core::start()
     m_tcp_input.start();
     Logger->log<logger::Level::Debug>("Notifying front of running status");
     FrontManager::Instance().send(ipc::Helper::Status(PUStatus::Running));
-    while (m_running)
+    while (m_running && signal_run)
     {
         try {
             m_tcp_output.status();

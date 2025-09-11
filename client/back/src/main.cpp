@@ -2,6 +2,7 @@
 #include "Client/Back/FrontManager.hpp"
 #include "Client/Back/InitiatorManager.hpp"
 #include "Client/Back/Config.hpp"
+#include "Client/Back/Signal.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Console.hpp"
@@ -22,6 +23,8 @@ int main(int _ac, const char **_av)
     if (!std::strcmp(_av[1], "-h"))
         return help(0);
 
+    setup_signal_handler();
+
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
@@ -35,5 +38,7 @@ int main(int _ac, const char **_av)
     Core core{};
 
     core.start();
+
+    logger::imp::Buffer::Stop();
     return 0;
 }

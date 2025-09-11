@@ -1,5 +1,6 @@
 #include "Server/Core.hpp"
 #include "Server/Config.hpp"
+#include "Server/Signal.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Console.hpp"
@@ -20,6 +21,8 @@ int main(int _ac, const char **_av)
     if (!std::strcmp(_av[1], "-h"))
         return help(0);
 
+    setup_signal_handler();
+
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
@@ -28,5 +31,8 @@ int main(int _ac, const char **_av)
 
     Core core{};
 
-    return core.start();
+    int result = core.start();
+
+    logger::imp::Buffer::Stop();
+    return result;
 }

@@ -1,5 +1,4 @@
 #include <functional>
-#include <iostream>
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 
@@ -14,7 +13,7 @@ ProcessUnit<T>::ProcessUnit(Ts &&..._args)
 template<IsProcessUnitBase T>
 void ProcessUnit<T>::start()
 {
-    m_thread = std::jthread(std::bind_front(&ProcessUnit<T>::process, this));
+    m_thread = std::jthread(&ProcessUnit<T>::process, this);
 }
 
 template<IsProcessUnitBase T>
@@ -23,7 +22,6 @@ PUStatus ProcessUnit<T>::status(float _to)
     switch (m_future.wait_for(std::chrono::duration<float>(_to)))
     {
         case std::future_status::ready:
-            std::cerr << "futur is ready" << std::endl;
             m_future.get();
             return PUStatus::Stop;
         case std::future_status::timeout:
@@ -52,6 +50,7 @@ void ProcessUnit<T>::process(std::stop_token _st)
     try {
         this->Logger->template log<logger::Level::Info>("Starting process unit...");
         T::runtime(_st);
+        m_promise.set_value();
     } catch (...) {
         this->Logger->template log<logger::Level::Fatal>("Process unit have crashed");
         m_promise.set_exception(std::current_exception());

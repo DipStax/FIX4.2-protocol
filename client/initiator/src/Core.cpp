@@ -1,4 +1,5 @@
 #include "Client/Initiator/Core.hpp"
+#include "Client/Initiator/Signal.hpp"
 
 #include "Shared/Configuration/Configuration.hpp"
 #include "Shared/Log/Manager.hpp"
@@ -21,7 +22,7 @@ bool Core::start()
     m_back_handler.start();
 
     m_running = true;
-    while (m_running)
+    while (m_running && signal_run)
     {
         try {
             // m_front_handler.status();
