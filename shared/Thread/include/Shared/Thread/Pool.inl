@@ -23,13 +23,14 @@ void ThreadPool<S>::start()
 }
 
 template<size_t S>
-void ThreadPool<S>::stop()
+void ThreadPool<S>::stop(TPFinishStrategy _finish)
 {
     if (!m_isStarted)
         return;
     {
         std::unique_lock<std::mutex> lock(m_mutex);
 
+        m_finish = _finish;
         m_terminate = true;
     }
     m_cond.notify_all();
@@ -67,8 +68,8 @@ void ThreadPool<S>::loop()
             m_cond.wait(lock, [this] () {
                 return !empty() || m_terminate;
             });
-            if (m_terminate)
-                    return;
+            if (m_terminate && ((m_finish == TPFinishStrategy::WaitEmpty && empty()) || m_finish == TPFinishStrategy::Direct))
+                return;
             task = m_queue.pop_front();
         }
         task();

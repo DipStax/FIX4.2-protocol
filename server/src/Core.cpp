@@ -1,5 +1,6 @@
 #include "Server/Core.hpp"
 #include "Server/Config.hpp"
+#include "Server/Signal.hpp"
 
 Core::Core()
     : m_logon(m_tcp_output.getInput()),
@@ -29,7 +30,7 @@ bool Core::start()
         m_running = false;
         return false;
     }
-    while (m_running)
+    while (m_running && signal_run)
     {
         try {
             // m_tcp_output.status();
@@ -72,7 +73,6 @@ void Core::stop()
 bool Core::internal_start()
 {
     Logger->log<logger::Level::Info>("Starting pipeline...");
-    // m_udp_output.start();
     m_tcp_output.start();
 
     m_logon.start();
@@ -84,6 +84,7 @@ bool Core::internal_start()
 
     m_router.start();
     m_tcp_input.start();
+    Logger->log<logger::Level::Info>("All procesds unit launched");
     return false;
 }
 

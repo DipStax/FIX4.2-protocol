@@ -8,7 +8,7 @@
 #include "Shared/Thread/Pool.hpp"
 
 #if !defined(LOG_BUFFER_TP) || LOG_BUFFER_TP < 1
-    #define LOG_BUFFER_TP
+    #define LOG_BUFFER_TP 1
 #endif
 
 namespace logger::imp
@@ -20,6 +20,8 @@ namespace logger::imp
             ~Buffer() = default;
 
             void newEventLog(Event _event);
+
+            static void Stop();
 
         private:
             std::vector<std::unique_ptr<ILogger>> m_loggers;

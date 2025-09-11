@@ -12,6 +12,12 @@
     #define N_THREAD_TP 1
 #endif
 
+
+enum TPFinishStrategy {
+    WaitEmpty,
+    Direct
+};
+
 template<size_t S = N_THREAD_TP>
 class ThreadPool
 {
@@ -24,7 +30,7 @@ class ThreadPool
         ~ThreadPool();
 
         void start();
-        void stop();
+        void stop(TPFinishStrategy _finish = TPFinishStrategy::Direct);
 
         void enqueue(Task _task);
 
@@ -39,6 +45,8 @@ class ThreadPool
         std::array<std::thread, S> m_thread;
         std::mutex m_mutex;
         std::condition_variable m_cond;
+
+        TPFinishStrategy m_finish = TPFinishStrategy::Direct;
 
         void loop();
 };

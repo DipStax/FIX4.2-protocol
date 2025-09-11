@@ -17,4 +17,9 @@ namespace logger::imp
                 _logger->newEventLog(_event);
         });
     }
+
+    void Buffer::Stop()
+    {
+        m_tp.stop(TPFinishStrategy::WaitEmpty);
+    }
 }
