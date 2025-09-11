@@ -21,9 +21,15 @@ namespace config
             uint32_t TcpPort = 0;
         };
 
+        struct FixConfig
+        {
+            std::vector<std::string> Market;
+            std::string ProviderName{};
+        };
+
         UserConfig User{};
         NetworkConfig Network{};
-        std::vector<std::string> Market;
+        FixConfig Fix{};
 
         friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };

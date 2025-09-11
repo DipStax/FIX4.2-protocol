@@ -62,8 +62,9 @@ The configuration is a `json` file provided as the first (and only) program argu
         - `max-to`: Maximum time, in second, allow between each `HeartBeat` message.
 - `network`:
     - `tcp-port`: Port on which the client will connect.
-- `market`:
-    - `list`: List of **symbol** available on the server.
+- `fix-config`:
+    - `market-list`: List of **symbol** available on the server.
+    - `provider-name`: name used a `Sender Id` in the header when replying to message (or `Target Id` when receiving).
 
 #### Example
 
@@ -77,12 +78,13 @@ The configuration is a `json` file provided as the first (and only) program argu
     "network": {
         "tcp-port": 8080
     },
-    "market": {
-        "list": [
+    "fix-config": {
+        "market-list": [
             "GOLD",
             "EURO",
             "USD"
-        ]
+        ],
+        "provider-name": "MyMarket"
     }
 }
 ```

@@ -1,6 +1,8 @@
 #include <future>
 
 #include "Server/ProcessUnit/Network/TCPOutput.hpp"
+#include "Server/Config.hpp"
+
 #include "Shared/Log/Manager.hpp"
 
 namespace pu
@@ -14,7 +16,7 @@ namespace pu
     {
         m_tp.enqueue([this, _input] () mutable {
             _input.Message.header.set34_msgSeqNum(std::to_string(_input.Client->getSeqNumber()));
-            _input.Message.header.set49_SenderCompId(PROVIDER_NAME);
+            _input.Message.header.set49_SenderCompId(Configuration<config::Global>::Get().Config.Fix.ProviderName);
             _input.Message.header.set56_TargetCompId(_input.Client->getUserId());
             _input.Client->nextSeqNumber();
 

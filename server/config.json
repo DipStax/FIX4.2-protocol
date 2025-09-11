@@ -7,11 +7,12 @@
     "network": {
         "tcp-port": {{ SERVER_PORT }}
     },
-    "market": {
-        "list": [
+    "fix-config": {
+        "market-list": [
             "GOLD",
             "EURO",
             "USD"
-        ]
+        ],
+        "provider-name": "MyMarket"
     }
 }

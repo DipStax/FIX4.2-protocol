@@ -20,9 +20,10 @@ namespace config
 
         network.at("tcp-port").get_to(_config.Network.TcpPort);
 
-        const nlohmann::json &market = _json.at("market");
+        const nlohmann::json &fixconfig = _json.at("fix-config");
 
-        market.at("list").get_to(_config.Market);
+        fixconfig.at("market-list").get_to(_config.Fix.Market);
+        fixconfig.at("provider-name").get_to(_config.Fix.ProviderName);
     }
 
     void to_json(nlohmann::json &_json, const config::Global &_config)
@@ -36,8 +37,9 @@ namespace config
             {"network", {
                 {"tcp-port", _config.Network.TcpPort}
             }},
-            {"market", {
-                {"list", _config.Market}
+            {"fix-config", {
+                {"market-list", _config.Fix.Market},
+                {"provider-name", _config.Fix.ProviderName}
             }}
         };
     }

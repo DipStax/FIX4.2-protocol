@@ -4,7 +4,6 @@
 
 #include "Shared/Message/Fix.hpp"
 #include "Shared/Message/Serializer.hpp"
-#include "Shared/Network/UDPPackage.hpp"
 #include "Shared/Thread/Queue.hpp"
 
 namespace data
@@ -40,4 +39,3 @@ namespace data
 
 using InputRouter = ts::Queue<Context<data::RouterInput>>;
 using InputNetworkOutput = ts::Queue<Context<data::OutNetworkInput>>;
-using InputUdp = ts::Queue<data::UDPPackage>;

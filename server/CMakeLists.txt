@@ -30,6 +30,3 @@ target_link_libraries(Fix_Server PRIVATE
 )
 
 target_include_directories(Fix_Server PRIVATE include)
-
-target_compile_definitions(Fix_Server PRIVATE PROVIDER_NAME="MyMarket")           # Server name (used for TargetCompId from client)
-target_compile_definitions(Fix_Server PRIVATE MARKET_NAME="GOLD","EURO","USD")    # Name of availalbe market

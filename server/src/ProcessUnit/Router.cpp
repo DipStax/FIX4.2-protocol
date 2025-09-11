@@ -3,6 +3,7 @@
 #include "Server/ProcessUnit/data/Market.hpp"
 #include "Server/ProcessUnit/Router.hpp"
 #include "Server/meta.hpp"
+#include "Server/Config.hpp"
 
 #include "Shared/Utils/Utils.hpp"
 #include "Shared/Message/Message.hpp"
@@ -26,7 +27,7 @@ namespace pu
     {
         std::pair<bool, fix::Reject> reject;
 
-        reject = fix::Header::Verify(_input.Message, _input.Client->getUserId(), PROVIDER_NAME, _input.Client->getSeqNumber());
+        reject = fix::Header::Verify(_input.Message, _input.Client->getUserId(), Configuration<config::Global>::Get().Config.Fix.ProviderName, _input.Client->getSeqNumber());
 
         _input.Client->nextSeqNumber();
         if (reject.first) {

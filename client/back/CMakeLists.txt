@@ -17,8 +17,6 @@ add_custom_command(
         -P ${CMAKE_SOURCE_DIR}/cmake/copy_config.cmake
 )
 
-target_compile_definitions(Fix_Client_Back PUBLIC PROVIDER_NAME="MyMarket")
-
 target_link_libraries(Fix_Client_Back PRIVATE
     Shared_Configuration
     Shared_Message

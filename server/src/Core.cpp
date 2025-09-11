@@ -89,10 +89,7 @@ bool Core::internal_start()
 
 void Core::market_init()
 {
-    std::vector<std::string> name{ MARKET_NAME };
-
-
-    for (std::string &_name : Configuration<config::Global>::Get().Config.Market) {
+    for (std::string &_name : Configuration<config::Global>::Get().Config.Fix.Market) {
         m_markets.emplace(std::piecewise_construct,
             std::forward_as_tuple(_name),
             std::forward_as_tuple(_name, m_tcp_output.getInput())
