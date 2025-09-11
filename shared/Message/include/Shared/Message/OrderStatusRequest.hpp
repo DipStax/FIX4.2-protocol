@@ -4,7 +4,7 @@
 
 namespace fix
 {
-    class OrderStatusRequest : public Message
+    class OrderStatusRequest : public old_Message
     {
         public:
             OrderStatusRequest();

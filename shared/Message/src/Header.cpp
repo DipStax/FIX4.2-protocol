@@ -10,7 +10,7 @@
 
 namespace fix
 {
-    std::pair<bool, Reject> Header::Verify(Serializer::AnonMessage &_msg, const std::string &_sender, const std::string &_target, size_t _seqnum)
+    std::pair<bool, Reject> old_Header::Verify(Serializer::AnonMessage &_msg, const std::string &_sender, const std::string &_target, size_t _seqnum)
     {
         // need to verify sending time
         std::pair<bool, Reject> reject = Has<Tag::BeginString, Tag::BodyLength, Tag::MsqSeqNum, Tag::MsgType, Tag::SenderCompId, Tag::SendingTime, Tag::TargetCompId>(_msg);
@@ -30,7 +30,7 @@ namespace fix
         reject = verify_all<Tag::BeginString, Tag::MsgType, Tag::SendingTime>(_msg);
         if (reject.first)
             return reject;
-        reject = verify<Tag::BodyLength>(_msg.at(Tag::BodyLength), Message::getBodyLength(body_len)); // calculate body length
+        reject = verify<Tag::BodyLength>(_msg.at(Tag::BodyLength), old_Message::getBodyLength(body_len)); // calculate body length
         if (reject.first)
             return reject;
         if (!_sender.empty()) {
@@ -44,48 +44,48 @@ namespace fix
         reject = verify<Tag::TargetCompId>(_msg.at(Tag::TargetCompId), _target);
         if (reject.first)
             return reject;
-        reject = verify<Tag::CheckSum>(_msg.at(Tag::CheckSum), Message::getChecksum(checksum));
+        reject = verify<Tag::CheckSum>(_msg.at(Tag::CheckSum), old_Message::getChecksum(checksum));
         if (reject.first)
             return reject;
         return reject;
     }
 
-    void Header::set9_bodyLength(const std::string &_val)
+    void old_Header::set9_bodyLength(const std::string &_val)
     {
         BodyLength = _val;
     }
 
-    void Header::set9_bodyLength(const size_t &_val)
+    void old_Header::set9_bodyLength(const size_t &_val)
     {
         BodyLength = std::to_string(_val);
     }
 
-    void Header::set35_MsgType(const std::string &_val)
+    void old_Header::set35_MsgType(const std::string &_val)
     {
         MsgType = _val;
     }
 
-    void Header::set34_msgSeqNum(const std::string &_val)
+    void old_Header::set34_msgSeqNum(const std::string &_val)
     {
         MsgSeqNum = _val;
     }
 
-    void Header::set34_msgSeqNum(const size_t &_val)
+    void old_Header::set34_msgSeqNum(const size_t &_val)
     {
         MsgSeqNum = std::to_string(_val);
     }
 
-    void Header::set49_SenderCompId(const std::string &_val)
+    void old_Header::set49_SenderCompId(const std::string &_val)
     {
         SenderCompId = _val;
     }
 
-    void Header::set56_TargetCompId(const std::string &_val)
+    void old_Header::set56_TargetCompId(const std::string &_val)
     {
         TargetCompId = _val;
     }
 
-    Header::operator std::string() const
+    old_Header::operator std::string() const
     {
         return "8=" + BeginString + (char)FIX_DELIMITER +
                "9=" + BodyLength + (char)FIX_DELIMITER +
@@ -96,7 +96,7 @@ namespace fix
                "52=" + SendingTime + (char)FIX_DELIMITER;
     }
 
-    void Header::setSendingTime()
+    void old_Header::setSendingTime()
     {
         time_t currentTime = time(nullptr);
         struct tm *timeInfo = localtime(&currentTime);
@@ -124,17 +124,17 @@ namespace fix
         SendingTime = formattedTime;
     }
 
-    uint64_t Header::getTargetCompId() const
+    uint64_t old_Header::getTargetCompId() const
     {
         return utils::to<uint64_t>(TargetCompId);
     }
 
-    void Header::updateMsgSeqNum()
+    void old_Header::updateMsgSeqNum()
     {
         MsgSeqNum = std::to_string(std::stoi(MsgSeqNum) + 1);
     }
 
-    std::string Header::getPartialHeader() const
+    std::string old_Header::getPartialHeader() const
     {
         return "35=" + MsgType + (char)FIX_DELIMITER +
                "49=" + SenderCompId + (char)FIX_DELIMITER +

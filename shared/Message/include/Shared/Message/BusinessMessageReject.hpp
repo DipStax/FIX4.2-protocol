@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [Business Message Reject](https://www.onixs.biz/fix-dictionary/4.2/msgType_j_106.html) message class.
-    class BusinessMessageReject : public Message
+    class BusinessMessageReject : public old_Message
     {
         public:
             BusinessMessageReject();

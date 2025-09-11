@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [Logout](https://www.onixs.biz/fix-dictionary/4.2/msgType_5_5.html) message class.
-    class Logout : public Message
+    class Logout : public old_Message
     {
         public:
             Logout();

@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [HeartBeat](https://www.onixs.biz/fix-dictionary/4.2/msgType_0_0.html) message class.
-    class HeartBeat : public Message
+    class HeartBeat : public old_Message
     {
         public:
             HeartBeat();

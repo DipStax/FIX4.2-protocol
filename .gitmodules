@@ -1,0 +1,3 @@
+[submodule "shared/FIX-Message"]
+	path = shared/FIX-Message
+	url = git@github.com:DipStax/FIX-Message.git

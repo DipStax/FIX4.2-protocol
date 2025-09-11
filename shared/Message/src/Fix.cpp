@@ -7,12 +7,12 @@
 
 namespace fix
 {
-    Message::operator std::string()
+    old_Message::operator std::string()
     {
         return to_string();
     }
 
-    std::string Message::to_string()
+    std::string old_Message::to_string()
     {
         std::string body_tmp = "";
         std::string header_tmp = "";
@@ -24,7 +24,7 @@ namespace fix
         header.setSendingTime();
         // header.updateMsgSeqNum();
 
-        std::size_t _len = Message::getBodyLength(
+        std::size_t _len = old_Message::getBodyLength(
             header.getPartialHeader() + body_tmp
         );
 
@@ -32,17 +32,17 @@ namespace fix
         header_tmp = header;
 
         msg = header_tmp + body_tmp;
-        msg += "10=" + Message::getChecksum(msg) + (char)FIX_DELIMITER;
+        msg += "10=" + old_Message::getChecksum(msg) + (char)FIX_DELIMITER;
 
         return msg;
     }
 
-    std::size_t Message::getBodyLength(const std::string &_str)
+    std::size_t old_Message::getBodyLength(const std::string &_str)
     {
         return _str.size();
     }
 
-    std::string Message::getChecksum(const std::string &_str)
+    std::string old_Message::getChecksum(const std::string &_str)
     {
         size_t sum = 0;
         std::string formated_checksum{};
@@ -56,12 +56,12 @@ namespace fix
         return formated_checksum;
     }
 
-    bool Message::contains(const std::string &_key) const
+    bool old_Message::contains(const std::string &_key) const
     {
         return m_params.contains(_key);
     }
 
-    const std::string &Message::get(const std::string &_key) const
+    const std::string &old_Message::get(const std::string &_key) const
     {
         return m_params.at(_key);
     }

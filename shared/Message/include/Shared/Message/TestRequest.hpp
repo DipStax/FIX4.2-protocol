@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [TestRequest](https://www.onixs.biz/fix-dictionary/4.2/msgType_1_1.html) message class.
-    class TestRequest : public Message
+    class TestRequest : public old_Message
     {
         public:
             TestRequest();

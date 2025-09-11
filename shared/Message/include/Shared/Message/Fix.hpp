@@ -10,13 +10,13 @@
 
 namespace fix
 {
-    class Message
+    class old_Message
     {
         public:
-            Message() = default;
-            virtual ~Message() = default;
+            old_Message() = default;
+            virtual ~old_Message() = default;
 
-            Header header;
+            old_Header header;
 
             operator std::string();
             [[nodiscard]] std::string to_string();
