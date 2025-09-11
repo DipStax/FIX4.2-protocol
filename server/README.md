@@ -53,6 +53,42 @@ There are 2 available rejection types:
 
 ## Configuration
 
+### Json
+
+The configuration is a `json` file provided as the first (and only) program argument. It is composed of three sections:
+
+- `user`:
+    - `heartbeat`:
+        - `max-to`: Maximum time, in second, allow between each `HeartBeat` message.
+- `network`:
+    - `tcp-port`: Port on which the client will connect.
+- `fix-config`:
+    - `market-list`: List of **symbol** available on the server.
+    - `provider-name`: name used a `Sender Id` in the header when replying to message (or `Target Id` when receiving).
+
+#### Example
+
+```json
+{
+    "user": {
+        "heartbeat": {
+            "max-to": 100
+        }
+    },
+    "network": {
+        "tcp-port": 8080
+    },
+    "fix-config": {
+        "market-list": [
+            "GOLD",
+            "EURO",
+            "USD"
+        ],
+        "provider-name": "MyMarket"
+    }
+}
+```
+
 ### Define
 
 This is all the compiler definition available for the server configuration.
@@ -60,7 +96,6 @@ This is all the compiler definition available for the server configuration.
 | Name | Description | Type | Default |
 |---|---|---|---|
 | **PU_LOGON_TP_SIZE** | Number of thread in the threadpool of the **logon** process unit, represent the number of message that can be process simultaneously | `uint` | 1 |
-| **PU_LOGON_HB_MAX_TO** | Maximum time, in second, allow between each `HeartBeat` message | `float` | 100 |
 | **PU_HEARTBEAT_TP_SIZE** | Number of thread in the threadpool of the **heartbeat** process unit, represent the number of message that can be process simultaneously | `uint` | 1 |
 | **PU_LOGOUT_TP_SIZE** | Number of thread in the threadpool of the **heartbeat** process unit, represent the number of message that can be process simultaneously | `uint` | 1 |
 | **PU_NETOUT_TP_SIZE** | Number of thread in the threadpool of the **network output** process unit, represent the number of message that can be send simultaneously | `uint` | 30 |

@@ -1,0 +1,7 @@
+{
+    "fix-server": {
+        "ip": "{{ VPS_HOST }}",
+        "port": {{ SERVER_PORT }},
+        "provider": "MyMarket"
+    }
+}

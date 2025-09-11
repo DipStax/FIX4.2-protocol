@@ -88,3 +88,27 @@ The **Trading historic** show the historic present the historic of the current t
 ---
 
 This structure allows users to easily track the lifecycle of each order, monitor execution details, and review trading activity in a clear and organized manner.
+
+## Configuration
+
+- `initiator`:
+    - `ip`: IP address of the Initiator.
+    - `port`: Port on which the Initiator await connection.
+- `back`:
+    - `ip`: IP address of the Backend.
+- `api-key`: API Key use to authenticated with the Initiator.
+
+#### Example
+
+```json
+{
+    "initiator": {
+        "ip": "127.0.0.1",
+        "port": 8082
+    },
+    "back": {
+        "ip": "127.0.0.1"
+    },
+    "api-key": "api-key"
+}
+```

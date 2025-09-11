@@ -1,5 +1,6 @@
 #include "Client/Back/ProcessUnit/Router.hpp"
 #include "Client/Back/User.hpp"
+#include "Client/Back/Config.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Message/Message.hpp"
@@ -15,7 +16,7 @@ namespace pu
 
     void Router::onInput(InputType _input)
     {
-        std::pair<bool, fix::Reject> reject = fix::Header::Verify(_input, PROVIDER_NAME, User::Instance().getUserId(), User::Instance().getSeqNumber());
+        std::pair<bool, fix::Reject> reject = fix::Header::Verify(_input, Configuration<config::Global>::Get().Config.FixServer.ProviderName, User::Instance().getUserId(), User::Instance().getSeqNumber());
 
         User::Instance().nextSeqNumber();
         if (reject.first) {

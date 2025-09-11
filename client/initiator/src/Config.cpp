@@ -11,11 +11,14 @@ namespace config
 
     void from_json(const nlohmann::json &_json, config::Global &_config)
     {
-        nlohmann::json front = _json.at("front");
-        nlohmann::json back = _json.at("back");
+        const nlohmann::json &front = _json.at("front");
 
         front.at("port").get_to(_config.Front.Port);
+
+        const nlohmann::json &back = _json.at("back");
+
         back.at("exec-path").get_to(_config.Back.Executable);
+        back.at("args").get_to(_config.Back.ExecArgs);
         back.at("api-key").get_to(_config.Back.ApiKey);
         back.at("address").get_to(_config.Back.Address);
     }
@@ -26,6 +29,7 @@ namespace config
             {"front", {{"port", _config.Front.Port}}},
             {"back",  {
                 {"exec-path", _config.Back.Executable},
+                {"args", _config.Back.ExecArgs},
                 {"api-key", _config.Back.ApiKey},
                 {"address", _config.Back.Address}
             }},

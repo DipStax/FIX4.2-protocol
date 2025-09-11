@@ -6,21 +6,14 @@ namespace config
 {
     struct Global
     {
-        struct BackendConfig
+        struct FixServerConfig
         {
-            std::string Executable{};
-            std::vector<std::string> ExecArgs{};
-            std::string ApiKey{};
-            std::string Address{};
-        };
-
-        struct FrontendConfig
-        {
+            std::string Ip{};
             uint32_t Port = 0;
+            std::string ProviderName{};
         };
 
-        FrontendConfig Front{};
-        BackendConfig Back{};
+        FixServerConfig FixServer{};
 
         friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };

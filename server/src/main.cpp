@@ -1,20 +1,32 @@
 #include "Server/Core.hpp"
+#include "Server/Config.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Console.hpp"
 #include "Shared/Log/Imp/File.hpp"
 #include "Shared/Log/Imp/Buffer.hpp"
 
+int help(int _return)
+{
+    std::cout << "help: todo" << std::endl;
+    return _return;
+}
+
 int main(int _ac, const char **_av)
 {
-    std::ignore = _ac;
-    std::ignore = _av;
+    if (_ac != 2)
+        return help(1);
+
+    if (!std::strcmp(_av[1], "-h"))
+        return help(0);
 
     logger::Manager::registerNewLogger<logger::imp::Console>("console");
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
-    Core core{8080, 8081};
+    Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
+
+    Core core{};
 
     return core.start();
 }

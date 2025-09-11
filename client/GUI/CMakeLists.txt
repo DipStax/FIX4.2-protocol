@@ -15,8 +15,18 @@ add_executable(Fix_Client_GUI
     ${SRC_Fix_Client_GUI}
 )
 
+add_custom_command(
+    TARGET Fix_Client_GUI POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+        -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        -DDEST=$<TARGET_FILE_DIR:Fix_Client_GUI>/config.json
+        -DDST_DIR=$<TARGET_FILE_DIR:Fix_Client_GUI>
+        -P ${CMAKE_SOURCE_DIR}/cmake/copy_config.cmake
+)
+
 target_link_libraries(Fix_Client_GUI PRIVATE
     Client_Shared_IPC
+    Shared_Configuration
     Shared_ProcessUnit
     Shared_Network
     Shared_Core

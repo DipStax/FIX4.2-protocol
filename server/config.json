@@ -1,0 +1,18 @@
+{
+    "user": {
+        "heartbeat": {
+            "max-to": 100
+        }
+    },
+    "network": {
+        "tcp-port": {{ SERVER_PORT }}
+    },
+    "fix-config": {
+        "market-list": [
+            "GOLD",
+            "EURO",
+            "USD"
+        ],
+        "provider-name": "MyMarket"
+    }
+}

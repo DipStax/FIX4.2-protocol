@@ -8,19 +8,18 @@ namespace config
     {
         struct BackendConfig
         {
-            std::string Executable{};
-            std::vector<std::string> ExecArgs{};
-            std::string ApiKey{};
-            std::string Address{};
+            std::string Ip{};
         };
 
-        struct FrontendConfig
+        struct InitiatorConfig
         {
+            std::string Ip{};
             uint32_t Port = 0;
         };
 
-        FrontendConfig Front{};
         BackendConfig Back{};
+        InitiatorConfig Initiator{};
+        std::string ApiKey;
 
         friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };

@@ -4,6 +4,9 @@
     },
     "back": {
         "exec-path": "../back/Fix_Client_Back",
+        "args": [
+            "../back/config.json"
+        ],
         "api-key": "api-key",
         "address": "/tmp/fix.initiator.socket"
     }

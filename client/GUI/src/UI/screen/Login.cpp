@@ -5,6 +5,7 @@
 #include "Client/GUI/UI/screen/Login.hpp"
 #include "Client/GUI/BackManager.hpp"
 #include "Client/GUI/InitiatorManager.hpp"
+#include "Client/GUI/Config.hpp"
 
 #include "Client/Shared/IPC/Header.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
@@ -50,7 +51,7 @@ namespace ui::screen
     {
         ipc::msg::AuthFrontToInitiator auth;
 
-        auth.apikey = "api-key"; // todo use configuration
+        auth.apikey = Configuration<config::Global>::Get().Config.ApiKey;
         Logger->log<logger::Level::Info>("Sending request to identify frontend to initiator");
         m_progress->setValue(1);
         connect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
