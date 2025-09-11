@@ -1,5 +1,6 @@
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
 #include "Client/Back/User.hpp"
+#include "Client/Back/Config.hpp"
 
 #include "Shared/Log/Manager.hpp"
 
@@ -15,7 +16,7 @@ namespace pu
     {
         _input.header.set34_msgSeqNum(std::to_string(User::Instance().getSeqNumber()));
         _input.header.set49_SenderCompId(User::Instance().getUserId());
-        _input.header.set56_TargetCompId(PROVIDER_NAME);
+        _input.header.set56_TargetCompId(Configuration<config::Global>::Get().Config.FixServer.ProviderName);
         User::Instance().nextSeqNumber();
 
         std::string data = _input.to_string();

@@ -10,9 +10,11 @@ add_executable(Fix_Client_Initiator
 
 add_custom_command(
     TARGET Fix_Client_Initiator POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-            $<TARGET_FILE_DIR:Fix_Client_Initiator>/config.json
+    COMMAND ${CMAKE_COMMAND}
+        -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        -DDEST=$<TARGET_FILE_DIR:Fix_Client_Initiator>/config.json
+        -DDST_DIR=$<TARGET_FILE_DIR:Fix_Client_Initiator>
+        -P ${CMAKE_SOURCE_DIR}/cmake/copy_config.cmake
 )
 
 target_link_libraries(Fix_Client_Initiator PRIVATE

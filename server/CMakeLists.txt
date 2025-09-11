@@ -12,9 +12,11 @@ add_executable(Fix_Server
 
 add_custom_command(
     TARGET Fix_Server POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/config.json
-            $<TARGET_FILE_DIR:Fix_Server>/config.json
+    COMMAND ${CMAKE_COMMAND}
+        -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/config.json
+        -DDEST=$<TARGET_FILE_DIR:Fix_Server>/config.json
+        -DDST_DIR=$<TARGET_FILE_DIR:Fix_Server>
+        -P ${CMAKE_SOURCE_DIR}/cmake/copy_config.cmake
 )
 
 target_link_libraries(Fix_Server PRIVATE

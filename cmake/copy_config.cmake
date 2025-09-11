@@ -1,0 +1,6 @@
+if(NOT EXISTS "${DEST}")
+    message(STATUS "Copying default config.json to ${DEST}")
+    file(COPY "${SRC}" DESTINATION "${DST_DIR}")
+else()
+    message(STATUS "Config.json already exists at ${DEST}, skipping copy")
+endif()

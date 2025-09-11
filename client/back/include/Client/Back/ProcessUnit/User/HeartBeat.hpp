@@ -6,10 +6,6 @@
 #include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
 #include "Shared/Log/ILogger.hpp"
 
-#if !defined(PU_HEARTBEAT_TO) || PU_HEARTBEAT_TO < 1
-    #define PU_HEARTBEAT_TO 1.f
-#endif
-
 namespace pu
 {
     class HeartBeatHandler : public AInputProcess<TransitMessage>, IProcessUnitStopable

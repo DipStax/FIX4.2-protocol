@@ -58,6 +58,7 @@ class Session
 
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyFrontend(net::Buffer &_buffer);
+        void buildShellBack();
 
         void handleBackend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyBackend(net::Buffer &_buffer);

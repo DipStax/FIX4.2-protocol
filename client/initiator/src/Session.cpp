@@ -95,17 +95,26 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         valid_auth.apikey = authfront.apikey;
         Logger->log<logger::Level::Debug>("Sending auth validation to frontend: ", valid_auth);
         send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
-        m_backend.cmd = shell::Builder()
-            .newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
-            .setEnvironement("FIX42-apikey", authfront.apikey)
-            .setEnvironement("FIX42-initiator-address", Configuration<config::Global>::Get().Config.Back.Address)
-            .result();
+        buildShellBack();
         Logger->log<logger::Level::Verbose>("New backend setup: ", *(m_backend.cmd));
         m_backend.cmd->run();
         Logger->log<logger::Level::Info>("New process created for backend, pid: ", m_backend.cmd->getPID());
     } else {
         Logger->log<logger::Level::Error>("Frontend try to reauth with the initiator");
     }
+}
+
+void Session::buildShellBack()
+{
+    shell::Builder builder{};
+
+    builder.newShellCommand(Configuration<config::Global>::Get().Config.Back.Executable)
+        .setEnvironement("FIX42-apikey", m_frontend.apikey.value())
+        .setEnvironement("FIX42-initiator-address", Configuration<config::Global>::Get().Config.Back.Address);
+
+    for (const std::string &_arg : Configuration<config::Global>::Get().Config.Back.ExecArgs)
+        builder.addArgument(_arg);
+    m_backend.cmd = builder.result();
 }
 
 void Session::handleBackend(const ipc::Header &_header, net::Buffer &_buffer)
