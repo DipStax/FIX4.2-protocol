@@ -34,3 +34,20 @@ The Initiator provides the Backend with necessary configuration, including:
 - The allowed API key for session validation
 - The Unix socket address for IPC communication with the Initiator
 - The session token for secure synchronization with the Frontend
+
+## Configuration
+
+- `fix-server`:
+    - `ip`: IP address of the FIX server.
+    - `port`: Port on which the FIX server listen for connection.
+    - `provider`: Provider name of the FIX server.
+
+```json
+{
+    "fix-server": {
+        "ip": "127.0.0.1",
+        "port": 8080,
+        "provider": "MyMarket"
+    }
+}
+```
