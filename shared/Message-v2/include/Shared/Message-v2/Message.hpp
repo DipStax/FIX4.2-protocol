@@ -3,9 +3,11 @@
 #include <cstdint>
 #include <chrono>
 
+#include "Shared/Message-v2/TagConvertor.hpp"
+#include "Shared/Message-v2/Tag.hpp"
+
 #include "FIX-Message/Header.hpp"
 #include "FIX-Message/Message.hpp"
-#include "Shared/Message-v2/Tag.hpp"
 
 namespace fix42
 {
@@ -17,8 +19,8 @@ namespace fix42
         >,
         fix::Tag<tag::SenderCompId, std::string>,
         fix::Tag<tag::TargetCompId, std::string>,
-        fix::Tag<tag::MsqSeqNum, uint32_t>,
-        fix::Tag<tag::SendingTime, std::chrono::time_point>
+        fix::Tag<tag::MsgSeqNum, uint32_t>,
+        fix::Tag<tag::SendingTime, std::chrono::time_point<std::chrono::system_clock>>
     >;
 
     namespace msg
@@ -31,18 +33,18 @@ namespace fix42
             fix::Tag<tag::TestReqId, std::string>
         >;
 
-        using Reject = fix::Message<'3',
+        using SessionReject = fix::Message<'3',
             fix::Tag<tag::RefSeqNum, uint32_t>,
             fix::Tag<tag::RefTagId, std::optional<uint16_t>>,
             fix::Tag<tag::RefMsgType, std::optional<char>>,
             fix::Tag<tag::SessionRejectReason, std::optional<RejectReasonSession>>,
-            fix::Tag<tag::Text, std::std::optional<string>>
+            fix::Tag<tag::Text, std::optional<std::string>>
         >;
 
         using Logout = fix::Message<'5'>;
 
         using ExecutionReport = fix::Message<'8',
-            fix::Tag<tag::OrderId, std::string>,
+            fix::Tag<tag::OrderID, std::string>,
             fix::Tag<tag::ExecId, std::string>,
             fix::Tag<tag::ExecTransType, uint8_t>,
             fix::Tag<tag::OrdStatus, OrderStatus>,
@@ -53,10 +55,10 @@ namespace fix42
             fix::Tag<tag::AvgPx, float>
         >;
 
-        using Reject = fix::Message<'j',
+        using BusinessReject = fix::Message<'j',
             fix::Tag<tag::RefSeqNum, std::optional<uint32_t>>,
             fix::Tag<tag::RefMsgType, char>,
-            fix::Tag<tag::BusinessRejectReason, std::optional<std::string>>,
+            fix::Tag<tag::SessionRejectReason, std::optional<std::string>>,
             fix::Tag<tag::BusinessRejectRefId, RejectReasonBusiness>,
             fix::Tag<tag::Text, std::optional<std::string>>
         >;
@@ -67,8 +69,8 @@ namespace fix42
         >;
 
         using NewOrderSingle = fix::Message<'D',
-            fix::Tag<tag::ClOrdID, std::string>
-            fix::Tag<tag::HandlInst, HandleInstance>
+            fix::Tag<tag::ClOrdID, std::string>,
+            fix::Tag<tag::HandlInst, HandleInstance>,
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
             fix::Tag<tag::OrdType, OrderType>,

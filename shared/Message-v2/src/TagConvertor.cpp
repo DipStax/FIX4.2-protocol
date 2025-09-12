@@ -1,12 +1,14 @@
-#include "Shared/Message-v2/enum.hpp"
+#include <algorithm>
+#include <charconv>
+#include <iomanip>
+
+#include "Shared/Message-v2/TagConvertor.hpp"
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::RejectReasonSession &_out)
 {
-    try {
-        _out = static_cast<fix42::RejectReasonSession>(std::stoi(_value));
-    } catch (const std::exception &_exception) {
-        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Invalid format expected a char" };
-    }
+    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
+    _out = static_cast<fix42::RejectReasonSession>(std::stoi(_value));
     switch (_out) {
         case fix42::RejectReasonSession::InvalidTagNum:
         case fix42::RejectReasonSession::RequiredTagMissing:
@@ -170,4 +172,83 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::O
         default:
             return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 9 || A <= value <= H || value == P" };
     }
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::string &_out)
+{
+    _out = _value;
+    return std::nullopt;
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_out)
+{
+    if (_value.size() > 0)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Expected a char" };
+    _out = _value[0];
+    return std::nullopt;
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t &_out)
+{
+    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
+
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size())
+        return std::nullopt;
+    if (ec == std::errc::invalid_argument)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint8_t" };
+    else if (ec == std::errc::result_out_of_range)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint8_t" };
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint8_t" };
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t &_out)
+{
+    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
+
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size())
+        return std::nullopt;
+    if (ec == std::errc::invalid_argument)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint16_t" };
+    else if (ec == std::errc::result_out_of_range)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint16_t" };
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint16_t" };
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t &_out)
+{
+    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
+
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size())
+        return std::nullopt;
+    if (ec == std::errc::invalid_argument)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint32_t" };
+    else if (ec == std::errc::result_out_of_range)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint32_t" };
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint32_t" };
+}
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out)
+{
+    std::tm tm = {};
+    std::istringstream stream(_value);
+
+    stream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    if (stream.fail())
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Awaited a time format" };
+
+    std::time_t time = std::mktime(&tm);
+
+    if (time == -1)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Unknow error on time convertion" };
+    _out = std::chrono::system_clock::from_time_t(time);
+    return std::nullopt;
 }

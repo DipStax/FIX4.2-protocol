@@ -34,15 +34,17 @@ class Core
 
         bool m_running = false;
 
-        std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
+        ts::Queue<Context<data::RouterInput>> m_input;
+        ts::Queue<Context<data::OutNetworkInput>> m_output;
+        // std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
-        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
+        // ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 
-        ProcessUnit<pu::user::LogonHandler> m_logon;
-        ProcessUnit<pu::user::LogoutHandler> m_logout;
-        ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
+        // ProcessUnit<pu::user::LogonHandler> m_logon;
+        // ProcessUnit<pu::user::LogoutHandler> m_logout;
+        // ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
 
-        ProcessUnit<pu::Router> m_router;
+        // ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::TCPInputNetwork> m_tcp_input;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;

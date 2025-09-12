@@ -1,9 +1,5 @@
 #pragma once
 
-#include <optional>
-
-#include "FIX-Message/RejectError.hpp"
-
 namespace fix42
 {
     enum RejectReasonSession
@@ -112,12 +108,3 @@ namespace fix42
         Pegged = 'P'
     };
 }
-
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::RejectReasonSession &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::TransactionType &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::OrderStatus &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::Side &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::RejectReasonBusiness &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::EncryptionMethod &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::HandleInstance &_out);
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::OrderType &_out);

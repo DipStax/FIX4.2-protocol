@@ -7,7 +7,7 @@ namespace data
     {
     }
 
-    OutNetworkInput::OutNetworkInput(const fix::Message &&_msg) noexcept
+    OutNetworkInput::OutNetworkInput(const fix::old_Message &&_msg) noexcept
         : Message(std::move(_msg))
     {
     }

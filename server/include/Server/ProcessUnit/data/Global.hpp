@@ -28,12 +28,12 @@ namespace data
         OutNetworkInput() = default;
         OutNetworkInput(OutNetworkInput &&_data) noexcept = default;
         OutNetworkInput(const OutNetworkInput &_data) = default;
-        OutNetworkInput(const fix::Message &&_msg) noexcept;
+        OutNetworkInput(const fix::old_Message &&_msg) noexcept;
         virtual ~OutNetworkInput() = default;
 
         OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept = default;
 
-        fix::Message Message{};                     ///< Final message send to the client.
+        fix::old_Message Message{};                     ///< Final message send to the client.
     };
 }
 

@@ -3,7 +3,15 @@
 file(GLOB_RECURSE SRC_Fix_Server
     include/**.hpp
     include/**.inl
-    src/**.cpp
+    src/ProcessUnit/data/Global.cpp
+    src/ProcessUnit/Network/TCPInput.cpp
+    src/ClientStore.cpp
+    src/Config.cpp
+    src/Core.cpp
+    src/InternalClient.cpp
+    src/main.cpp
+    src/OrderBook.cpp
+    src/Signal.cpp
 )
 
 add_executable(Fix_Server
@@ -20,6 +28,7 @@ add_custom_command(
 )
 
 target_link_libraries(Fix_Server PRIVATE
+    Shared_Message_v2
     Shared_Configuration
     Shared_ProcessUnit
     Shared_Message

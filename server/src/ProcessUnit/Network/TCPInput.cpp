@@ -2,8 +2,8 @@
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 
-#include "Shared/Message/Message.hpp"
 #include "Shared/Log/Manager.hpp"
+#include "Shared/Utils/Utils.hpp"
 
 namespace pu
 {
@@ -60,8 +60,6 @@ namespace pu
     bool TCPInputNetwork::process(const ClientStore::Client &_client)
     {
         int error = 0;
-        fix::Serializer::AnonMessage msg;
-        fix::Reject reject;
 
         if (_client->getSocket() == nullptr || !_client->getSocket()->isOpen()) {
             Logger->log<logger::Level::Info>("Client socket not found or closed");
@@ -75,13 +73,91 @@ namespace pu
             Logger->log<logger::Level::Error>("no data receive from the client: ");
             return true;
         }
-        if (fix::Serializer::run(data, msg) != fix::Serializer::Error::None) {
-            Logger->log<logger::Level::Error>("will parsing the client message");
-            // build reject
-            m_error.append(_client, std::chrono::system_clock::now(), std::move(reject));
-            return false;
-        }
-        m_output.append(_client, std::chrono::system_clock::now(), std::move(msg));
+
+        buildHeader(_client, data);
         return false;
+    }
+
+    void TCPInputNetwork::buildHeader(const ClientStore::Client &_client, const std::string &_data)
+    {
+        fix42::Header header{};
+        std::unordered_set<uint16_t> tagset{};
+        std::vector<std::string> split = utils::split<'\1'>(_data);
+        std::vector<std::pair<std::string, std::string>> map;
+        bool header_complet = false;
+
+        for (const std::string &result : split) {
+            std::vector<std::string> kvsplit = utils::split<'='>(result);
+
+            if (kvsplit.size() != 2) {
+                fix42::msg::SessionReject reject{};
+
+                if (tagset.contains(fix42::tag::MsgSeqNum))
+                    reject.get<fix42::tag::RefSeqNum>().Value = header.get<fix42::tag::MsgSeqNum>().Value;
+                else
+                    reject.get<fix42::tag::RefSeqNum>().Value = _client->getSeqNumber();
+                if (tagset.contains(fix42::tag::MsgSeqNum))
+                reject.get<fix42::tag::RefMsgType>().Value = header.getPositional<fix42::tag::MsgType>().Value;
+                else
+                    Logger->log<logger::Level::Warning>("Unable to find message type in header, reject has empty RefMsgType");
+                reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::UndefineTag;
+                reject.get<fix42::tag::Text>().Value = "Unable to parse header key-value";
+                // send to output
+                return;
+            }
+            if (!header_complet) {
+                xstd::Expected<bool, fix::RejectError> error = header.try_insert(kvsplit[0], kvsplit[1]);
+
+                if (error.has_error()) {
+                    Logger->log<logger::Level::Info>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
+                    BuildRejectFromError(error.error(), tagset, header, _client);
+                    // send to output
+                    return;
+                }
+                if (!error.value()) {
+                    std::optional<fix::RejectError> reject = verifyHeader(header, tagset);
+
+                    if (reject.has_value()) {
+                        Logger->log<logger::Level::Info>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
+                        BuildRejectFromError(reject.value(), tagset, header, _client);
+                        // send to output
+                        return;
+                    }
+                    header_complet = true;
+                    break;
+                }
+                tagset.emplace(std::stoi(kvsplit[0]));
+            } else {
+                map.emplace_back(kvsplit[0], kvsplit[1]);
+            }
+        }
+        // send to input
+    }
+
+    std::optional<fix::RejectError> TCPInputNetwork::verifyHeader(const fix42::Header &_header, const std::unordered_set<uint16_t> &_tagset)
+    {
+        std::optional<fix::RejectError> error = _header.verify();
+
+        if (error.has_value())
+            return error;
+        return TCPInputNetwork::HeaderVerifyPresence<fix42::tag::SenderCompId, fix42::tag::TargetCompId, fix42::tag::MsgSeqNum, fix42::tag::SendingTime>(_tagset);
+    }
+
+    fix42::msg::SessionReject TCPInputNetwork::BuildRejectFromError(const fix::RejectError &_error, const std::unordered_set<uint16_t> &_tagset, const fix42::Header &_header, const ClientStore::Client &_client)
+    {
+        fix42::msg::SessionReject reject{};
+
+        if (_tagset.contains(fix42::tag::MsgSeqNum))
+            reject.get<fix42::tag::RefSeqNum>().Value = _header.get<fix42::tag::MsgSeqNum>().Value;
+        else
+            reject.get<fix42::tag::RefSeqNum>().Value = _client->getSeqNumber();
+        if (_tagset.contains(fix42::tag::MsgSeqNum))
+            reject.get<fix42::tag::RefMsgType>().Value = _header.getPositional<fix42::tag::MsgType>().Value;
+        else
+            Logger->log<logger::Level::Warning>("Unable to find message type in header, reject has empty RefMsgType");
+        reject.get<fix42::tag::SessionRejectReason>().Value = static_cast<fix42::RejectReasonSession>(_error.Reason);
+        reject.get<fix42::tag::RefTagId>().Value = _error.Tag;
+        reject.get<fix42::tag::Text>().Value = _error.Message;
+        return reject;
     }
 }
