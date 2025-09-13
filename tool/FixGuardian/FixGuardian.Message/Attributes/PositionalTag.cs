@@ -8,12 +8,10 @@ namespace FixGuardian.Message.Attributes
 {
     public class PositionalTag : Attribute
     {
-        public UInt32 TagId;
         public byte Position;
 
-        public PositionalTag(byte position, UInt32 tagId)
+        public PositionalTag(byte position)
         {
-            TagId = tagId;
             Position = position;
         }
     }
