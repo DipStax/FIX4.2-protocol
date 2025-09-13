@@ -90,6 +90,7 @@ namespace pu
             std::vector<std::string> kvsplit = utils::split<'='>(result);
 
             if (kvsplit.size() != 2) {
+                Logger->log<logger::Level::Error>("No '=' separator found, rejecting message");
                 fix42::msg::SessionReject reject{};
 
                 if (tagset.contains(fix42::tag::MsgSeqNum))
@@ -106,6 +107,7 @@ namespace pu
                 return;
             }
             if (!header_complet) {
+                Logger->log<logger::Level::Verbose>("Inserting: ", kvsplit[0], " = ", kvsplit[1]);
                 xstd::Expected<bool, fix::RejectError> error = header.try_insert(kvsplit[0], kvsplit[1]);
 
                 if (error.has_error()) {
@@ -118,19 +120,33 @@ namespace pu
                     std::optional<fix::RejectError> reject = verifyHeader(header, tagset);
 
                     if (reject.has_value()) {
-                        Logger->log<logger::Level::Info>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
+                        Logger->log<logger::Level::Info>("header verification failed: ", reject.value().Message);
                         BuildRejectFromError(reject.value(), tagset, header, _client);
                         // send to output
                         return;
                     }
+                    Logger->log<logger::Level::Info>("Header verification completed sucessfully");
                     header_complet = true;
                     break;
                 }
-                tagset.emplace(std::stoi(kvsplit[0]));
+                tagset.emplace(static_cast<uint16_t>(std::stoi(kvsplit[0])));
             } else {
                 map.emplace_back(kvsplit[0], kvsplit[1]);
             }
         }
+        // case where all the data is in SecureData (no message body)
+        if (!header_complet) {
+            std::optional<fix::RejectError> reject = verifyHeader(header, tagset);
+
+            if (reject.has_value()) {
+                Logger->log<logger::Level::Info>("header verification failed: ", reject.value().Message);
+                BuildRejectFromError(reject.value(), tagset, header, _client);
+                // send to output
+                return;
+            }
+            Logger->log<logger::Level::Info>("Header verification completed sucessfully");
+        }
+        Logger->log<logger::Level::Debug>("Finish parsing the input message");
         // send to input
     }
 

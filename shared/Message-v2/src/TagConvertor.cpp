@@ -182,7 +182,7 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::str
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_out)
 {
-    if (_value.size() > 0)
+    if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::ValueOORange, "Expected a char" };
     _out = _value[0];
     return std::nullopt;
@@ -239,16 +239,45 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out)
 {
     std::tm tm = {};
-    std::istringstream stream(_value);
+    auto parse2 = [] (const std::string &_str, size_t _pos, uint8_t &_intout) -> bool {
+        if (!std::isdigit(_str[_pos]) || !std::isdigit(_str[_pos+1]))
+            return false;
+        auto [ptr, ec] = std::from_chars(_str.data() + _pos, _str.data() + _pos + 2, _intout);
+        return ec == std::errc();
+    };
+    auto parse4 = [] (const std::string &_str, size_t _pos, uint16_t &_intout) -> bool {
+        for (size_t i = 0; i < 4; ++i)
+            if (!std::isdigit(_str[_pos+i])) return false;
+        auto [ptr, ec] = std::from_chars(_str.data()+_pos, _str.data()+_pos+4, _intout);
+        return ec == std::errc();
+    };
+    uint16_t year = 0;
+    uint8_t month, day, hour, min, sec;
 
-    stream >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    if (stream.fail())
+    // std::istringstream stream(_value);
+
+    // stream >> std::get_time(&tm, "%Y%m%d-%H:%M:%S");
+    // if (stream.fail())
+    //     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Awaited a time format" };
+
+    if (_value.size() != 17 || _value[8] != '-' || _value[11] != ':' || _value[14] != ':')
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Awaited a time format" };
+
+    if (!parse4(_value, 0, year) || !parse2(_value, 4, month) || !parse2(_value, 6, day) || !parse2(_value, 9, hour) || !parse2(_value, 12, min) || !parse2(_value, 15, sec))
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Awaited a time format" };
+
+    tm.tm_year = static_cast<int>(year - 1900);
+    tm.tm_mon  = static_cast<int>(month - 1);
+    tm.tm_mday = static_cast<int>(day);
+    tm.tm_hour = static_cast<int>(hour);
+    tm.tm_min  = static_cast<int>(min);
+    tm.tm_sec  = static_cast<int>(sec);
 
     std::time_t time = std::mktime(&tm);
 
     if (time == -1)
         return fix::RejectError{ fix::RejectError::ValueOORange, "Unknow error on time convertion" };
+
     _out = std::chrono::system_clock::from_time_t(time);
     return std::nullopt;
 }
