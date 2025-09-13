@@ -12,8 +12,8 @@
 template<class T>
 concept IsSocketType = requires (T _sock, const std::byte *_data1, size_t _size, std::string _data2, int &_err) {
     { T::Type } -> std::same_as<const uint32_t &>;
-    { _sock.send(_data1, _size) } -> std::same_as<size_t>;
-    { _sock.send(_data2) } -> std::same_as<size_t>;
+    { _sock.send(_data1, _size) } -> std::same_as<ssize_t>;
+    { _sock.send(_data2) } -> std::same_as<ssize_t>;
     { _sock.receive(_size, _err) } -> std::same_as<std::vector<std::byte>>;
 };
 
@@ -96,8 +96,8 @@ namespace net
                 ~Stream() = default;
 
                 // size_t send(const Buffer &_data);
-                size_t send(const std::string &_data);
-                size_t send(const std::byte *_data, size_t _size);
+                ssize_t send(const std::string &_data);
+                ssize_t send(const std::byte *_data, size_t _size);
 
                 [[nodiscard]] std::vector<std::byte> receive(size_t _size, int &_error);
         };
@@ -113,8 +113,8 @@ namespace net
                 ~DGram() = default;
 
                 // size_t send(const Buffer &_data);
-                size_t send(const std::string &_data);
-                size_t send(const std::byte *_data, size_t _size);
+                ssize_t send(const std::string &_data);
+                ssize_t send(const std::byte *_data, size_t _size);
 
                 [[nodiscard]] std::vector<std::byte> receive(size_t _size, int &_error);
 

@@ -13,7 +13,7 @@
 
 namespace pu
 {
-    class TcpOutputNetwork : public AInputProcess<Context<data::OutNetworkInput>>
+    class TcpOutputNetwork : public AInputProcess<Context<data::StringOutput>>
     {
         public:
             using Client = net::Acceptor<net::INetTcp>::Client;
@@ -23,6 +23,8 @@ namespace pu
 
         protected:
             void onInput(InputType _input) final;
+
+            static void AddCheckSum(std::string &_msg);
 
         private:
             ThreadPool<PU_NETOUT_TP_SIZE> m_tp;

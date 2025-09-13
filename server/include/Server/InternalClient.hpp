@@ -29,6 +29,9 @@ class InternalClient
         [[nodiscard]] bool isLoggedin() const;
         [[nodiscard]] std::string getUserId() const;
 
+        [[nodiscard]] bool isConnected() const;
+        [[nodiscard]] bool close();
+
         void disconnect();
         void shouldDisconnect(bool _disconnect);
         [[nodiscard]] bool shouldDisconnect() const;
@@ -37,6 +40,7 @@ class InternalClient
         void nextSeqNumber();
         [[nodiscard]] uint32_t getSeqNumber() const;
 
+        [[nodiscard]] bool send(const std::byte *_data, size_t _len);
         [[nodiscard]] std::shared_ptr<net::INetTcp> getSocket() const;
 
         [[nodiscard]] HeartBeatInfo &getHeartBeatInfo();
@@ -51,6 +55,7 @@ class InternalClient
         UserId m_user_id = "";
         uint32_t m_seq_num = 0;
 
+        std::mutex m_socket_mutex;
         std::shared_ptr<net::INetTcp> m_socket = nullptr;
         std::unordered_map<size_t, std::chrono::system_clock::time_point> m_request{};
         HeartBeatInfo m_hb_info{};

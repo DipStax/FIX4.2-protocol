@@ -7,8 +7,8 @@ namespace data
     {
     }
 
-    StringOutput::StringOutput(const std::string &&_msg) noexcept
-        : Message(std::move(_msg))
+    StringOutput::StringOutput(char _msgtype, const std::string &&_msg) noexcept
+        : MessageType(_msgtype), Message(std::move(_msg))
     {
     }
 }

@@ -6,7 +6,7 @@
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 #include "Server/ProcessUnit/HeaderValidation.hpp"
-// #include "Server/ProcessUnit/Network/TCPOutput.hpp"
+#include "Server/ProcessUnit/Network/TCPOutput.hpp"
 
 // #include "Server/ProcessUnit/MarketContainer.hpp"
 
@@ -39,7 +39,7 @@ class Core
         StringOutputQueue m_output;
         // std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
-        // ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
+        ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 
         // ProcessUnit<pu::user::LogonHandler> m_logon;
         // ProcessUnit<pu::user::LogoutHandler> m_logout;

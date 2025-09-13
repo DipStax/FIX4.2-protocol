@@ -12,8 +12,8 @@ Core::Core()
     //     m_heartbeat.getInput()
     // ),
     // m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
-    : m_header_validation(m_input, m_output),
-    m_tcp_input(m_header_validation.getInput(), m_output, Configuration<config::Global>::Get().Config.Network.TcpPort),
+    : m_header_validation(m_input, m_tcp_output.getInput()),
+    m_tcp_input(m_header_validation.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
     Logger(logger::Manager::newLogger("Core"))
 {
     market_init();
@@ -68,7 +68,7 @@ void Core::stop()
         // m_heartbeat.stop();
         // for (auto &[_name, _pip] : m_markets)
         //     _pip.stop();
-        // m_tcp_output.stop();
+        m_tcp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
     }
 }
@@ -76,7 +76,7 @@ void Core::stop()
 bool Core::internal_start()
 {
     Logger->log<logger::Level::Info>("Starting pipeline...");
-    // m_tcp_output.start();
+    m_tcp_output.start();
 
     // m_logon.start();
     // m_logout.start();

@@ -26,11 +26,12 @@ namespace data
         StringOutput() = default;
         StringOutput(StringOutput &&_data) noexcept = default;
         StringOutput(const StringOutput &_data) = default;
-        StringOutput(const std::string &&_msg) noexcept;
+        StringOutput(char _msgtype, const std::string &&_msg) noexcept;
         virtual ~StringOutput() = default;
 
         StringOutput &operator=(StringOutput &&_data) noexcept = default;
 
+        char MessageType;
         std::string Message{};  ///< FIX formated message into string
     };
 }

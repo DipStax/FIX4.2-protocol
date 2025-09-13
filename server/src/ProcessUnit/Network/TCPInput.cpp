@@ -18,7 +18,7 @@ namespace pu
 
         ClientStore::OnRemoveClient([this] (const ClientStore::Client _client) {
             Logger->log<logger::Level::Info>("Removing client from selector (", *_client, ")");
-            if (!_client->getSocket()->close())
+            if (!_client->close())
                 Logger->log<logger::Level::Warning>("Closing socket for client failed");
             m_selector.erase(_client->getSocket());
         });
@@ -86,11 +86,13 @@ namespace pu
         fix::MapMessage map;
         bool header_complet = false;
         uint32_t checksum = 0;
+        uint32_t last_checksum = 0;
 
         for (const std::string &result : split) {
             std::vector<std::string> kvsplit = utils::split<'='>(result);
 
-            checksum += CountCheckSum(result);
+            last_checksum = CountCheckSum(result);
+            checksum += last_checksum;
             if (kvsplit.size() != 2) {
                 Logger->log<logger::Level::Error>("No '=' separator found, rejecting message");
                 fix42::msg::SessionReject reject{};
@@ -105,7 +107,7 @@ namespace pu
                     Logger->log<logger::Level::Warning>("Unable to find message type in header, reject has empty RefMsgType");
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::UndefineTag;
                 reject.get<fix42::tag::Text>().Value = "Unable to parse header key-value";
-                m_error.append(_client, std::chrono::system_clock::now(), std::move(reject.to_string()));
+                m_error.append(_client, std::chrono::system_clock::now(), fix42::msg::SessionReject::Type, std::move(reject.to_string()));
                 return;
             }
             if (!header_complet) {
@@ -114,7 +116,7 @@ namespace pu
 
                 if (error.has_error()) {
                     Logger->log<logger::Level::Error>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
-                    m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(error.error(), tagset, header, _client).to_string()));
+                    m_error.append(_client, std::chrono::system_clock::now(), fix42::msg::SessionReject::Type, std::move(BuildRejectFromError(error.error(), tagset, header, _client).to_string()));
                     return;
                 }
                 if (!error.value()) {
@@ -122,12 +124,13 @@ namespace pu
 
                     if (reject.has_value()) {
                         Logger->log<logger::Level::Info>("header verification failed: ", reject.value().Message);
-                        m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
+                        m_error.append(_client, std::chrono::system_clock::now(), fix42::msg::SessionReject::Type, std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
                         // send to output
                         return;
                     }
                     Logger->log<logger::Level::Info>("Header verification completed sucessfully");
                     header_complet = true;
+                    map.emplace_back(kvsplit[0], kvsplit[1]);
                     continue;
                 }
                 tagset.emplace(static_cast<uint16_t>(std::stoi(kvsplit[0])));
@@ -135,11 +138,11 @@ namespace pu
                 map.emplace_back(kvsplit[0], kvsplit[1]);
             }
         }
-        std::optional<fix::RejectError> reject = verifyCheckSum(checksum, map);
+        std::optional<fix::RejectError> reject = verifyCheckSum(checksum - last_checksum, map);
 
         if (reject.has_value()) {
             Logger->log<logger::Level::Info>("Checksum verification failed: ", reject.value().Message);
-            m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
+            m_error.append(_client, std::chrono::system_clock::now(), fix42::msg::SessionReject::Type, std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
             return;
         }
         Logger->log<logger::Level::Debug>("Finish parsing the input message");
@@ -197,8 +200,10 @@ namespace pu
 
             if (reject.has_value())
                 return reject;
-            if (out_checksum != checksum)
+            if (out_checksum != checksum) {
+                Logger->log<logger::Level::Info>("Expected: ", (int)checksum, ", got: ", (int)out_checksum);
                 return fix::RejectError{ fix::RejectError::ValueOORange, "Miss match on checksum" };
+            }
             _map.pop_back();
             return std::nullopt;
         } else {

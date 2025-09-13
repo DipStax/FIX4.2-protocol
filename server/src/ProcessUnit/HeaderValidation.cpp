@@ -16,14 +16,14 @@ namespace pu
 
         if (reject.has_value()) {
             Logger->log<logger::Level::Error>("Positional tag verification failed: ", reject.value().get<fix42::tag::Text>().Value.value());
-            m_error.append(_input.Client, _input.ReceiveTime, reject.value().to_string());
+            m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
         // todo handle secure data
         reject = verifyUserSpecific(_input.Header, _input.Client);
         if (reject.has_value()) {
             Logger->log<logger::Level::Error>("User specific verification failed: ", reject.value().get<fix42::tag::Text>().Value.value());
-            m_error.append(_input.Client, _input.ReceiveTime, reject.value().to_string());
+            m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
         // todo verify time accuracy
