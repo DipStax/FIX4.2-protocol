@@ -12,10 +12,10 @@ struct Context : T
     Context(const ClientStore::Client &_client, std::chrono::system_clock::time_point _time, Ts &&..._args);
     ~Context() = default;
 
-    ClientStore::Client Client = nullptr;                      ///< Sender client information.
-    std::chrono::system_clock::time_point ReceiveTime;
-
     Context<T> &operator=(Context<T> &&_data) noexcept;
+
+    ClientStore::Client Client = nullptr;                       ///< Sender client information.
+    std::chrono::system_clock::time_point ReceiveTime;          ///< Receive time of the message
 };
 
 #include "Server/ProcessUnit/data/Context.inl"

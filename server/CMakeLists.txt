@@ -5,6 +5,7 @@ file(GLOB_RECURSE SRC_Fix_Server
     include/**.inl
     src/ProcessUnit/data/Global.cpp
     src/ProcessUnit/Network/TCPInput.cpp
+    src/ProcessUnit/HeaderValidation.cpp
     src/ClientStore.cpp
     src/Config.cpp
     src/Core.cpp

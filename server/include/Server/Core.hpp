@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Server/ProcessUnit/User/Logon.hpp"
-#include "Server/ProcessUnit/User/Logout.hpp"
-#include "Server/ProcessUnit/User/HeartBeat.hpp"
+// #include "Server/ProcessUnit/User/Logon.hpp"
+// #include "Server/ProcessUnit/User/Logout.hpp"
+// #include "Server/ProcessUnit/User/HeartBeat.hpp"
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
-#include "Server/ProcessUnit/Network/TCPOutput.hpp"
+#include "Server/ProcessUnit/HeaderValidation.hpp"
+// #include "Server/ProcessUnit/Network/TCPOutput.hpp"
 
-#include "Server/ProcessUnit/MarketContainer.hpp"
+// #include "Server/ProcessUnit/MarketContainer.hpp"
 
-#include "Server/ProcessUnit/Router.hpp"
+// #include "Server/ProcessUnit/Router.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 
@@ -34,8 +35,8 @@ class Core
 
         bool m_running = false;
 
-        ts::Queue<Context<data::RouterInput>> m_input;
-        ts::Queue<Context<data::OutNetworkInput>> m_output;
+        UnparsedMessageQueue m_input;
+        StringOutputQueue m_output;
         // std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
         // ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
@@ -45,6 +46,7 @@ class Core
         // ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
 
         // ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::HeaderValidation> m_header_validation;
         ProcessUnit<pu::TCPInputNetwork> m_tcp_input;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;

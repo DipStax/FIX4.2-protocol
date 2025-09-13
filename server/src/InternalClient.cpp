@@ -39,7 +39,7 @@ bool InternalClient::shouldDisconnect() const
     return m_should_dc;
 }
 
-void InternalClient::setSeqNumber(size_t _seq_num)
+void InternalClient::setSeqNumber(uint32_t _seq_num)
 {
     m_seq_num = _seq_num;
 }
@@ -49,7 +49,7 @@ void InternalClient::nextSeqNumber()
     m_seq_num++;
 }
 
-size_t InternalClient::getSeqNumber() const
+uint32_t InternalClient::getSeqNumber() const
 {
     return m_seq_num;
 }

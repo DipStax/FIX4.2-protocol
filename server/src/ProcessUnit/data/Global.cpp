@@ -2,12 +2,12 @@
 
 namespace data
 {
-    RouterInput::RouterInput(const fix::Serializer::AnonMessage &&_msg)
-        : Message(std::move(_msg))
+    UnparsedMessage::UnparsedMessage(const fix42::Header &&_header, const fix::MapMessage &&_msg) noexcept
+        : Header(std::move(_header)), Message(std::move(_msg))
     {
     }
 
-    OutNetworkInput::OutNetworkInput(const fix::old_Message &&_msg) noexcept
+    StringOutput::StringOutput(const std::string &&_msg) noexcept
         : Message(std::move(_msg))
     {
     }

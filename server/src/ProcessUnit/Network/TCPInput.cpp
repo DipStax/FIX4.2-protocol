@@ -7,7 +7,7 @@
 
 namespace pu
 {
-    TCPInputNetwork::TCPInputNetwork(InputRouter &_output, InputNetworkOutput &_error, uint32_t _port)
+    TCPInputNetwork::TCPInputNetwork(UnparsedMessageQueue &_output, StringOutputQueue &_error, uint32_t _port)
         : AProcessUnitBase("Server/NET/TCP-Input"),
         m_output(_output), m_error(_error)
     {
@@ -83,12 +83,14 @@ namespace pu
         fix42::Header header{};
         std::unordered_set<uint16_t> tagset{};
         std::vector<std::string> split = utils::split<'\1'>(_data);
-        std::vector<std::pair<std::string, std::string>> map;
+        fix::MapMessage map;
         bool header_complet = false;
+        uint32_t checksum = 0;
 
         for (const std::string &result : split) {
             std::vector<std::string> kvsplit = utils::split<'='>(result);
 
+            checksum += CountCheckSum(result);
             if (kvsplit.size() != 2) {
                 Logger->log<logger::Level::Error>("No '=' separator found, rejecting message");
                 fix42::msg::SessionReject reject{};
@@ -103,7 +105,7 @@ namespace pu
                     Logger->log<logger::Level::Warning>("Unable to find message type in header, reject has empty RefMsgType");
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::UndefineTag;
                 reject.get<fix42::tag::Text>().Value = "Unable to parse header key-value";
-                // send to output
+                m_error.append(_client, std::chrono::system_clock::now(), std::move(reject.to_string()));
                 return;
             }
             if (!header_complet) {
@@ -111,9 +113,8 @@ namespace pu
                 xstd::Expected<bool, fix::RejectError> error = header.try_insert(kvsplit[0], kvsplit[1]);
 
                 if (error.has_error()) {
-                    Logger->log<logger::Level::Info>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
-                    BuildRejectFromError(error.error(), tagset, header, _client);
-                    // send to output
+                    Logger->log<logger::Level::Error>("Error during insertion of: ", kvsplit[0], " = ", kvsplit[1], ": ", error.error().Message);
+                    m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(error.error(), tagset, header, _client).to_string()));
                     return;
                 }
                 if (!error.value()) {
@@ -121,33 +122,28 @@ namespace pu
 
                     if (reject.has_value()) {
                         Logger->log<logger::Level::Info>("header verification failed: ", reject.value().Message);
-                        BuildRejectFromError(reject.value(), tagset, header, _client);
+                        m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
                         // send to output
                         return;
                     }
                     Logger->log<logger::Level::Info>("Header verification completed sucessfully");
                     header_complet = true;
-                    break;
+                    continue;
                 }
                 tagset.emplace(static_cast<uint16_t>(std::stoi(kvsplit[0])));
             } else {
                 map.emplace_back(kvsplit[0], kvsplit[1]);
             }
         }
-        // case where all the data is in SecureData (no message body)
-        if (!header_complet) {
-            std::optional<fix::RejectError> reject = verifyHeader(header, tagset);
+        std::optional<fix::RejectError> reject = verifyCheckSum(checksum, map);
 
-            if (reject.has_value()) {
-                Logger->log<logger::Level::Info>("header verification failed: ", reject.value().Message);
-                BuildRejectFromError(reject.value(), tagset, header, _client);
-                // send to output
-                return;
-            }
-            Logger->log<logger::Level::Info>("Header verification completed sucessfully");
+        if (reject.has_value()) {
+            Logger->log<logger::Level::Info>("Checksum verification failed: ", reject.value().Message);
+            m_error.append(_client, std::chrono::system_clock::now(), std::move(BuildRejectFromError(reject.value(), tagset, header, _client).to_string()));
+            return;
         }
         Logger->log<logger::Level::Debug>("Finish parsing the input message");
-        // send to input
+        m_output.append(_client, std::chrono::system_clock::now(), std::move(header), std::move(map));
     }
 
     std::optional<fix::RejectError> TCPInputNetwork::verifyHeader(const fix42::Header &_header, const std::unordered_set<uint16_t> &_tagset)
@@ -175,5 +171,38 @@ namespace pu
         reject.get<fix42::tag::RefTagId>().Value = _error.Tag;
         reject.get<fix42::tag::Text>().Value = _error.Message;
         return reject;
+    }
+
+    uint32_t TCPInputNetwork::CountCheckSum(const std::string &_data)
+    {
+        uint32_t count = 0;
+
+        for (const char _c : _data)
+            count += static_cast<uint32_t>(_c);
+        return count + 1;
+    }
+
+    std::optional<fix::RejectError> TCPInputNetwork::verifyCheckSum(uint32_t _checksum, fix::MapMessage &_map) const
+    {
+        uint8_t checksum = static_cast<uint8_t>(_checksum % 256);
+        std::optional<fix::RejectError> reject = std::nullopt;
+        uint8_t out_checksum = 0;
+        std::pair<std::string, std::string> pair ;
+
+        if (_map.size() == 0)
+            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum" };
+        pair = _map.back();
+        if (pair.first == "10") {
+            reject = TagConvertor(pair.second, out_checksum);
+
+            if (reject.has_value())
+                return reject;
+            if (out_checksum != checksum)
+                return fix::RejectError{ fix::RejectError::ValueOORange, "Miss match on checksum" };
+            _map.pop_back();
+            return std::nullopt;
+        } else {
+            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum" };
+        }
     }
 }
