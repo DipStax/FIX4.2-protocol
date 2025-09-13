@@ -43,3 +43,8 @@ docs
 
 # python
 **/__pycache__
+
+# MVS
+.vs
+bin
+obj
