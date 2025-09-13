@@ -11,13 +11,14 @@ namespace FixGuardian.Message
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(prop => prop.GetCustomAttribute<Tag>() != null)
                 .Select(prop => new KeyValuePair<PropertyInfo, Tag>(prop, prop.GetCustomAttribute<Tag>()!))
-                .OrderBy(pair => {
+                .OrderBy(pair =>
+                {
                     PositionalTag? attribute = pair.Key.GetCustomAttribute<PositionalTag>();
 
                     if (attribute == null)
                         return byte.MaxValue;
                     return attribute.Position;
-                });;
+                }); ;
             string result = string.Empty;
 
             foreach (KeyValuePair<PropertyInfo, Tag> pair in props)
@@ -36,6 +37,16 @@ namespace FixGuardian.Message
                     result += $"{pair.Value.TagId}={value.ToString()}\u0001";
             }
             return result;
+        }
+
+        static public string AddCheckSum(string message)
+        {
+            UInt32 checksum = 0;
+
+            foreach (char c in message)
+                checksum += c;
+            message += $"10={checksum % 256}\u0001";
+            return message;
         }
     }
 }
