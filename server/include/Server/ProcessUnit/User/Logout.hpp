@@ -28,11 +28,6 @@ namespace pu::user
             void onInput(InputType _input) final;
 
         private:
-            /// @brief Parse the message from the data available in the input
-            /// @param _input Input data containing unparsed message info
-            /// @return Return the parsed `Logout` message parsed on success, otherwise send a `SessionReject` and return `nullopt`
-            std::optional<fix42::msg::Logout> parseMessage(InputType _input);
-
             StringOutputQueue &m_tcp_output;    ///< TCP/IP ouput queue
 
             ThreadPool<PU_LOGOUT_TP_SIZE> m_tp; ///< Thread pool that process all the incoming message

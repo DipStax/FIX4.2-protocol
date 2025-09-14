@@ -4,39 +4,38 @@
 
 #include "Server/ProcessUnit/User/HeartBeat.hpp"
 
-#include "Shared/Message/HeartBeat.hpp"
-#include "Shared/Message/Tag.hpp"
+#include "Shared/Message-v2/Parser.hpp"
 #include "Shared/Log/Manager.hpp"
 
 namespace pu::user
 {
-    HeartBeatHandler::HeartBeatHandler(InputNetworkOutput &_tcp_output)
+    HeartBeatHandler::HeartBeatHandler(StringOutputQueue &_tcp_output)
         : AInputProcess<InputType>("Server/User/HeartBeat"),
         m_tcp_output(_tcp_output)
     {
-        Logger = logger::Manager::newLogger("file", "Server/User/HeartBeat");
-
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {
             _client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
         });
 
-        m_thread = std::jthread(&HeartBeatHandler::handle, this);
     }
 
     void HeartBeatHandler::onInput(InputType _input)
     {
         m_tp.enqueue([this, _input] () {
-            switch (_input.Message.at("35")[0]) {
-                case fix::TestRequest::cMsgType:
+            switch (_input.Header.getPositional<fix42::tag::MsgType>().Value) {
+                case fix42::msg::TestRequest::Type:
+                    processTestRequest(_input);
                     break;
-                case fix::HeartBeat::cMsgType:
+                case fix42::msg::HeartBeat::Type:
                     processHeartBeat(_input);
-                    break;
-                default:
-                    Logger->log<logger::Level::Error>("Unknow message", _input.Message.at("35")[0]);
                     break;
             }
         });
+    }
+
+    void HeartBeatHandler::setup()
+    {
+        m_thread = std::jthread(&HeartBeatHandler::handle, this);
     }
 
     void HeartBeatHandler::onStop()
@@ -49,54 +48,81 @@ namespace pu::user
         }
     }
 
-    bool HeartBeatHandler::processHeartBeat(const InputType &_input)
+    void HeartBeatHandler::processHeartBeat(const InputType &_input)
     {
-        Logger->log<logger::Level::Info>("Processing message...");
-        fix::HeartBeat heartbeat;
-        std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input.Message);
+        xstd::Expected<fix42::msg::HeartBeat, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::HeartBeat>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("Reject from (", *(_input.Client), ") moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of HeartBeat message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
         }
 
+        const fix42::msg::HeartBeat &heartbeat = error.value();
         InternalClient::HeartBeatInfo &hb = _input.Client->getHeartBeatInfo();
 
-        Logger->log<logger::Level::Info>("Updated client (", *(_input.Client), ") heartbeat");
         if (hb.TestRequest) {
             if (hb.TestValue.has_value()) {
-                if (hb.TestValue.value() != _input.Message.at(fix::Tag::TestReqId)) {
-                    fix::Reject reject;
+                if (!heartbeat.get<fix42::tag::TestReqId>().Value.has_value()) {
+                    fix42::msg::SessionReject reject{};
 
-                    reject.set371_refTagId(_input.Message.at(fix::Tag::MsqSeqNum));
-                    reject.set372_refMsgType(_input.Message.at(fix::Tag::MsgType));
-                    reject.set373_sessionRejectReason(fix::Reject::ValueOORange);
-                    reject.set58_text("Incorrect Test Value");
-                    Logger->log<logger::Level::Error>("Invalid Test Value: ", hb.TestValue.value(), " - ", _input.Message[fix::Tag::TestReqId], ", for client: (", *(_input.Client), ")");
-                    m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-                    return false;
+                    reject.get<fix42::tag::RefTagId>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+                    reject.get<fix42::tag::RefTagId>().Value = fix42::msg::SessionReject::Type;
+                    reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::RequiredTagMissing;
+                    reject.get<fix42::tag::Text>().Value = "Missing Test request Id";
+                    Logger->log<logger::Level::Error>("Test request value missing for client: ", _input.Client->getUserId());
+                    m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
+                    return;
+                } else {
+                    if (hb.TestValue.value() != heartbeat.get<fix42::tag::TestReqId>().Value.value()) {
+                        fix42::msg::SessionReject reject{};
+
+                        reject.get<fix42::tag::RefTagId>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+                        reject.get<fix42::tag::RefTagId>().Value = fix42::msg::SessionReject::Type;
+                        reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
+                        reject.get<fix42::tag::Text>().Value = "Incorrect Test Value";
+                        Logger->log<logger::Level::Error>("Invalid Test Value: ", hb.TestValue.value(), " - ", heartbeat.get<fix42::tag::TestReqId>().Value.value(), ", for client: ", _input.Client->getUserId());
+                        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
+                        return;
+                    }
+                    hb.TestRequest = false;
+                    hb.TestValue = std::nullopt;
+                    Logger->log<logger::Level::Info>("Client (", _input.Client->getUserId(), ") TestRequest validated");
                 }
-                hb.TestRequest = false;
-                hb.TestValue = std::nullopt;
             } else {
                 Logger->log<logger::Level::Fatal>("Missing Test value in memory for client (", *(_input.Client), ")");
-                return false;
+                return;
             }
         }
+
+        fix42::msg::HeartBeat heartbeat_reply{};
+
         hb.Since = _input.ReceiveTime;
-        Logger->log<logger::Level::Debug>("Heartbeat from (", *(_input.Client), ") moving to TCP output");
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(heartbeat));
-        return true;
+        Logger->log<logger::Level::Info>("Sending validation heartbeat to client: (", _input.Client->getUserId(), ")");
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::HeartBeat::Type, std::move(heartbeat_reply.to_string()));
+    }
+
+    void HeartBeatHandler::processTestRequest(const InputType &_input)
+    {
+        xstd::Expected<fix42::msg::TestRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::TestRequest>(_input.Message, _input.Header);
+
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of TestRequest message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
+        }
+
+        const fix42::msg::TestRequest &testreq = error.value();
+        fix42::msg::HeartBeat heartbeat{};
+
+        heartbeat.get<fix42::tag::TestReqId>().Value = testreq.get<fix42::tag::TestReqId>().Value;
+        Logger->log<logger::Level::Info>("Sending validation TestRequest (as HeartBeat) to client: (", _input.Client->getUserId(), ")");
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::HeartBeat::Type, std::move(heartbeat.to_string()));
     }
 
     void HeartBeatHandler::handle(std::stop_token _st)
     {
+        Logger->log<logger::Level::Warning>("Entering processing thread");
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
@@ -107,14 +133,14 @@ namespace pu::user
                     return;
                 if (std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
                     if (!hb_info.TestRequest) {
-                        fix::TestRequest test;
+                        fix42::msg::TestRequest testreq;
 
                         hb_info.Since = now;
                         hb_info.TestRequest = true;
                         hb_info.TestValue = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(now));
-                        test.set112_testReqID(hb_info.TestValue.value());
-                        Logger->log<logger::Level::Info>("Sending TestRequest to Client (", *(_client), ") for failed heartbeat");
-                        m_tcp_output.append(_client, now, std::move(test));
+                        testreq.get<fix42::tag::TestReqId>().Value = hb_info.TestValue.value();
+                        Logger->log<logger::Level::Info>("Sending TestRequest to Client (", _client->getUserId(), ") for failed heartbeat");
+                        m_tcp_output.append(_client, now, fix42::msg::TestRequest::Type, std::move(testreq.to_string()));
                     } else {
                         Logger->log<logger::Level::Error>("Client (", *(_client), ") failed heartbeat & Test Request");
                         ClientStore::Instance().removeClient(_client);

@@ -8,6 +8,7 @@ file(GLOB SRC_Fix_Server
     src/ProcessUnit/Network/TCPInput.cpp
     src/ProcessUnit/User/Logon.cpp
     src/ProcessUnit/User/Logout.cpp
+    src/ProcessUnit/User/HeartBeat.cpp
     src/ProcessUnit/HeaderValidation.cpp
     src/ProcessUnit/Router.cpp
     src/ClientStore.cpp

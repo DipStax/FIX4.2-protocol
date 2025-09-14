@@ -1,6 +1,7 @@
 #include "Server/ProcessUnit/User/Logon.hpp"
 #include "Server/Config.hpp"
 
+#include "Shared/Message-v2/Parser.hpp"
 #include "Shared/Log/Manager.hpp"
 
 namespace pu::user
@@ -14,9 +15,16 @@ namespace pu::user
     void LogonHandler::onInput(InputType _input)
     {
         m_tp.enqueue([this, _input = std::move(_input)] () {
-            std::optional<fix42::msg::Logon> logon = parseMessage(_input);
+            xstd::Expected<fix42::msg::Logon, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::Logon>(_input.Message, _input.Header);
 
-            if (!logon.has_value() && !verifyMessage(logon.value(), _input))
+            if (error.has_error()) {
+                Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+                m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+                return;
+            }
+            const fix42::msg::Logon &logon = error.value();
+
+            if (!verifyMessage(logon, _input))
                 return;
             if (_input.Client->isLoggedin()) {
                 fix42::msg::SessionReject reject{};
@@ -36,7 +44,7 @@ namespace pu::user
                 Logger->log<logger::Level::Info>("User logged in: ", _input.Client->getUserId());
 
                 hb_info.Since = std::chrono::system_clock::now();
-                hb_info.Elapsing = std::max(1.f, std::min(Configuration<config::Global>::Get().Config.User.Heartbeat.MaxTO, static_cast<float>(logon.value().get<fix42::tag::HeartBtInt>().Value)));
+                hb_info.Elapsing = std::max(1.f, std::min(Configuration<config::Global>::Get().Config.User.Heartbeat.MaxTO, static_cast<float>(logon.get<fix42::tag::HeartBtInt>().Value)));
 
                 Logger->log<logger::Level::Debug>("User (", _input.Client->getUserId(), ") use ", hb_info.Elapsing, "s as elapsing time between each HeartBeat");
                 reply_logon.get<fix42::tag::EncryptMethod>().Value = fix42::EncryptionMethod::None;
@@ -44,26 +52,6 @@ namespace pu::user
                 m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::Logon::Type, std::move(reply_logon.to_string()));
             }
         });
-    }
-
-    std::optional<fix42::msg::Logon> LogonHandler::parseMessage(InputType _input)
-    {
-        fix42::msg::Logon logon{};
-        std::optional<fix::RejectError> error = logon.from_string(_input.Message);
-
-        if (error.has_value()) {
-            fix42::msg::SessionReject reject{};
-
-            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
-            reject.get<fix42::tag::RefMsgType>().Value = fix42::msg::Logon::Type;
-            reject.get<fix42::tag::SessionRejectReason>().Value = static_cast<fix42::RejectReasonSession>(error.value().Reason);
-            reject.get<fix42::tag::RefTagId>().Value = error.value().Tag;
-            reject.get<fix42::tag::Text>().Value = error.value().Message;
-            Logger->log<logger::Level::Info>("Parsing Logon message failed, reason: ", reject.get<fix42::tag::Text>().Value.value());
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
-            return std::nullopt;
-        }
-        return logon;
     }
 
     bool LogonHandler::verifyMessage(const fix42::msg::Logon &_logon, const InputType &_input)

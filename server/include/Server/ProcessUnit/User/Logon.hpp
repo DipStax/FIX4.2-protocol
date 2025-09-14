@@ -28,11 +28,6 @@ namespace pu::user
             void onInput(InputType _input) final;
 
         private:
-            /// @brief Parse the message from the data available in the input
-            /// @param _input Input data containing unparsed message info
-            /// @return Return the parsed `Logon` message parsed on success, otherwise send a `SessionReject` and return `nullopt`
-            std::optional<fix42::msg::Logon> parseMessage(InputType _input);
-
             /// @brief Temporary method to verify if the encryption method is None
             ///     todo remove this method when the encryption method is supported
             /// @param _logon Logon message currently processing
