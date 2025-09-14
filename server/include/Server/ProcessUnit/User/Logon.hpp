@@ -13,13 +13,18 @@
 
 namespace pu::user
 {
+    /// @brief Process Unit dedicated to processing `Logon` message
     class LogonHandler : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
+            /// @brief Default constructor for the `Logon` message handler
+            /// @param _tcp_output Message queue to the TCP/IP output
             LogonHandler(StringOutputQueue &_tcp_output);
             virtual ~LogonHandler() = default;
 
         protected:
+            /// @brief Process in a thread pool every `Logon` message
+            /// @param _input Input containing the `Logon` message
             void onInput(InputType _input) final;
 
         private:
@@ -35,8 +40,8 @@ namespace pu::user
             /// @return `true` if the encprytion method is `None`, otherwise send a `SessionReject` message and return `false`
             bool verifyMessage(const fix42::msg::Logon &_logon, const InputType &_input);
 
-            StringOutputQueue &m_tcp_output;
+            StringOutputQueue &m_tcp_output;    ///< TCP/IP ouput queue
 
-            ThreadPool<PU_LOGON_TP_SIZE> m_tp;
+            ThreadPool<PU_LOGON_TP_SIZE> m_tp;  ///< Thread pool that process all the incoming message
     };
 }

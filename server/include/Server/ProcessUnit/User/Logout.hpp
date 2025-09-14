@@ -1,36 +1,40 @@
 #pragma once
 
-#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Server/ProcessUnit/data/Global.hpp"
 
+#include "Shared/Message-v2/Message.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Thread/Pool.hpp"
 #include "Shared/Log/ILogger.hpp"
 
-#if !defined(PU_LOGOUT_TP_SIZE) || PU_LOGOUT_TP_SIZE <= 0
+#ifndef PU_LOGOUT_TP_SIZE
     #define PU_LOGOUT_TP_SIZE 1
 #endif
 
-namespace data
-{
-    using LogoutInput = RouterInput;
-}
-
 namespace pu::user
 {
-    class LogoutHandler : public AInputProcess<Context<data::LogoutInput>>
+    /// @brief Process Unit dedicated to processing `Logout` message
+    class LogoutHandler : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            LogoutHandler(InputNetworkOutput &_tcp_output);
+            /// @brief Default constructor for the `Logout` message handler
+            /// @param _tcp_output Message queue to the TCP/IP output
+            LogoutHandler(StringOutputQueue &_tcp_output);
             virtual ~LogoutHandler() = default;
 
         protected:
+            /// @brief Process in a thread pool every `Logout` message
+            /// @param _input Input containing the `Logout` message
             void onInput(InputType _input) final;
 
         private:
-            bool process(InputType &_input);
+            /// @brief Parse the message from the data available in the input
+            /// @param _input Input data containing unparsed message info
+            /// @return Return the parsed `Logout` message parsed on success, otherwise send a `SessionReject` and return `nullopt`
+            std::optional<fix42::msg::Logout> parseMessage(InputType _input);
 
-            InputNetworkOutput &m_tcp_output;
+            StringOutputQueue &m_tcp_output;    ///< TCP/IP ouput queue
 
-            ThreadPool<PU_LOGOUT_TP_SIZE> m_tp;
+            ThreadPool<PU_LOGOUT_TP_SIZE> m_tp; ///< Thread pool that process all the incoming message
     };
 }
