@@ -1,40 +1,29 @@
 #pragma once
 
-#include "Shared/ProcessUnit/AInputProcess.hpp"
-#include "Server/ProcessUnit/data/Market.hpp"
+#include "Server/ProcessUnit/data/Global.hpp"
+#include "Server/OrderBook.hpp"
 
-#include "Shared/Thread/Pool.hpp"
+#include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Log/ILogger.hpp"
+#include "Shared/Thread/Pool.hpp"
 
 namespace pu::market
 {
-    /// @brief Pipeline managing the OrderBook.
-    class OBAction : public AInputProcess<Context<data::OBActionInput>>
+    class OBAction : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            /// @brief Construct the pipeline.
-            /// @param _ob OrderBook reference.
-            /// @param _input Input data queue.
-            /// @param _output Output data queue.
-            OBAction(OrderBook &_ob, InputNetworkOutput &_output);
+            OBAction(OrderBook &_ob, StringOutputQueue &_output);
             virtual ~OBAction() = default;
 
         protected:
             void onInput(InputType _input) final;
 
         private:
+            void treatNewOrderSingle(InputType &_input);
 
-            bool treatNewOrderSingle(InputType &_input);
-            // void process(InputType &_data);
+            void newOrderLimit(const InputType &_input, const fix42::msg::NewOrderSingle &_order);
 
-            // bool runAdd(const InputType &_data);
-            // bool runModify(const InputType &_data);
-            // bool runCancel(const InputType &_data);
-
-            void rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order);
-            void acknowledgeOrder(InputType &_input, const obs::OrderInfo &_order);
-
-            InputNetworkOutput &m_tcp_output;
+            StringOutputQueue &m_tcp_output;
 
             OrderBook &m_ob;
 

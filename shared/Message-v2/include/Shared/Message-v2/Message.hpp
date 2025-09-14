@@ -46,20 +46,24 @@ namespace fix42
         using ExecutionReport = fix::Message<'8',
             fix::Tag<tag::OrderID, std::string>,
             fix::Tag<tag::ExecId, std::string>,
-            fix::Tag<tag::ExecTransType, uint8_t>,
+            fix::Tag<tag::ExecTransType, TransactionType>,
+            fix::Tag<tag::ExecType, ExecutionStatus>,
             fix::Tag<tag::OrdStatus, OrderStatus>,
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
-            fix::Tag<tag::LeavesQty, float>,
-            fix::Tag<tag::CumQty, float>,
-            fix::Tag<tag::AvgPx, float>
+            fix::Tag<tag::OrderQty, std::optional<Quantity>>,
+            fix::Tag<tag::OrdType, std::optional<OrderType>>,
+            fix::Tag<tag::Price, std::optional<Price>>,
+            fix::Tag<tag::LeavesQty, Quantity>,
+            fix::Tag<tag::CumQty, Quantity>,
+            fix::Tag<tag::AvgPx, Price>
         >;
 
         using BusinessReject = fix::Message<'j',
             fix::Tag<tag::RefSeqNum, std::optional<uint32_t>>,
             fix::Tag<tag::RefMsgType, char>,
-            fix::Tag<tag::SessionRejectReason, std::optional<std::string>>,
-            fix::Tag<tag::BusinessRejectRefId, RejectReasonBusiness>,
+            fix::Tag<tag::BusinessRejectRefId, std::optional<std::string>>,
+            fix::Tag<tag::BusinessRejectReason, RejectReasonBusiness>,
             fix::Tag<tag::Text, std::optional<std::string>>
         >;
 
@@ -73,8 +77,9 @@ namespace fix42
             fix::Tag<tag::HandlInst, HandleInstance>,
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
+            fix::Tag<tag::OrderQty, std::optional<Quantity>>,
             fix::Tag<tag::OrdType, OrderType>,
-            fix::Tag<tag::Price, float>
+            fix::Tag<tag::Price, std::optional<Price>>
         >;
     }
 }

@@ -19,4 +19,5 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_o
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t &_out);
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t &_out);
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t &_out);
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, float &_out);
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out);

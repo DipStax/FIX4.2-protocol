@@ -2,14 +2,14 @@
 
 #include "Server/ProcessUnit/Market/OBAction.hpp"
 
-#include "Shared/Message/Message.hpp"
+
+#include "Shared/Message-v2/Parser.hpp"
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Utils/Utils.hpp"
-#include "Shared/Message/Tag.hpp"
 
 namespace pu::market
 {
-    OBAction::OBAction(OrderBook &_ob, InputNetworkOutput &_output)
+    OBAction::OBAction(OrderBook &_ob, StringOutputQueue &_output)
         : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/OB-Action"),
         m_tcp_output(_output), m_ob(_ob)
     {
@@ -17,9 +17,10 @@ namespace pu::market
 
     void OBAction::onInput(InputType _input)
     {
-        switch (_input.Message.at("35")[0])
+        switch (_input.Header.getPositional<fix42::tag::MsgType>().Value)
         {
-            case fix::NewOrderSingle::cMsgType: treatNewOrderSingle(_input);
+            case fix42::msg::NewOrderSingle::Type:
+                treatNewOrderSingle(_input);
                 break;
             // case fix::OrderCancelRequest::cMsgType:
             // case fix::OrderCancelReplaceRequest::cMsgType:
@@ -30,116 +31,87 @@ namespace pu::market
         }
     }
 
-    bool OBAction::treatNewOrderSingle(InputType &_input)
+    void OBAction::treatNewOrderSingle(InputType &_input)
     {
-        std::pair<bool, fix::Reject> reject = fix::NewOrderSingle::Verify(_input.Message);
+        xstd::Expected<fix42::msg::NewOrderSingle, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::NewOrderSingle>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("(Logout) Reject from (", *(_input.Client), ") moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of NewOrderSingle message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
+        }
+        const fix42::msg::NewOrderSingle &order = error.value();
+
+        switch (order.get<fix42::tag::OrdType>().Value) {
+            case fix42::OrderType::Limit:
+                newOrderLimit(_input, order);
+                break;
+            default:
+                // todo orderTypeNotSupported(_input);
+                break;
+        }
+    }
+
+    void OBAction::newOrderLimit(const InputType &_input, const fix42::msg::NewOrderSingle &_order)
+    {
+        if (!_order.get<fix42::tag::Price>().Value.has_value()) {
+            fix42::msg::BusinessReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
+            reject.get<fix42::tag::Text>().Value = "Price required when OrderType=Limit";
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
+            return;
+        } else if (!_order.get<fix42::tag::OrderQty>().Value.has_value()) {
+            fix42::msg::BusinessReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
+            reject.get<fix42::tag::Text>().Value = "Order quantity required";
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
+            return;
         }
 
-        obs::OrderInfo info;
+        obs::OrderInfo info{};
 
-        info.side = (_input.Message.at(fix::Tag::Side) == "3") ? OrderType::Bid : OrderType::Ask;
-        info.price = utils::to<Price>(_input.Message.at(fix::Tag::Price));
+        info.side = _order.get<fix42::tag::Side>().Value;
+        info.price = _order.get<fix42::tag::Price>().Value.value();
+        info.execid = utils::Uuid::Generate();
         info.order.userId = _input.Client->getUserId();
-        info.order.orderId = _input.Message.at(fix::Tag::ClOrdID);
-        info.order.quantity = utils::to<Quantity>(_input.Message.at(fix::Tag::OrderQty));
+        info.order.orderId = _order.get<fix42::tag::ClOrdID>().Value;
+        info.order.quantity = _order.get<fix42::tag::OrderQty>().Value.value();
 
-        Logger->log<logger::Level::Info>("(New) New order: ", info.order, " at price: ", info.price, " on side: ", static_cast<int>(info.side)); // todo log
-
+        Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side); // todo log
         if (!m_ob.has(info.order.orderId)) {
-            acknowledgeOrder(_input, info);
+            fix42::msg::ExecutionReport report;
+
+            report.get<fix42::tag::OrderID>().Value = info.order.orderId;
+            report.get<fix42::tag::ExecId>().Value = info.execid;
+            report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::New;
+            report.get<fix42::tag::ExecType>().Value = fix42::OrderStatus::NewOrder;
+            report.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::NewOrder;
+            report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+            report.get<fix42::tag::Side>().Value = info.side;
+            report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+            report.get<fix42::tag::Price>().Value = info.price;
+            report.get<fix42::tag::LeavesQty>().Value = info.order.quantity;
+            report.get<fix42::tag::CumQty>().Value = 0.f;
+            report.get<fix42::tag::AvgPx>().Value = 0.f;
+            Logger->log<logger::Level::Info>("Aknowledge Limit order: ", info.order.orderId, ", with exec Id: ", info.execid);
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
             m_ob.add(info);
-            return true;
         } else {
-            rejectOrderIdExist(_input, info);
-            return false;
+            fix42::msg::BusinessReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = info.order.orderId;
+            reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
+            reject.get<fix42::tag::Text>().Value = "Order Id already used";
+            Logger->log<logger::Level::Info>("Rejected: Order ID already used: ", info.order);
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
         }
     }
-
-    void OBAction::rejectOrderIdExist(InputType &_input, const obs::OrderInfo &_order)
-    {
-        fix::BusinessMessageReject reject{};
-
-        Logger->log<logger::Level::Info>("Reject: Order ID already used: ", _order.order);
-        reject.set58_text("Order Id already used");
-        reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-        reject.set379_businessRejectRefId(_order.order.orderId);
-        reject.set380_businessRejectReason(fix::BusinessMessageReject::UnknowId);
-        reject.set372_refMsgType(_input.Message.at(fix::Tag::MsgType));
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-    }
-
-    void OBAction::acknowledgeOrder(InputType &_input, const obs::OrderInfo &_order)
-    {
-        fix::ExecutionReport report{};
-
-        report.set6_avgPx("0");
-        report.set14_cumQty("0");
-        report.set17_execID();
-        report.set20_execTransType("0");
-        report.set38_orderQty(std::to_string(_order.order.quantity));
-        report.set37_orderID(_order.order.orderId);
-        report.set39_ordStatus(std::string(1, static_cast<char>(OrderStatusValue::New)));
-        report.set40_ordType("2");
-        report.set44_price(std::to_string(_order.price));
-        report.set54_side((_order.side == OrderType::Ask) ? "4" : "3");
-        report.set55_symbol(m_ob.getSymbol());
-        report.set150_execType(std::string(1, static_cast<char>(ExecTypeValue::New)));
-        report.set151_leavesQty(std::to_string(_order.order.quantity));
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(report));
-    }
-
-    // bool OBAction::runModify(const InputType &_data)
-    // {
-    //     fix::OrderCancelReject report;
-    //     Order order = _data.order;
-
-    //     Logger->log<logger::Level::Info>("(Modify) Request: "); // todo log
-    //     report.set37_orderID(_data.target);
-    //     report.set11_clOrdID(_data.target);
-    //     report.set41_origClOrdID(_data.order.orderId);
-    //     if (!m_ob.cancel(_data.type, _data.target, false)) {
-    //         report.set39_ordStatus("8");
-    //         report.set58_text("Order ID doesn't exist");
-    //         Logger->log<logger::Level::Info>("(Modify-Cancel) Reject: Order ID already exist: ", _data.target);
-    //         m_tcp_output.append(_data.Client, _data.ReceiveTime, std::move(report));
-    //         return false;
-    //     } else if (!m_ob.modify(_data.type, _data.price, order)) {
-    //         report.set39_ordStatus("4");
-    //         report.set58_text("Order ID already exist, target got canceled");
-    //         Logger->log<logger::Level::Info>("(Modify-Add) Reject: Order ID already exist: ", _data.order.orderId);
-    //         m_tcp_output.append(_data.Client, _data.ReceiveTime, std::move(report));
-    //         return false;
-    //     }
-    //     Logger->log<logger::Level::Info>("(Modify) Order modify sucessfully: ", _data.target, " -> ", order);
-    //     return true;
-    // }
-
-    // bool OBAction::runCancel(const InputType &_data)
-    // {
-    //     fix::OrderCancelReject report;
-
-    //     Logger->log<logger::Level::Info>("(Cancel) Request: ", _data.order.orderId);
-    //     if (!m_ob.cancel(_data.type, _data.order.orderId)) {
-    //         Logger->log<logger::Level::Info>("(Cancel) Reject: Order ID not found: ", _data.order.orderId);
-    //         report.set11_clOrdID(_data.order.orderId);
-    //         report.set37_orderID(_data.order.orderId);
-    //         report.set41_origClOrdID(_data.order.orderId);
-    //         report.set434_cxlRejReason("8");
-    //         report.set58_text("Order ID doesn't exist");
-    //         m_tcp_output.append(_data.Client, _data.ReceiveTime, std::move(report));
-    //         return false;
-    //     }
-    //     Logger->log<logger::Level::Info>("(Cancel) Successfully executed on: ", _data.order.orderId);
-    //     return true;
-    // }
 }

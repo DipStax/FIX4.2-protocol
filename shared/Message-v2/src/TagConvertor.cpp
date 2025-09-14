@@ -62,7 +62,7 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::O
         case fix42::OrderStatus::PendingNew:
         case fix42::OrderStatus::Caluclated:
         case fix42::OrderStatus::Expired:
-        case fix42::OrderStatus::AcceptedBidding:
+        case fix42::OrderStatus::AcceptedBidding_Restated:
         case fix42::OrderStatus::PendingReplace:
             return std::nullopt;
         default:
@@ -190,9 +190,6 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_o
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t &_out)
 {
-    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
-        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
-
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
     if (ec == std::errc() && ptr == _value.data() + _value.size())
@@ -206,9 +203,6 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t 
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t &_out)
 {
-    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
-        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
-
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
     if (ec == std::errc() && ptr == _value.data() + _value.size())
@@ -222,9 +216,6 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t &_out)
 {
-    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
-        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
-
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
     if (ec == std::errc() && ptr == _value.data() + _value.size())
@@ -235,6 +226,20 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t
         return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint32_t" };
     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint32_t" };
 }
+
+std::optional<fix::RejectError> TagConvertor(const std::string &_value, float &_out)
+{
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size())
+        return std::nullopt;
+    if (ec == std::errc::invalid_argument)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an float" };
+    else if (ec == std::errc::result_out_of_range)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of float" };
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing float" };
+}
+
 
 std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out)
 {

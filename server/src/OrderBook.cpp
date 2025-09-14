@@ -2,7 +2,6 @@
 
 #include "Server/OrderBook.hpp"
 
-#include "Shared/Message/ExecutionReport.hpp"
 #include "Shared/Log/Manager.hpp"
 
 OrderBook::OrderBook(const std::string &_name, ts::Queue<obs::Event> &_event)
@@ -14,16 +13,18 @@ bool OrderBook::add(const obs::OrderInfo &_order)
 {
     Quantity qty = 0;
 
-    if (_order.side == OrderType::Ask) {
+    if (_order.side == fix42::Side::BuyMinus) {
         qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
         if (qty != 0) {
             Order new_order{ _order.order.userId, _order.order.orderId, qty };
+
             addToBook(m_ask_book, m_ask_id, _order.price, new_order);
         }
-    } else if (_order.side == OrderType::Bid) {
+    } else if (_order.side == fix42::Side::SellPlus) {
         qty = fillOnBook<std::greater_equal<Price>>(m_ask_book, m_ask_id, _order);
         if (qty != 0) {
             Order new_order{ _order.order.userId, _order.order.orderId, qty };
+
             addToBook(m_bid_book, m_bid_id, _order.price, new_order);
         }
     } else {

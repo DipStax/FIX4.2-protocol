@@ -16,18 +16,18 @@ namespace pu::market
     class OBEvent : public AInputProcess<obs::Event>
     {
         public:
-            OBEvent(const std::string &_symbol, InputNetworkOutput &_tcp);
+            OBEvent(const std::string &_symbol, StringOutputQueue &_tcp_output);
             virtual ~OBEvent() = default;
 
         protected:
             void onInput(InputType _input) final;
 
         private:
-            bool createEvent(const InputType &_input);
+            void createEvent(const InputType &_input);
 
             const std::string m_symbol;
 
-            InputNetworkOutput &m_tcp_output;
+            StringOutputQueue &m_tcp_output;
 
             ThreadPool<TS_SIZE_OBEVENT> m_tp;
     };

@@ -40,9 +40,11 @@ namespace fix42
         PendingNew = 'A',
         Caluclated,
         Expired,
-        AcceptedBidding,
+        AcceptedBidding_Restated,
         PendingReplace
     };
+
+    using ExecutionStatus = OrderStatus;
 
     enum Side
     {

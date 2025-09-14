@@ -19,8 +19,8 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
         0.f,
         _order.order.quantity,
         _order.order.quantity,
-        OrderStatusValue::New,
-        ExecTypeValue::New
+        fix42::OrderStatus::NewOrder,
+        fix42::ExecutionStatus::NewOrder
     };
 
 
@@ -64,7 +64,7 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
                 event.remainQty = 0;
             }
             if (event.remainQty == 0) {
-                event.execStatus = ExecTypeValue::Filled;
+                event.execStatus = fix42::ExecutionStatus::Filled;
                 Logger->log<logger::Level::Debug>("Set event as execution type as: Filled");
                 m_event_output.push(std::move(event));
                 return 0;
@@ -72,7 +72,7 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
         }
     }
     if (event.remainQty != _order.order.quantity) {
-        event.execStatus = ExecTypeValue::PartiallyFilled;
+        event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
         Logger->log<logger::Level::Debug>("Set event as execution type as: PartiallyFilled");
         m_event_output.push(std::move(event));
     }
