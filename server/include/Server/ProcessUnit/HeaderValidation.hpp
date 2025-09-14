@@ -6,9 +6,13 @@
 
 namespace pu
 {
+    /// @brief Process Unit verifying the content of each header
     class HeaderValidation : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
+            /// @brief Construct the default implementation of the network output unit
+            /// @param _output Standard message output
+            /// @param _error Error messsage output
             HeaderValidation(UnparsedMessageQueue &_output, StringOutputQueue &_error);
             virtual ~HeaderValidation() = default;
 

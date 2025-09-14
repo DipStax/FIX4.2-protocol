@@ -1,124 +1,100 @@
-#include <future>
-
-#include "Server/ProcessUnit/data/Market.hpp"
 #include "Server/ProcessUnit/Router.hpp"
 #include "Server/meta.hpp"
 #include "Server/Config.hpp"
 
 #include "Shared/Utils/Utils.hpp"
-#include "Shared/Message/Message.hpp"
-#include "Shared/Message/Tag.hpp"
 #include "Shared/Log/Manager.hpp"
 
 namespace pu
 {
-    Router::Router(InputNetworkOutput &_tcp_output, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat)
+    Router::Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, StringOutputQueue &_error)
         : AInputProcess<InputType>("Server/Master-Router"),
-        m_tcp_output(_tcp_output), m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat)
+        m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat), m_error(_error)
     {
     }
 
-    void Router::registerMarket(const std::string &_name, QueueInputType &_input)
-    {
-        m_market_input.emplace(_name, _input);
-    }
+    // void Router::registerMarket(const std::string &_name, QueueInputType &_input)
+    // {
+    //     m_market_input.emplace(_name, _input);
+    // }
 
     void Router::onInput(InputType _input)
     {
-        std::pair<bool, fix::Reject> reject;
-
-        reject = fix::Header::Verify(_input.Message, _input.Client->getUserId(), Configuration<config::Global>::Get().Config.Fix.ProviderName, _input.Client->getSeqNumber());
-
-        _input.Client->nextSeqNumber();
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return;
-        }
-
-        Logger->log<logger::Level::Debug>("Header verification validated");
-        Logger->log<logger::Level::Info>("Message from: (", *(_input.Client), ") with type: ", _input.Message.at(fix::Tag::MsgType));
-        if (_input.Message.at("35")[0] == fix::Logon::cMsgType) {
+        if (_input.Header.getPositional<fix42::tag::MsgType>().Value == fix42::msg::Logon::Type) {
+            Logger->log<logger::Level::Info>("Moving message to Logon process unit");
             m_logon_handler.push(std::move(_input));
         } else if (_input.Client->isLoggedin()) {
-            switch (_input.Message.at("35")[0]) {
-                case fix::TestRequest::cMsgType:
-                case fix::HeartBeat::cMsgType:
+            switch (_input.Header.getPositional<fix42::tag::MsgType>().Value) {
+                case fix42::msg::TestRequest::Type:
+                case fix42::msg::HeartBeat::Type:
                     m_heartbeat_handler.push(std::move(_input));
                     break;
-                case fix::Logout::cMsgType: m_logout_handler.push(std::move(_input));
+                case fix42::msg::Logout::Type:
+                    m_logout_handler.push(std::move(_input));
                     break;
-                case fix::NewOrderSingle::cMsgType:
-                case fix::OrderCancelRequest::cMsgType:
-                case fix::OrderCancelReplaceRequest::cMsgType:
-                    redirectToMarket(_input);
+                // case fix::NewOrderSingle::cMsgType:
+                // case fix::OrderCancelRequest::cMsgType:
+                // case fix::OrderCancelReplaceRequest::cMsgType:
+                //     redirectToMarket(_input);
+                //     break;
+                // case fix::MarketDataRequest::cMsgType: // todo
+                //     break;
+                case fix42::msg::SessionReject::Type:
+                    treatReject(_input);
                     break;
-                case fix::MarketDataRequest::cMsgType: // todo
-                    break;
-                case fix::Reject::cMsgType: treatReject(_input);
-                    break;
-                default: (void)treatUnknown(_input);
+                default: treatUnknown(_input);
                     break;
             }
         } else {
-            (void)treatRequireLogin(_input);
+            treatRequireLogin(_input);
         }
     }
 
-    bool Router::redirectToMarket(const InputType &_input)
+    // bool Router::redirectToMarket(const InputType &_input)
+    // {
+    //     if (!m_market_input.contains(_input.Message.at(fix::Tag::Symbol))) {
+    //         fix::Reject reject{};
+
+    //         reject.set371_refTagId(fix::Tag::Symbol);
+    //         reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
+    //         reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
+    //         reject.set58_text("Unknown symbol");
+    //         m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
+    //         return false;
+    //     }
+
+    //     Logger->log<logger::Level::Debug>("(Market Order) Redirecting to correct market router");
+    //     m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(_input));
+    //     return true;
+    // }
+
+    void Router::treatUnknown(const InputType &_input)
     {
-        if (!m_market_input.contains(_input.Message.at(fix::Tag::Symbol))) {
-            fix::Reject reject{};
+        fix42::msg::SessionReject reject;
 
-            reject.set371_refTagId(fix::Tag::Symbol);
-            reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
-            reject.set58_text("Unknown symbol");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-            return false;
-        }
-
-        Logger->log<logger::Level::Debug>("(Market Order) Redirecting to correct market router");
-        m_market_input.at(_input.Message.at(fix::Tag::Symbol)).push(std::move(_input));
-        return true;
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgType;
+        reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
+        reject.get<fix42::tag::Text>().Value = "Unknown message type";
+        Logger->log<logger::Level::Info>("Rejecting request from client: ", _input.Client->getUserId(), ", reason: ", reject.get<fix42::tag::Text>().Value.value());
+        m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
     }
 
-    bool Router::treatUnknown(const InputType &_input)
+    void Router::treatRequireLogin(const InputType &_input)
     {
-        fix::Reject reject;
+        fix42::msg::SessionReject reject;
 
-        Logger->log<logger::Level::Info>("(Unknow) Rejecting request from client: ", _input.Client->getUserId(), ", with request type: ", _input.Message.at(fix::Tag::MsgType));
-        reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-        reject.set371_refTagId(fix::Tag::MsgType);
-        reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
-        reject.set58_text("Unknown message type");
-        Logger->log<logger::Level::Debug>("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-        return true;
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgType;
+        reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
+        reject.get<fix42::tag::Text>().Value = "Accesing login required features will not logged in";
+        Logger->log<logger::Level::Warning>("User (", _input.Client->getUserId(), ") not logged in, but try to access login required message type: ", _input.Header.get<fix42::tag::MsgSeqNum>().Value);
+        m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
     }
 
-    bool Router::treatRequireLogin(const InputType &_input)
+    void Router::treatReject(const InputType &_input)
     {
-        Logger->log<logger::Level::Warning>("User not logged in, but try to access login required message type: ", _input.Message.at(fix::Tag::MsgType));
-        fix::Reject reject;
-
-        Logger->log<logger::Level::Info>("(New Order Single) Rejecting request from client: ", _input.Client->getUserId(), ", with request type: ", _input.Message.at(fix::Tag::MsgType));
-        reject.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-        reject.set371_refTagId(fix::Tag::MsgType);
-        reject.set373_sessionRejectReason(fix::Reject::InvalidTag);
-        reject.set58_text("Accesing login required features");
-        Logger->log<logger::Level::Debug>("(Unknown) Moving Reject Unknown from (", _input.Client->getUserId() ,") to TCP Output");
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject));
-        return true;
-    }
-
-    bool Router::treatReject(const InputType &_input)
-    {
-        Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.Message.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.Message.at(fix::Tag::RefTagId), ", reason: ", _input.Message.at(fix::Tag::SessionRejectReason), " }");
-        return true;
+        Logger->log<logger::Level::Error>("Received a reject message from client: ", _input.Client->getUserId(), ", reject info: "); // todo
     }
 
     // bool Router::treatMarketDataRequest(InputType &_input)

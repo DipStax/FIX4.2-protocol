@@ -1,12 +1,13 @@
 # Server
 
-file(GLOB_RECURSE SRC_Fix_Server
+file(GLOB SRC_Fix_Server
     include/**.hpp
     include/**.inl
     src/ProcessUnit/data/Global.cpp
     src/ProcessUnit/Network/TCPOutput.cpp
     src/ProcessUnit/Network/TCPInput.cpp
     src/ProcessUnit/HeaderValidation.cpp
+    src/ProcessUnit/Router.cpp
     src/ClientStore.cpp
     src/Config.cpp
     src/Core.cpp

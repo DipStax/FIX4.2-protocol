@@ -6,11 +6,10 @@
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 #include "Server/ProcessUnit/HeaderValidation.hpp"
+#include "Server/ProcessUnit/Router.hpp"
 #include "Server/ProcessUnit/Network/TCPOutput.hpp"
 
 // #include "Server/ProcessUnit/MarketContainer.hpp"
-
-// #include "Server/ProcessUnit/Router.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 
@@ -45,7 +44,7 @@ class Core
         // ProcessUnit<pu::user::LogoutHandler> m_logout;
         // ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
 
-        // ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::HeaderValidation> m_header_validation;
         ProcessUnit<pu::TCPInputNetwork> m_tcp_input;
 

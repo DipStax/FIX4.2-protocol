@@ -27,6 +27,7 @@ namespace pu
             return;
         }
         // todo verify time accuracy
+        _input.Client->nextSeqNumber();
         m_output.push(std::move(_input));
     }
 

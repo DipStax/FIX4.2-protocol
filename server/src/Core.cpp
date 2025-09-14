@@ -12,7 +12,10 @@ Core::Core()
     //     m_heartbeat.getInput()
     // ),
     // m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
-    : m_header_validation(m_input, m_tcp_output.getInput()),
+    : m_router(m_input, m_input, m_input,
+        m_tcp_output.getInput()
+    ),
+    m_header_validation(m_input, m_tcp_output.getInput()),
     m_tcp_input(m_header_validation.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
     Logger(logger::Manager::newLogger("Core"))
 {
@@ -41,7 +44,7 @@ bool Core::start()
             // m_heartbeat.status();
             // for (auto &[_, _pip] : m_markets)
                 // _pip.status();
-            // m_router.status();
+            m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
             Logger->log<logger::Level::Fatal>("Pipeline have crash: ", _e.what(), "\n\t> with the code: ", _e.code());
@@ -62,7 +65,7 @@ void Core::stop()
         Logger->log<logger::Level::Info>("Stoping...");
         m_tcp_input.stop();
         m_header_validation.stop();
-        // m_router.stop();
+        m_router.stop();
         // m_logon.stop();
         // m_logout.stop();
         // m_heartbeat.stop();
@@ -85,7 +88,7 @@ bool Core::internal_start()
     // for (auto &[_name, _pip] : m_markets)
     //     _pip.start();
 
-    // m_router.start();
+    m_router.start();
     m_header_validation.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Info>("All procesds unit launched");
