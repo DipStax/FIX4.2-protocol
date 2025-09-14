@@ -1,6 +1,8 @@
-﻿using FixGuardian.Message;
-using System.Net.Sockets;
-using System.Text;
+﻿using System.Reflection;
+using FixGuardian.TestFramework.Attributes;
+using System;
+using System.Linq;
+using System.Runtime.Loader;
 
 namespace FixGuardian
 {
@@ -8,27 +10,43 @@ namespace FixGuardian
     {
         static void Main(string[] args)
         {
-            TcpClient tcpClient = new TcpClient("127.0.0.1", 8080);
-            NetworkStream stream = tcpClient.GetStream();
+            Assembly asm = Assembly.Load("FixGuardian.Test");
+            IEnumerable<Type> types = asm.GetTypes().Where(type => type.GetCustomAttribute<TestSuite>() != null);
 
-            Header header = new Header();
+            Console.WriteLine($"Found: {types.Count()} Test Suite");
+            foreach (Type type in types)
+            {
+                TestSuite suite = type.GetCustomAttribute<TestSuite>()!;
+                IEnumerable<MethodInfo> methods = type.GetMethods().Where(method => method.GetCustomAttribute<TestCase>() != null);
+                object? testSuiteInstance = Activator.CreateInstance(type);
 
-            header.BeginString = "FIX.4.2";
-            header.BodyLength = 0;
-            header.MsgType = 'C';
-            header.SenderCompId = "AZE";
-            header.TargetCompId = "MyMarket";
-            header.MsgSeqNum = 1;
-            header.SendingTime = DateTime.Now;
-
-            string message = MessageSupport.ToString(header, true);
-            message = MessageSupport.AddCheckSum(message);
-            Console.WriteLine(message);
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            stream.Write(data, 0, data.Length);
-            byte[] buffer = new byte[4096];
-            int bytesRead = stream.Read(buffer, 0, buffer.Length);
-            Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                if (testSuiteInstance == null)
+                {
+                    Console.WriteLine($"Failed to create an instance of the test suite: {suite.Name}");
+                    continue;
+                }
+                Console.WriteLine($"Found: {methods.Count()} Test case in test suite {suite.Name}");
+                foreach (MethodInfo method in methods)
+                {
+                    bool testSucced = true;
+                    TestCase testCase = method.GetCustomAttribute<TestCase>()!;
+                    Console.WriteLine($"=== Running test case: {testCase.Name}");
+                    try
+                    {
+                        method.Invoke(testSuiteInstance, null);
+                    }
+                    catch (Exception exception)
+                    {
+                        testSucced = false;
+                        Console.WriteLine($"==> Test throw an exception: {exception}");
+                        Console.WriteLine($"=== {testCase.Name} | Case Failed");
+                    }
+                    if (testSucced)
+                    {
+                        Console.WriteLine($"=== {testCase.Name} | Case Succed");
+                    }
+                }
+            }
         }
     }
 }
