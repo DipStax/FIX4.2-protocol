@@ -1,14 +1,11 @@
 #include "Server/ProcessUnit/User/Logon.hpp"
 #include "Server/Config.hpp"
 
-#include "Shared/Utils/Utils.hpp"
-#include "Shared/Message/Logon.hpp"
-#include "Shared/Message/Tag.hpp"
 #include "Shared/Log/Manager.hpp"
 
 namespace pu::user
 {
-    LogonHandler::LogonHandler(InputNetworkOutput &_tcp_output)
+    LogonHandler::LogonHandler(StringOutputQueue &_tcp_output)
         : AInputProcess<InputType>("Server/User/Logon"),
         m_tcp_output(_tcp_output)
     {
@@ -17,48 +14,66 @@ namespace pu::user
     void LogonHandler::onInput(InputType _input)
     {
         m_tp.enqueue([this, _input] () mutable {
-            process(_input);
+            std::optional<fix42::msg::Logon> logon = parseMessage(_input);
+
+            if (!logon.has_value() && !verifyMessage(logon.value(), _input))
+                return;
+            if (_input.Client->isLoggedin()) {
+                fix42::msg::SessionReject reject{};
+
+                reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+                reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+                reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::InvalidMsgType;
+                reject.get<fix42::tag::Text>().Value = "User is already logged in";
+                m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
+            } else {
+                fix42::msg::Logon reply_logon{};
+                InternalClient::HeartBeatInfo &hb_info = _input.Client->getHeartBeatInfo();
+
+                _input.Client->login(_input.Header.get<fix42::tag::SenderCompId>().Value);
+                _input.Client->setSeqNumber(_input.Header.get<fix42::tag::MsgSeqNum>().Value + 1);
+
+                hb_info.Since = std::chrono::system_clock::now();
+                hb_info.Elapsing = std::max(1.f, std::min(Configuration<config::Global>::Get().Config.User.Heartbeat.MaxTO, static_cast<float>(logon.value().get<fix42::tag::HeartBtInt>().Value)));
+
+                reply_logon.get<fix42::tag::EncryptMethod>().Value = fix42::EncryptionMethod::None;
+                reply_logon.get<fix42::tag::HeartBtInt>().Value = hb_info.Elapsing;
+                m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::Logon::Type, std::move(reply_logon.to_string()));
+            }
         });
     }
 
-    bool LogonHandler::process(InputType &_input)
+    std::optional<fix42::msg::Logon> LogonHandler::parseMessage(InputType _input)
     {
-        Logger->log<logger::Level::Info>("Processing message...");
-        fix::Logon logon;
-        std::pair<bool, fix::Reject> reject = fix::Logon::Verify(_input.Message);
+        fix42::msg::Logon logon{};
+        std::optional<fix::RejectError> error = logon.from_string(_input.Message);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Header verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("Reject moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
-            return false;
-        } else if (_input.Client->isLoggedin()) {
-            Logger->log<logger::Level::Warning>("Client (", *(_input.Client), ") already connected");
-            reject.second.set45_refSeqNum(_input.Message.at(fix::Tag::MsqSeqNum));
-            reject.second.set58_text("Client already logged in");
-            Logger->log<logger::Level::Debug>("Reject from (", *(_input.Client), ") moving to TCP output");
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(reject.second));
+        if (error.has_value()) {
+            fix42::msg::SessionReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::SessionRejectReason>().Value = static_cast<fix42::RejectReasonSession>(error.value().Reason);
+            reject.get<fix42::tag::RefTagId>().Value = error.value().Tag;
+            reject.get<fix42::tag::Text>().Value = error.value().Message;
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
+            return std::nullopt;
+        }
+        return logon;
+    }
+
+    bool LogonHandler::verifyMessage(const fix42::msg::Logon &_logon, const InputType &_input)
+    {
+        if (_logon.get<fix42::tag::EncryptMethod>().Value != fix42::EncryptionMethod::None) {
+            fix42::msg::SessionReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::InvalidMsgType;
+            reject.get<fix42::tag::Text>().Value = "User is already logged in";
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
             return false;
         }
-
-        _input.Client->login(_input.Message.at(fix::Tag::SenderCompId));
-        _input.Client->setSeqNumber(utils::to<size_t>(_input.Message.at(fix::Tag::MsqSeqNum)) + 1);
-
-        InternalClient::HeartBeatInfo &hb_info = _input.Client->getHeartBeatInfo();
-
-        hb_info.Since = std::chrono::system_clock::now();
-        hb_info.Elapsing = std::max(1.f, std::min(Configuration<config::Global>::Get().Config.User.Heartbeat.MaxTO, utils::to<float>(_input.Message.at(fix::Tag::HeartBtInt))));
-
-        Logger->log<logger::Level::Debug>("Set heartbeat int at: ", hb_info.Elapsing);
-        Logger->log<logger::Level::Info>("Client set as logged in as: (", *(_input.Client), ")");
-        logon.set98_EncryptMethod("0");
-        logon.set108_HeartBtInt(std::to_string(static_cast<int>(hb_info.Elapsing)));
-        Logger->log<logger::Level::Debug>("Reply to (", *(_input.Client), ") moving to TCP output");
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, std::move(logon));
         return true;
     }
 }

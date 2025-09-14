@@ -1,6 +1,6 @@
 #pragma once
 
-// #include "Server/ProcessUnit/User/Logon.hpp"
+#include "Server/ProcessUnit/User/Logon.hpp"
 // #include "Server/ProcessUnit/User/Logout.hpp"
 // #include "Server/ProcessUnit/User/HeartBeat.hpp"
 
@@ -40,7 +40,7 @@ class Core
 
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 
-        // ProcessUnit<pu::user::LogonHandler> m_logon;
+        ProcessUnit<pu::user::LogonHandler> m_logon;
         // ProcessUnit<pu::user::LogoutHandler> m_logout;
         // ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
 

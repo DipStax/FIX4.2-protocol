@@ -12,7 +12,11 @@ Core::Core()
     //     m_heartbeat.getInput()
     // ),
     // m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
-    : m_router(m_input, m_input, m_input,
+    : m_logon(m_tcp_output.getInput()),
+    m_router(
+        m_logon.getInput(),
+        m_input,
+        m_input,
         m_tcp_output.getInput()
     ),
     m_header_validation(m_input, m_tcp_output.getInput()),
@@ -39,7 +43,7 @@ bool Core::start()
     {
         try {
             // m_tcp_output.status();
-            // m_logon.status();
+            m_logon.status();
             // m_logout.status();
             // m_heartbeat.status();
             // for (auto &[_, _pip] : m_markets)
@@ -66,7 +70,7 @@ void Core::stop()
         m_tcp_input.stop();
         m_header_validation.stop();
         m_router.stop();
-        // m_logon.stop();
+        m_logon.stop();
         // m_logout.stop();
         // m_heartbeat.stop();
         // for (auto &[_name, _pip] : m_markets)
@@ -81,7 +85,7 @@ bool Core::internal_start()
     Logger->log<logger::Level::Info>("Starting pipeline...");
     m_tcp_output.start();
 
-    // m_logon.start();
+    m_logon.start();
     // m_logout.start();
     // m_heartbeat.start();
 

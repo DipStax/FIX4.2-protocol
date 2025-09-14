@@ -5,10 +5,9 @@
 #include <unordered_map>
 #include <set>
 
-#include "Server/OrderBook.hpp"
-
 #include "Shared/Core/Order.hpp"
 #include "Shared/Network/Socket.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 class InternalClient
 {
@@ -57,6 +56,6 @@ class InternalClient
 
         std::mutex m_socket_mutex;
         std::shared_ptr<net::INetTcp> m_socket = nullptr;
-        std::unordered_map<size_t, std::chrono::system_clock::time_point> m_request{};
+
         HeartBeatInfo m_hb_info{};
 };
