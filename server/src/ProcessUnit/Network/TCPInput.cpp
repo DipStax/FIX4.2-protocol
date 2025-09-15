@@ -196,7 +196,7 @@ namespace pu
             return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum" };
         pair = _map.back();
         if (pair.first == "10") {
-            reject = TagConvertor(pair.second, out_checksum);
+            reject = from_FIX(pair.second, out_checksum);
 
             if (reject.has_value())
                 return reject;

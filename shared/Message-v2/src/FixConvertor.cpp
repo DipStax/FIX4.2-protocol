@@ -2,32 +2,50 @@
 #include <charconv>
 #include <iomanip>
 
-#include "Shared/Message-v2/TagConvertor.hpp"
+#include "Shared/Message-v2/FixConvertor.hpp"
+#include "FIX-Message/meta/limit.hpp"
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::RejectReasonSession &_out)
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::RejectReasonSession &_out)
 {
-    if (!std::all_of(_value.begin(), _value.end(), [] (char _c) { return std::isdigit(_c); }))
-        return fix::RejectError{ fix::RejectError::ValueOORange, "Value should be numeric" };
-    _out = static_cast<fix42::RejectReasonSession>(std::stoi(_value));
-    switch (_out) {
-        case fix42::RejectReasonSession::InvalidTagNum:
-        case fix42::RejectReasonSession::RequiredTagMissing:
-        case fix42::RejectReasonSession::TagNotDefine:
-        case fix42::RejectReasonSession::UndefineTag:
-        case fix42::RejectReasonSession::TagWithoutValue:
-        case fix42::RejectReasonSession::ValueOutOfRange:
-        case fix42::RejectReasonSession::IncorrectDataFormat:
-        case fix42::RejectReasonSession::SignatureProblem:
-        case fix42::RejectReasonSession::CompIDProblem:
-        case fix42::RejectReasonSession::SendingTimeAccuracy:
-        case fix42::RejectReasonSession::InvalidMsgType:
-            return std::nullopt;
-        default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 10" };
+    uint8_t out;
+
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size()) {
+        _out = static_cast<fix42::RejectReasonSession>(out);
+        switch (_out) {
+            case fix42::RejectReasonSession::InvalidTagNum:
+            case fix42::RejectReasonSession::RequiredTagMissing:
+            case fix42::RejectReasonSession::TagNotDefine:
+            case fix42::RejectReasonSession::UndefineTag:
+            case fix42::RejectReasonSession::TagWithoutValue:
+            case fix42::RejectReasonSession::ValueOutOfRange:
+            case fix42::RejectReasonSession::IncorrectDataFormat:
+            case fix42::RejectReasonSession::SignatureProblem:
+            case fix42::RejectReasonSession::CompIDProblem:
+            case fix42::RejectReasonSession::SendingTimeAccuracy:
+            case fix42::RejectReasonSession::InvalidMsgType:
+                return std::nullopt;
+            default:
+                return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 10" };
+        }
+    } else if (ec == std::errc::invalid_argument) {
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint8_t" };
+    } else if (ec == std::errc::result_out_of_range) {
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint8_t" };
     }
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint8_t" };
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::TransactionType &_out)
+void to_FIX(std::string &_out, const fix42::RejectReasonSession _value)
+{
+    char buffer[2];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
+
+    _out.append(buffer, ptr);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::TransactionType &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -43,7 +61,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::T
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::OrderStatus &_out)
+void to_FIX(std::string &_out, const fix42::TransactionType _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderStatus &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -70,7 +93,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::O
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::Side &_out)
+void to_FIX(std::string &_out, const fix42::OrderStatus _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Side &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -91,7 +119,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::S
     };
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::RejectReasonBusiness &_out)
+void to_FIX(std::string &_out, const fix42::Side _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::RejectReasonBusiness &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -109,7 +142,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::R
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::EncryptionMethod &_out)
+void to_FIX(std::string &_out, const fix42::RejectReasonBusiness _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::EncryptionMethod &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -128,7 +166,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::E
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::HandleInstance &_out)
+void to_FIX(std::string &_out, const fix42::EncryptionMethod _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::HandleInstance &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -143,7 +186,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::H
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::OrderType &_out)
+void to_FIX(std::string &_out, const fix42::HandleInstance _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderType &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
@@ -174,13 +222,23 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, fix42::O
     }
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::string &_out)
+void to_FIX(std::string &_out, const fix42::OrderType _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out)
 {
     _out = _value;
     return std::nullopt;
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_out)
+void to_FIX(std::string &_out, const std::string &_value)
+{
+    _out.append(_value);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, char &_out)
 {
     if (_value.size() > 1)
         return fix::RejectError{ fix::RejectError::ValueOORange, "Expected a char" };
@@ -188,7 +246,12 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, char &_o
     return std::nullopt;
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t &_out)
+void to_FIX(std::string &_out, const char _value)
+{
+    _out.push_back(_value);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, uint8_t &_out)
 {
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
@@ -201,7 +264,15 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint8_t 
     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint8_t" };
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t &_out)
+void to_FIX(std::string &_out, const uint8_t _value)
+{
+    char buffer[fix::meta::NumericLimit::MaxAlloc<uint8_t>()];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
+
+    _out.append(buffer, ptr);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, uint16_t &_out)
 {
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
@@ -214,7 +285,15 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint16_t
     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint16_t" };
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t &_out)
+void to_FIX(std::string &_out, const uint16_t _value)
+{
+    char buffer[fix::meta::NumericLimit::MaxAlloc<uint16_t>()];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
+
+    _out.append(buffer, ptr);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, uint32_t &_out)
 {
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
@@ -227,7 +306,15 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, uint32_t
     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint32_t" };
 }
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, float &_out)
+void to_FIX(std::string &_out, const uint32_t _value)
+{
+    char buffer[fix::meta::NumericLimit::MaxAlloc<uint32_t>()];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
+
+    _out.append(buffer, ptr);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, float &_out)
 {
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
 
@@ -240,8 +327,15 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, float &_
     return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing float" };
 }
 
+void to_FIX(std::string &_out, const float _value)
+{
+    char buffer[fix::meta::NumericLimit::MaxAlloc<float, 3>()];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
 
-std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out)
+    _out.append(buffer, ptr);
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, std::chrono::time_point<std::chrono::system_clock> &_out)
 {
     std::tm tm = {};
     auto parse2 = [] (const std::string &_str, size_t _pos, uint8_t &_intout) -> bool {
@@ -285,4 +379,37 @@ std::optional<fix::RejectError> TagConvertor(const std::string &_value, std::chr
 
     _out = std::chrono::system_clock::from_time_t(time);
     return std::nullopt;
+}
+
+void to_FIX(std::string &_out, const std::chrono::time_point<std::chrono::system_clock> &_value)
+{
+    std::time_t time = std::chrono::system_clock::to_time_t(_value);
+    std::tm tm = *std::gmtime(&time);
+    int year = 1900 + tm.tm_year;
+    int month = tm.tm_mon + 1;
+    int day = tm.tm_mday;
+    int hour = tm.tm_hour;
+    int minute = tm.tm_min;
+    int second = tm.tm_sec;
+    char *ptr = nullptr;
+
+    _out.resize(_out.size() + 17);
+    ptr = _out.data() + _out.size() - 17;
+    ptr[0] = '0' + (year / 1000) % 10;
+    ptr[1] = '0' + (year / 100) % 10;
+    ptr[2] = '0' + (year / 10) % 10;
+    ptr[3] = '0' + (year % 10);
+    ptr[4] = '0' + month / 10;
+    ptr[5] = '0' + month % 10;
+    ptr[6] = '0' + day / 10;
+    ptr[7] = '0' + day % 10;
+    ptr[8] = '-';
+    ptr[9]  = '0' + hour / 10;
+    ptr[10] = '0' + hour % 10;
+    ptr[11] = ':';
+    ptr[12] = '0' + minute / 10;
+    ptr[13] = '0' + minute % 10;
+    ptr[14] = ':';
+    ptr[15] = '0' + second / 10;
+    ptr[16] = '0' + second % 10;
 }
