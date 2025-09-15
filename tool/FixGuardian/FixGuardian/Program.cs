@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using FixGuardian.TestFramework.Attributes;
 using System;
-using System.Linq;
 using System.Runtime.Loader;
+using FixGuardian.TestFramework.Assertions;
 
 namespace FixGuardian
 {
@@ -10,8 +10,21 @@ namespace FixGuardian
     {
         static void Main(string[] args)
         {
-            Assembly asm = Assembly.Load("FixGuardian.Test");
-            IEnumerable<Type> types = asm.GetTypes().Where(type => type.GetCustomAttribute<TestSuite>() != null);
+            IEnumerable<Type> types = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany(asm =>
+                {
+                    try
+                    {
+                        return asm.GetTypes();
+                    }
+                    catch (ReflectionTypeLoadException ex)
+                    {
+                        return ex.Types.Where(t => t != null)!;
+                    }
+                })
+                .Select(type => type!)
+                .Where(type => type.GetCustomAttribute<TestSuite>() != null);
 
             Console.WriteLine($"Found: {types.Count()} Test Suite");
             foreach (Type type in types)
@@ -35,6 +48,12 @@ namespace FixGuardian
                     {
                         method.Invoke(testSuiteInstance, null);
                     }
+                    catch (TargetInvocationException tie)
+                        when (tie.InnerException is AssertionException)
+                    {
+                        Console.WriteLine("==> Test failed, see logs");
+                        testSucced = false;
+                    }
                     catch (Exception exception)
                     {
                         testSucced = false;
@@ -44,6 +63,10 @@ namespace FixGuardian
                     if (testSucced)
                     {
                         Console.WriteLine($"=== {testCase.Name} | Case Succed");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"=== {testCase.Name} | Case Failed");
                     }
                 }
             }

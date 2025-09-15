@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FixGuardian.Test\FixGuardian.Test.csproj" />
+    <ProjectReference Include="..\FixGuardian.TestFramework\FixGuardian.TestFramework.csproj" />
   </ItemGroup>
 
 </Project>

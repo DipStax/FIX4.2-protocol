@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../FixGuardian.Message/FixGuardian.Message.csproj" />
+  </ItemGroup>
+
 </Project>

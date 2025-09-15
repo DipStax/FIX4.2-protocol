@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Message", "FixG
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.TestFramework", "FixGuardian.TestFramework\FixGuardian.TestFramework.csproj", "{D9BEE5A7-6886-4187-98FF-8E34A4567A1C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Test", "FixGuardian.Test\FixGuardian.Test.csproj", "{F0651065-BEE3-4E52-8BC5-054E181D152C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{D9BEE5A7-6886-4187-98FF-8E34A4567A1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9BEE5A7-6886-4187-98FF-8E34A4567A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9BEE5A7-6886-4187-98FF-8E34A4567A1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F0651065-BEE3-4E52-8BC5-054E181D152C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F0651065-BEE3-4E52-8BC5-054E181D152C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F0651065-BEE3-4E52-8BC5-054E181D152C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F0651065-BEE3-4E52-8BC5-054E181D152C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

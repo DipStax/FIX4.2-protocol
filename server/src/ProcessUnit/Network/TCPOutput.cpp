@@ -28,7 +28,7 @@ namespace pu
 
             _input.Client->nextSeqNumber();
 
-            std::string data = _input.Message + header.to_string();
+            std::string data = header.to_string() + _input.Message;
 
             AddCheckSum(data);
 
@@ -57,6 +57,6 @@ namespace pu
 
         for (char _c : _msg)
             checksum += _c;
-        _msg += std::to_string(static_cast<uint8_t>(checksum % 256));
+        _msg += "10=" + std::to_string(static_cast<uint8_t>(checksum % 256)) + "\1";
     }
 }

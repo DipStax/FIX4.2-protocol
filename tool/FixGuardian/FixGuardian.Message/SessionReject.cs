@@ -14,7 +14,7 @@ namespace FixGuardian.Message
 
         [OptionalTag()]
         [Tag(372)]
-        public byte? RefMsgType { get; set; } = null;
+        public char? RefMsgType { get; set; } = null;
 
         [OptionalTag()]
         [Tag(373)]
