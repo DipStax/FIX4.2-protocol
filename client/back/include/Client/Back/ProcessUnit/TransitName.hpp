@@ -6,4 +6,4 @@
 
 using TransitMessage = fix::Serializer::AnonMessage;
 using QueueTransit = ts::Queue<TransitMessage>;
-using QueueMessage = ts::Queue<fix::Message>;
+using QueueMessage = ts::Queue<fix::old_Message>;

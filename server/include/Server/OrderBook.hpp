@@ -11,7 +11,7 @@
 #include "Shared/Core/Order.hpp"
 #include "Shared/Thread/Queue.hpp"
 #include "Shared/Log/ILogger.hpp"
-#include "Shared/Message-v2/Enum.hpp"
+#include "Shared/Core/Enum.hpp"
 
 namespace obs
 {

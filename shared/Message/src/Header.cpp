@@ -98,30 +98,36 @@ namespace fix
 
     void old_Header::setSendingTime()
     {
-        time_t currentTime = time(nullptr);
-        struct tm *timeInfo = localtime(&currentTime);
+        std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm tm = *std::gmtime(&time);
+        int year = 1900 + tm.tm_year;
+        int month = tm.tm_mon + 1;
+        int day = tm.tm_mday;
+        int hour = tm.tm_hour;
+        int minute = tm.tm_min;
+        int second = tm.tm_sec;
+        char *ptr = nullptr;
 
-        // Get the microseconds since the last second
-        struct timeval tv;
-        gettimeofday(&tv, nullptr);
-        int microseconds = tv.tv_usec;
-
-        // Format the current time as a string
-        char dateTimeBuffer[80];
-        strftime(dateTimeBuffer, sizeof(dateTimeBuffer), "%Y%m%d-%H:%M:%S", timeInfo);
-
-        // Convert the formatted time string to a C++ string
-        std::string formattedTime = dateTimeBuffer;
-
-        // Prepend two zeros to the microsecond value
-        std::string microsecondsString = std::to_string(microseconds);
-        if (microsecondsString.length() < 3)
-            microsecondsString = "00" + microsecondsString;
-
-        // Combine the formatted time string with the microsecond value
-        formattedTime = formattedTime + "." + microsecondsString.substr(0, 3);
-        // std::string formattedTime(timeBuffer);
-        SendingTime = formattedTime;
+        SendingTime.clear();
+        SendingTime.resize(17);
+        ptr = SendingTime.data();
+        ptr[0] = '0' + (year / 1000) % 10;
+        ptr[1] = '0' + (year / 100) % 10;
+        ptr[2] = '0' + (year / 10) % 10;
+        ptr[3] = '0' + (year % 10);
+        ptr[4] = '0' + month / 10;
+        ptr[5] = '0' + month % 10;
+        ptr[6] = '0' + day / 10;
+        ptr[7] = '0' + day % 10;
+        ptr[8] = '-';
+        ptr[9]  = '0' + hour / 10;
+        ptr[10] = '0' + hour % 10;
+        ptr[11] = ':';
+        ptr[12] = '0' + minute / 10;
+        ptr[13] = '0' + minute % 10;
+        ptr[14] = ':';
+        ptr[15] = '0' + second / 10;
+        ptr[16] = '0' + second % 10;
     }
 
     uint64_t old_Header::getTargetCompId() const

@@ -10,6 +10,7 @@ add_library(Shared_Message_v2 STATIC
 
 target_link_libraries(Shared_Message_v2
     fix_message
+    Shared_Core
 )
 
 target_include_directories(Shared_Message_v2 PUBLIC include)

@@ -16,7 +16,7 @@ namespace pu
 
     void Router::onInput(InputType _input)
     {
-        std::pair<bool, fix::Reject> reject = fix::Header::Verify(_input, Configuration<config::Global>::Get().Config.FixServer.ProviderName, User::Instance().getUserId(), User::Instance().getSeqNumber());
+        std::pair<bool, fix::Reject> reject = fix::old_Header::Verify(_input, Configuration<config::Global>::Get().Config.FixServer.ProviderName, User::Instance().getUserId(), User::Instance().getSeqNumber());
 
         User::Instance().nextSeqNumber();
         if (reject.first) {

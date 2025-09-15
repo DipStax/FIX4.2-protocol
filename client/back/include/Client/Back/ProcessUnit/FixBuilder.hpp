@@ -19,8 +19,8 @@ namespace pu
 
         private:
 
-            fix::Message buildLogon(net::Buffer &_buffer);
-            fix::Message buildOrderSingle(net::Buffer &_buffer);
+            fix::old_Message buildLogon(net::Buffer &_buffer);
+            fix::old_Message buildOrderSingle(net::Buffer &_buffer);
 
             ts::Queue<net::Buffer> &m_input;
             QueueMessage &m_output;

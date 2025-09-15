@@ -7,7 +7,7 @@
 
 namespace pu
 {
-    class TcpOutputNetwork : public AInputProcess<fix::Message>
+    class TcpOutputNetwork : public AInputProcess<fix::old_Message>
     {
         public:
             using Socket = std::shared_ptr<net::INetTcp>;

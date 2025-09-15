@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Server/ProcessUnit/User/Logon.hpp"
-// #include "Server/ProcessUnit/User/Logout.hpp"
-// #include "Server/ProcessUnit/User/HeartBeat.hpp"
+#include "Server/ProcessUnit/User/Logout.hpp"
+#include "Server/ProcessUnit/User/HeartBeat.hpp"
 
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 #include "Server/ProcessUnit/HeaderValidation.hpp"
@@ -41,8 +41,8 @@ class Core
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 
         ProcessUnit<pu::user::LogonHandler> m_logon;
-        // ProcessUnit<pu::user::LogoutHandler> m_logout;
-        // ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
+        ProcessUnit<pu::user::LogoutHandler> m_logout;
+        ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
 
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::HeaderValidation> m_header_validation;

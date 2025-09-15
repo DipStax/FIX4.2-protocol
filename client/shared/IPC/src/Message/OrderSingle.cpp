@@ -12,7 +12,7 @@ namespace ipc::msg
         uint8_t type;
 
         _buffer >> _order.symbol >> _order.orderId >> _order.price >> _order.quantity >> type;
-        _order.type = static_cast<OrderType>(type);
+        _order.type = static_cast<fix42::Side>(type);
         return _buffer;
     }
 

@@ -3,7 +3,7 @@
 #include <optional>
 #include <chrono>
 
-#include "Shared/Message-v2/Enum.hpp"
+#include "Shared/Core/Enum.hpp"
 #include "FIX-Message/RejectError.hpp"
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::RejectReasonSession &_out);
