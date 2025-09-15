@@ -27,7 +27,7 @@ namespace FixGuardian.Suite
                 SendingTime = DateTime.Now
             };
 
-            string headerStr = header1.ToString(true);
+            string headerStr = header1.ToString(Header.ToStringContext.None);
 
             Console.WriteLine($"Sending: '{headerStr.Replace('\u0001', '^')}'");
 
@@ -58,7 +58,7 @@ namespace FixGuardian.Suite
 
             List<KeyValuePair<ushort, string>> msgmap = FixHelper.ToMap(receiveBuffer);
 
-            receiveHeader.FromString(msgmap, true);
+            receiveHeader.FromString(msgmap);
 
             // Console.WriteLine(Encoding.UTF8.GetString(buffer, 0, bytesRead));
         }

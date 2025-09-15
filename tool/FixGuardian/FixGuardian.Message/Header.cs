@@ -1,19 +1,30 @@
 ﻿using FixGuardian.Message.Attributes;
+using FixGuardian.Message.Exceptions;
+using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace FixGuardian.Message
 {
-    public class Header
+    public class Header : IEquatable<Header>
     {
+        public enum ToStringContext
+        {
+            None,
+            AllowNull,
+            NullAsEmpty,
+            NullAsEmptyTag
+        };
+
         [PositionalTag(1)]
         [Tag(8)]
         public string? BeginString { get; set; } = null;
 
         [PositionalTag(2)]
         [Tag(9)]
-        public UInt32? BodyLength { get; set; } = null;
+        public uint? BodyLength { get; set; } = null;
 
         [PositionalTag(3)]
         [Tag(35)]
@@ -26,7 +37,7 @@ namespace FixGuardian.Message
         public string? TargetCompId { get; set; } = null;
 
         [Tag(34)]
-        public UInt32? MsgSeqNum { get; set; } = null;
+        public uint? MsgSeqNum { get; set; } = null;
 
         [Tag(52)]
         public DateTime? SendingTime { get; set; } = null;
@@ -49,15 +60,50 @@ namespace FixGuardian.Message
         static private IEnumerable<KeyValuePair<PropertyInfo, Tag>> PositionalProperty = GlobalProperty
             .Where(prop => prop.Key.GetCustomAttribute<PositionalTag>() != null);
 
+        public override string ToString()
+        {
+            string result = string.Empty;
+
+            foreach (KeyValuePair<PropertyInfo, Tag> prop in GlobalProperty)
+                result += $"{prop.Key.Name} ({prop.Value.TagId}) = '{prop.Key.GetValue(this)}'\n";
+            return result;
+        }
+
+        public bool Equals(Header? other)
+        {
+            foreach (KeyValuePair<PropertyInfo, Tag> prop in GlobalProperty)
+            {
+                object? lhs = prop.Key.GetValue(this);
+                object? rhs = prop.Key.GetValue(other);
+
+                if (lhs is null && rhs is null)
+                    continue;
+                if (lhs is null || rhs is null)
+                    return false;
+
+                if (lhs is DateTime dt1 && rhs is DateTime dt2)
+                {
+                    dt1 = dt1.AddTicks(-(dt1.Ticks % TimeSpan.TicksPerSecond));
+                    dt2 = dt2.AddTicks(-(dt2.Ticks % TimeSpan.TicksPerSecond));
+
+                    if (dt1 != dt2)
+                        return false;
+                }
+                else if (!Equals(lhs, rhs))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public void Clear()
         {
             foreach (KeyValuePair<PropertyInfo, Tag> pair in GlobalProperty)
-            {
                 pair.Key.SetValue(this, null);
-            }
         }
 
-        public string ToString(bool allowNull = false)
+        public string ToString(ToStringContext context = ToStringContext.None)
         {
             string result = string.Empty;
 
@@ -71,9 +117,21 @@ namespace FixGuardian.Message
                 }
                 else if (value == null)
                 {
-                    if (!allowNull)
-                        throw new Exception($"Null value for property: {pair.Key.Name}");
-                    continue;
+                    switch (context)
+                    {
+                        case ToStringContext.None:
+                            throw new FixEncodeException($"Null value for property", pair.Value.TagId);
+                        case ToStringContext.NullAsEmpty:
+                            result += $"{pair.Value.TagId}=\u0001";
+                            continue;
+                        case ToStringContext.NullAsEmptyTag:
+                            result += "\u0001";
+                            continue;
+                        case ToStringContext.AllowNull:
+                            continue;
+                        default:
+                            throw new UnreachableException();
+                    }
                 }
 
                 string strValue = string.Empty;
@@ -90,73 +148,47 @@ namespace FixGuardian.Message
             return result;
         }
 
-        public void FromString(List<KeyValuePair<ushort, string>> mapmsg, bool allowNull = false)
+        public void FromString(List<KeyValuePair<ushort, string>> mapmsg)
         {
             HashSet<ushort> tagset = new HashSet<ushort>();
             Clear();
 
             foreach (KeyValuePair<PropertyInfo, Tag> prop in PositionalProperty)
             {
-                Console.WriteLine($"{prop.Key.Name} => {prop.Value.TagId} == {mapmsg[0].Key}|{mapmsg[0].Value}");
                 if (mapmsg.Count == 0)
-                    throw new Exception($"Missing positional {prop.Key.Name}"); // todo
+                    throw new FixDecodeException($"Missing positional {prop.Key.Name}"); // todo
                 if (prop.Value.TagId != mapmsg[0].Key)
-                    throw new Exception($"Incorrect position tag: '{prop.Value.TagId}' != '{mapmsg[0].Key}'"); // todo
+                    throw new FixDecodeException($"Incorrect position tag: '{prop.Value.TagId}' != '{mapmsg[0].Key}'"); // todo
 
                 object? value = FixHelper.ConvertValue(mapmsg[0].Value, prop.Key.PropertyType);
 
-                if (value == null && allowNull)
-                {
-                    Console.WriteLine($"Skipping {value == null && prop.Key.GetCustomAttribute<OptionalTag>() != null} || {allowNull}");
-                    continue;
-                }
-                else if (value == null)
-                    throw new Exception($"Null value for property: {prop.Key.Name}");
+                if (value == null)
+                    throw new FixDecodeException($"Null value for property: {prop.Key.Name}");
                 prop.Key.SetValue(this, value);
-                Console.WriteLine($"Set positional: {prop.Key.Name} as '{value}'");
                 mapmsg.RemoveAt(0);
             }
             for (int it = 0; 0 != mapmsg.Count; it++)
             {
                 if (tagset.Contains(mapmsg[0].Key))
-                    throw new Exception($"Key already parsed: {mapmsg[0].Key}");
+                    throw new FixDecodeException($"Key already parsed: {mapmsg[0].Key}");
 
                 PropertyInfo? prop = GlobalProperty.Where(prop => prop.Value.TagId == mapmsg[0].Key).Select(prop => prop.Key).FirstOrDefault();
 
                 if (prop == null)
                     break;
 
-                if (mapmsg[0].Value == string.Empty)
-                {
-                    if (allowNull || prop.GetCustomAttribute<OptionalTag>() != null)
-                    {
-                        Console.WriteLine($"{prop.Name} stay null");
-                        tagset.Add(mapmsg[0].Key);
-                        mapmsg.RemoveAt(0);
-                        continue;
-                    }
-                    else
-                    {
-                        throw new Exception($"Null value for property: {prop.Name}");
-                    }
-                }
-                else
-                {
-                    object? value = FixHelper.ConvertValue(mapmsg[0].Value, prop.PropertyType);
+                object? value = FixHelper.ConvertValue(mapmsg[0].Value, prop.PropertyType);
 
-                    if (value == null)
-                        throw new Exception($"Null value for property: {prop.Name}");
-                    Console.WriteLine($"Setting tag {prop.Name} to: {value}");
-                    prop.SetValue(this, value);
-                    tagset.Add(mapmsg[0].Key);
-                    mapmsg.RemoveAt(0);
-                }
+                if (value == null)
+                    throw new FixDecodeException($"Null value for property: {prop.Name}");
+                prop.SetValue(this, value);
+                tagset.Add(mapmsg[0].Key);
+                mapmsg.RemoveAt(0);
             }
 
-            if (!allowNull)
-                foreach (PropertyInfo prop in TagProperty)
-                    if (prop.GetValue(this) == null && prop.GetCustomAttribute<OptionalTag>() == null)
-                        throw new Exception($"Missing required tag: {prop.Name} ({prop.GetCustomAttribute<Tag>()!.TagId})");
+            foreach (PropertyInfo prop in TagProperty)
+                if (prop.GetValue(this) == null && prop.GetCustomAttribute<OptionalTag>() == null)
+                    throw new FixDecodeException($"Missing required tag: {prop.Name} ({prop.GetCustomAttribute<Tag>()!.TagId})");
         }
     }
 }

@@ -2,9 +2,9 @@
 {
     public class Tag : Attribute
     {
-        public UInt32 TagId;
+        public ushort TagId;
 
-        public Tag(UInt32 tagId)
+        public Tag(ushort tagId)
         {
             TagId = tagId;
         }

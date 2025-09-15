@@ -96,12 +96,16 @@ namespace FixGuardian.Message
 
         static public string AddCheckSum(string message)
         {
-            UInt32 checksum = 0;
+            int checksum = 0;
 
             foreach (char c in message)
                 checksum += c;
-            message += $"10={checksum % 256}\u0001";
-            return message;
+            return AddArbitraryCheckSum(message, checksum % 256);
+        }
+
+        static public string AddArbitraryCheckSum(string message, int checksum)
+        {
+             return $"{message}10={checksum}\u0001";
         }
 
         static public string GetEnumValue(Enum value)
