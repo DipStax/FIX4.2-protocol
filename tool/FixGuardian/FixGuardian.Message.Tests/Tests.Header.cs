@@ -152,7 +152,7 @@ namespace FixGuardian.Message.Tests
                 TestHeader.BeginString = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.AllowNull).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
@@ -165,7 +165,7 @@ namespace FixGuardian.Message.Tests
                 TestHeader.TargetCompId = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.AllowNull).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
@@ -178,7 +178,7 @@ namespace FixGuardian.Message.Tests
                 TestHeader.BodyLength = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.NullAsEmpty).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.NullAsEmpty).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
@@ -191,40 +191,40 @@ namespace FixGuardian.Message.Tests
                 TestHeader.SenderCompId = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.NullAsEmpty).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.NullAsEmpty).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
 
             [Test]
-            public void NullAsEmptyTag_NullPositional()
+            public void NullAsFullyEmpty_NullPositional()
             {
                 const string expected = "8=FIX.4.2^9=0^^49=Sender^56=Receiver^34=1^52=20250925-12:25:30^";
 
                 TestHeader.MsgType = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.NullAsEmptyTag).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.NullAsFullyEmpty).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
 
             [Test]
-            public void NullAsEmptyTag_NullNonPositional()
+            public void NullAsFullyEmpty_NullNonPositional()
             {
                 const string expected = "8=FIX.4.2^9=0^35=A^49=Sender^56=Receiver^^52=20250925-12:25:30^";
 
                 TestHeader.MsgSeqNum = null;
 
                 Assert.That(
-                    TestHeader.ToString(Header.ToStringContext.NullAsEmptyTag).Replace('\u0001', '^'),
+                    TestHeader.ToString(FixHelper.NullHandlingStrategy.NullAsFullyEmpty).Replace('\u0001', '^'),
                     Is.EqualTo(expected)
                 );
             }
         }
 
         [TestFixture]
-        public class Function_FromString_InOrder
+        public class Function_FromString
         {
             static public DateTime TimeNow = DateTime.Now;
 
@@ -334,6 +334,7 @@ namespace FixGuardian.Message.Tests
                 MapHeader.Add(newValue);
 
                 TestHeader.FromString(MapHeader);
+                Assert.That(TestHeader, Is.EqualTo(ExpectedHeader));
                 Assert.That(MapHeader, Is.EqualTo(expected));
             }
 
@@ -350,6 +351,17 @@ namespace FixGuardian.Message.Tests
                 FixDecodeException? fixDecodeException = Assert.Throws<FixDecodeException>(() => TestHeader.FromString(MapHeader));
                 Assert.That(fixDecodeException, Is.Not.Null);
                 Assert.That(MapHeader, Is.EqualTo(expected));
+            }
+
+            [Test]
+            public void EmptyValue()
+            {
+                MapHeader[0] = new KeyValuePair<ushort, string>(8, string.Empty);
+                ExpectedHeader.BeginString = string.Empty;
+
+                TestHeader.FromString(MapHeader);
+                Assert.That(TestHeader, Is.EqualTo(ExpectedHeader));
+                Assert.That(MapHeader, Is.Empty);
             }
         }
     }

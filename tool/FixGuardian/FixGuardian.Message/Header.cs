@@ -5,19 +5,12 @@ using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
 using System.Xml.Linq;
+using static FixGuardian.Message.FixHelper;
 
 namespace FixGuardian.Message
 {
-    public class Header : IEquatable<Header>
+    public class Header : AMessage
     {
-        public enum ToStringContext
-        {
-            None,
-            AllowNull,
-            NullAsEmpty,
-            NullAsEmptyTag
-        };
-
         [PositionalTag(1)]
         [Tag(8)]
         public string? BeginString { get; set; } = null;
@@ -60,50 +53,13 @@ namespace FixGuardian.Message
         static private IEnumerable<KeyValuePair<PropertyInfo, Tag>> PositionalProperty = GlobalProperty
             .Where(prop => prop.Key.GetCustomAttribute<PositionalTag>() != null);
 
-        public override string ToString()
-        {
-            string result = string.Empty;
-
-            foreach (KeyValuePair<PropertyInfo, Tag> prop in GlobalProperty)
-                result += $"{prop.Key.Name} ({prop.Value.TagId}) = '{prop.Key.GetValue(this)}'\n";
-            return result;
-        }
-
-        public bool Equals(Header? other)
-        {
-            foreach (KeyValuePair<PropertyInfo, Tag> prop in GlobalProperty)
-            {
-                object? lhs = prop.Key.GetValue(this);
-                object? rhs = prop.Key.GetValue(other);
-
-                if (lhs is null && rhs is null)
-                    continue;
-                if (lhs is null || rhs is null)
-                    return false;
-
-                if (lhs is DateTime dt1 && rhs is DateTime dt2)
-                {
-                    dt1 = dt1.AddTicks(-(dt1.Ticks % TimeSpan.TicksPerSecond));
-                    dt2 = dt2.AddTicks(-(dt2.Ticks % TimeSpan.TicksPerSecond));
-
-                    if (dt1 != dt2)
-                        return false;
-                }
-                else if (!Equals(lhs, rhs))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         public void Clear()
         {
             foreach (KeyValuePair<PropertyInfo, Tag> pair in GlobalProperty)
                 pair.Key.SetValue(this, null);
         }
 
-        public string ToString(ToStringContext context = ToStringContext.None)
+        public string ToString(FixHelper.NullHandlingStrategy context = FixHelper.NullHandlingStrategy.None)
         {
             string result = string.Empty;
 
@@ -119,15 +75,15 @@ namespace FixGuardian.Message
                 {
                     switch (context)
                     {
-                        case ToStringContext.None:
+                        case NullHandlingStrategy.None:
                             throw new FixEncodeException($"Null value for property", pair.Value.TagId);
-                        case ToStringContext.NullAsEmpty:
+                        case NullHandlingStrategy.NullAsEmpty:
                             result += $"{pair.Value.TagId}=\u0001";
                             continue;
-                        case ToStringContext.NullAsEmptyTag:
+                        case NullHandlingStrategy.NullAsFullyEmpty:
                             result += "\u0001";
                             continue;
-                        case ToStringContext.AllowNull:
+                        case NullHandlingStrategy.AllowNull:
                             continue;
                         default:
                             throw new UnreachableException();

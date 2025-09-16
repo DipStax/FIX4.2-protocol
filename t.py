@@ -1,6 +1,6 @@
 import os
 
-TARGET_EXTENSIONS = {'.cpp', '.hpp', '.inl'}
+TARGET_EXTENSIONS = {'.cpp', '.hpp', '.inl', '.cs'}
 TARGET_FILENAMES = {'CMakeLists.txt'}
 EXCLUDED_DIRS = {'build'}
 
