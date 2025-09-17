@@ -3,6 +3,7 @@ using FixGuardian.TestFramework.Attributes;
 using System;
 using System.Runtime.Loader;
 using FixGuardian.TestFramework.Assertions;
+using System.Security.Cryptography;
 
 namespace FixGuardian
 {
@@ -51,14 +52,15 @@ namespace FixGuardian
                     catch (TargetInvocationException tie)
                         when (tie.InnerException is AssertionException)
                     {
-                        Console.WriteLine("==> Test failed, see logs");
+                        AssertionException assert = tie.InnerException as AssertionException;
+                        DisplayAssertionError(assert);
+                        Console.WriteLine("==> Test failed");
                         testSucced = false;
                     }
                     catch (Exception exception)
                     {
                         testSucced = false;
                         Console.WriteLine($"==> Test throw an exception: {exception}");
-                        Console.WriteLine($"=== {testCase.Name} | Case Failed");
                     }
                     if (testSucced)
                     {
@@ -69,6 +71,52 @@ namespace FixGuardian
                         Console.WriteLine($"=== {testCase.Name} | Case Failed");
                     }
                 }
+            }
+        }
+
+        static public void DisplayAssertionError(Exception ex, int depth = 0)
+        {
+            if (ex is AssertionException)
+            {
+                string padding = new string('\t', depth);
+                AssertionException? assertex = ex as AssertionException;
+
+                Console.Write($"{padding}Assertion failed: ");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine($"{padding}\tExpected: <{GetNameOrValue(assertex.Expected, depth)}>");
+                Console.WriteLine($"{padding}\tActual: <{GetNameOrValue(assertex.Actual, depth)}>");
+            }
+            if (ex.InnerException != null)
+            {
+                DisplayAssertionError(ex.InnerException, depth + 1);
+            }
+
+            static string GetNameOrValue(object? obj, int depth)
+            {
+                if (obj == null)
+                    return "null";
+
+                Type type = obj.GetType();
+
+                if (type == null)
+                    return "Unknown";
+
+                MethodInfo method = type.GetMethod("ToString", Type.EmptyTypes)!;
+                if (method.GetBaseDefinition().DeclaringType != typeof(object))
+                    return type.FullName!;
+                string value = obj.ToString()!;
+                if (value.Contains('\n'))
+                {
+                    string padding = $"\n{new string('\t', depth + 2)}";
+
+                    value = value.Replace("\n", padding);
+
+                    int index = value.LastIndexOf(padding, StringComparison.Ordinal);
+
+                    value = (value.Remove(index, padding.Length) + '\n').Insert(0, padding);
+                }
+                return value;
+            
             }
         }
     }

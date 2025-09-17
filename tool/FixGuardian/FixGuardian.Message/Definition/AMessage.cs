@@ -14,8 +14,24 @@ namespace FixGuardian.Messages.Definition
                 .Select(prop => new KeyValuePair<PropertyInfo, Tag>(prop, prop.GetCustomAttribute<Tag>()!));
 
             foreach (KeyValuePair<PropertyInfo, Tag> prop in props)
-                result += $"{prop.Key.Name} ({prop.Value.TagId}) = '{prop.Key.GetValue(this)}'\n";
+            {
+                object? value = prop.Key.GetValue(this);
+                string display;
+
+                if (value == null)
+                    display = "null";
+                else
+                    display = value.ToString();
+                result += $"{prop.Key.Name} ({prop.Value.TagId}) = '{display}'\n";
+            }
             return result;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is AMessage other)
+                return Equals(other);
+            return false;
         }
 
         public bool Equals(AMessage? other)

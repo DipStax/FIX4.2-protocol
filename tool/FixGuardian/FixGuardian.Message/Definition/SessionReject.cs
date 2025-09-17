@@ -1,5 +1,5 @@
 using FixGuardian.Messages.Attributes;
-using FixGuardian.Messages.enums;
+using FixGuardian.Messages.Enums;
 
 namespace FixGuardian.Messages.Definition
 {

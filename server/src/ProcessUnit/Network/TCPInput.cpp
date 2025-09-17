@@ -193,7 +193,7 @@ namespace pu
         std::pair<std::string, std::string> pair ;
 
         if (_map.size() == 0)
-            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum" };
+            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum", fix42::tag::CheckSum };
         pair = _map.back();
         if (pair.first == "10") {
             reject = from_FIX(pair.second, out_checksum);
@@ -202,12 +202,12 @@ namespace pu
                 return reject;
             if (out_checksum != checksum) {
                 Logger->log<logger::Level::Info>("Expected: ", (int)checksum, ", got: ", (int)out_checksum);
-                return fix::RejectError{ fix::RejectError::ValueOORange, "Miss match on checksum" };
+                return fix::RejectError{ fix::RejectError::ValueOORange, "Miss match on checksum", fix42::tag::CheckSum };
             }
             _map.pop_back();
             return std::nullopt;
         } else {
-            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum" };
+            return fix::RejectError{ fix::RejectError::ReqTagMissing, "Last tag should be CheckSum", fix42::tag::CheckSum };
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace FixGuardian.Messages.enums
+namespace FixGuardian.Messages.Enums
 {
     public enum RejectReasonSession
     {

@@ -8,13 +8,18 @@ namespace FixGuardian.TestFramework.Assertions
 {
     public class AssertionException : Exception
     {
+        public object? Expected { get; }
+        public object? Actual { get; }
+
         public AssertionException()
         {
         }
 
-        public AssertionException(string msg)
+        public AssertionException(string msg, object? expected, object? actual)
             : base(msg)
         {
+            Expected = expected;
+            Actual = actual;
         }
 
         public AssertionException(string msg, Exception inner)
@@ -86,7 +91,7 @@ namespace FixGuardian.TestFramework.Assertions
             if (actual is null && expected is null)
                 return;
             if (actual is null || expected is null)
-                throw new AssertionException("");
+                throw new AssertionException("One of the comparent is null", expected, actual);
 
             if (ReferenceEquals(actual, expected))
                 return;
@@ -98,13 +103,13 @@ namespace FixGuardian.TestFramework.Assertions
                     case ComparerResult.TypeNotSupported:
                         continue;
                     case ComparerResult.ComparedNotEqual:
-                        throw new AssertionException($"Not Equal {actual} != {expected}");
+                        throw new AssertionException($"Not Equal", expected, actual);
                     case ComparerResult.ComparedEqual:
                         return;
                 }
             }
             if (!actual.Equals(expected))
-                throw new AssertionException($"Not Equal {actual} != {expected}");
+                throw new AssertionException($"Not Equal", expected, actual);
         }
     }
 }
