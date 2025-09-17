@@ -3,7 +3,6 @@ file(GLOB_RECURSE SRC_Shared_Core
     include/**.inl
     src/**.cpp
 )
-message (STATUS "test " ${SRC_Shared_Core})
 
 add_library(Shared_Core STATIC
     ${SRC_Shared_Core}

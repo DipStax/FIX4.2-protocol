@@ -11,7 +11,7 @@
 #include "Shared/Core/Order.hpp"
 #include "Shared/Thread/Queue.hpp"
 #include "Shared/Log/ILogger.hpp"
-
+#include "Shared/Core/Enum.hpp"
 
 namespace obs
 {
@@ -23,7 +23,8 @@ namespace obs
 
     struct OrderInfo
     {
-        OrderType side;
+        fix42::Side side;
+        std::string execid;
         Price price;
         Order order;
     };
@@ -36,15 +37,15 @@ namespace obs
 
     struct Event
     {
-        OrderType side;
+        fix42::Side side;
         OrderId orderId;
         UserId userId;
         Price price;
         Price avgPrice;
         Quantity remainQty;
         Quantity orgQty;
-        OrderStatusValue ordStatus;
-        ExecTypeValue execStatus;
+        fix42::OrderStatus ordStatus;
+        fix42::ExecutionStatus execStatus;
     };
 }
 

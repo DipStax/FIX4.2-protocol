@@ -7,7 +7,7 @@ namespace fix
     /**
      * @brief Market Data messages are used as the response to a Market Data Request <V> message.
     */
-    class MarketDataSnapshotFullRefresh: public Message
+    class MarketDataSnapshotFullRefresh: public old_Message
     {
         public:
             MarketDataSnapshotFullRefresh();

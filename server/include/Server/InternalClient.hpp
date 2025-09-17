@@ -5,10 +5,9 @@
 #include <unordered_map>
 #include <set>
 
-#include "Server/OrderBook.hpp"
-
 #include "Shared/Core/Order.hpp"
 #include "Shared/Network/Socket.hpp"
+#include "Shared/Log/ILogger.hpp"
 
 class InternalClient
 {
@@ -29,14 +28,18 @@ class InternalClient
         [[nodiscard]] bool isLoggedin() const;
         [[nodiscard]] std::string getUserId() const;
 
+        [[nodiscard]] bool isConnected() const;
+        [[nodiscard]] bool close();
+
         void disconnect();
         void shouldDisconnect(bool _disconnect);
         [[nodiscard]] bool shouldDisconnect() const;
 
-        void setSeqNumber(size_t _seqnum);
+        void setSeqNumber(uint32_t _seqnum);
         void nextSeqNumber();
-        [[nodiscard]] size_t getSeqNumber() const;
+        [[nodiscard]] uint32_t getSeqNumber() const;
 
+        [[nodiscard]] bool send(const std::byte *_data, size_t _len);
         [[nodiscard]] std::shared_ptr<net::INetTcp> getSocket() const;
 
         [[nodiscard]] HeartBeatInfo &getHeartBeatInfo();
@@ -49,9 +52,10 @@ class InternalClient
         bool m_logged_in = false;
         bool m_should_dc = false;
         UserId m_user_id = "";
-        size_t m_seq_num = 0;
+        uint32_t m_seq_num = 0;
 
+        std::mutex m_socket_mutex;
         std::shared_ptr<net::INetTcp> m_socket = nullptr;
-        std::unordered_map<size_t, std::chrono::system_clock::time_point> m_request{};
+
         HeartBeatInfo m_hb_info{};
 };

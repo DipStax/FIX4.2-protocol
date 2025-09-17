@@ -2,6 +2,7 @@
 
 #include "Shared/Network/Buffer.hpp"
 #include "Shared/Core/Order.hpp"
+#include "Shared/Core/Enum.hpp"
 
 namespace ipc::msg
 {
@@ -11,7 +12,7 @@ namespace ipc::msg
         std::string orderId;
         Price price;
         Quantity quantity;
-        OrderType type;
+        fix42::Side type;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const OrderSingle &_order);
         friend net::Buffer &operator>>(net::Buffer &_buffer, OrderSingle &_order);

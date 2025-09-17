@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y cmake make && rm -rf /var/lib/apt/lists
 COPY CMakeLists.txt .
 COPY server/ server/
 COPY shared/ shared/
+COPY cmake/ cmake/
 
 WORKDIR /fix42-build/build
 

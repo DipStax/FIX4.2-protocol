@@ -32,8 +32,8 @@ namespace net::c
             /// @param _data Data to send to the endpoint.
             /// @param _size Size in bytes of data to send.
             /// @return The size send to the endpoint, if an error occured it return -1.
-            static size_t send(int _fd, const std::byte *_data, size_t _size);
-            static size_t sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size);
+            static ssize_t send(int _fd, const std::byte *_data, size_t _size);
+            static ssize_t sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size);
             /// @brief  C++ binding to the C function recv.
             /// @param _fd File descriptor of the socket receiving.
             /// @param _size Size of the data that should be receive at max.

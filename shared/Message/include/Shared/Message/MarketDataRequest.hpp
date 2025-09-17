@@ -4,7 +4,7 @@
 
 namespace fix
 {
-    class MarketDataRequest : public Message
+    class MarketDataRequest : public old_Message
     {
         public:
             static std::pair<bool, Reject> Verify(Serializer::AnonMessage &_msg);

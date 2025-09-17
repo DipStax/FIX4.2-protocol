@@ -7,7 +7,7 @@
 namespace fix
 {
     /// @brief Fix [Logon](https://www.onixs.biz/fix-dictionary/4.2/msgType_A_65.html) message class.
-    class Logon : public Message
+    class Logon : public old_Message
     {
         public:
             Logon();

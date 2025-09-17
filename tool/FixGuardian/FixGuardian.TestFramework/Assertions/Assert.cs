@@ -1,0 +1,115 @@
+using FixGuardian.Message;
+using FixGuardian.Message.Tests.Comparer;
+using FixGuardian.Messages.Definition;
+using FixGuardian.Messages.Exceptions;
+using FixGuardian.TestFramework.Comparer;
+
+namespace FixGuardian.TestFramework.Assertions
+{
+    public class AssertionException : Exception
+    {
+        public object? Expected { get; }
+        public object? Actual { get; }
+
+        public AssertionException()
+        {
+        }
+
+        public AssertionException(string msg, object? expected, object? actual)
+            : base(msg)
+        {
+            Expected = expected;
+            Actual = actual;
+        }
+
+        public AssertionException(string msg, Exception inner)
+            : base(msg, inner)
+        {
+        }
+    }
+
+    public class Assert
+    {
+        private delegate ComparerResult ComparerMethod(object x, object y);
+
+        static private readonly ComparerMethod[] Comparers =
+        {
+            ValueTypeComparer.Equal
+        };
+
+        static public (Header, T) Received<T>(string msg)
+            where T : AMessage, new()
+        {
+            List<KeyValuePair<ushort, string>> msgmap;
+            Header header = new Header();
+            T message;
+
+            try
+            {
+                msgmap = Mapable(msg);
+                ValidCheckSum(msgmap);
+                msgmap.RemoveAt(msgmap.Count - 1);
+                header.FromString(msgmap);
+                message = FixHelper.FromString<T>(msgmap);
+            }
+            catch (AssertionException ex)
+            {
+                throw new AssertionException("Mapping failed", ex);
+            }
+            return (header, message);
+        }
+
+        static public List<KeyValuePair<ushort, string>> Mapable(string msg)
+        {
+            try
+            {
+                return FixHelper.ToMap(msg);
+            }
+            catch (FixDecodeException ex)
+            {
+                throw new AssertionException("Mapping failed", ex);
+            }
+        }
+
+        static public void ValidCheckSum(List<KeyValuePair<ushort, string>> mapmsg)
+        {
+            uint checksum = 0;
+
+            Equal(mapmsg.Last().Key, 10);
+
+            for (int i = 0; i < mapmsg.Count - 1; i++)
+            {
+                foreach (char c in mapmsg[i].Key.ToString() + mapmsg[i].Value)
+                    checksum += c;
+                checksum += '=' + 1;
+            }
+            Equal(uint.Parse(mapmsg.Last().Value), checksum % 256);
+        }
+
+        static public void Equal(object? actual, object? expected)
+        {
+            if (actual is null && expected is null)
+                return;
+            if (actual is null || expected is null)
+                throw new AssertionException("One of the comparent is null", expected, actual);
+
+            if (ReferenceEquals(actual, expected))
+                return;
+
+            foreach (ComparerMethod comparer in Comparers)
+            {
+                switch (comparer(actual, expected))
+                {
+                    case ComparerResult.TypeNotSupported:
+                        continue;
+                    case ComparerResult.ComparedNotEqual:
+                        throw new AssertionException($"Not Equal", expected, actual);
+                    case ComparerResult.ComparedEqual:
+                        return;
+                }
+            }
+            if (!actual.Equals(expected))
+                throw new AssertionException($"Not Equal", expected, actual);
+        }
+    }
+}

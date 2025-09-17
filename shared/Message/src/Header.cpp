@@ -10,7 +10,7 @@
 
 namespace fix
 {
-    std::pair<bool, Reject> Header::Verify(Serializer::AnonMessage &_msg, const std::string &_sender, const std::string &_target, size_t _seqnum)
+    std::pair<bool, Reject> old_Header::Verify(Serializer::AnonMessage &_msg, const std::string &_sender, const std::string &_target, size_t _seqnum)
     {
         // need to verify sending time
         std::pair<bool, Reject> reject = Has<Tag::BeginString, Tag::BodyLength, Tag::MsqSeqNum, Tag::MsgType, Tag::SenderCompId, Tag::SendingTime, Tag::TargetCompId>(_msg);
@@ -30,7 +30,7 @@ namespace fix
         reject = verify_all<Tag::BeginString, Tag::MsgType, Tag::SendingTime>(_msg);
         if (reject.first)
             return reject;
-        reject = verify<Tag::BodyLength>(_msg.at(Tag::BodyLength), Message::getBodyLength(body_len)); // calculate body length
+        reject = verify<Tag::BodyLength>(_msg.at(Tag::BodyLength), old_Message::getBodyLength(body_len)); // calculate body length
         if (reject.first)
             return reject;
         if (!_sender.empty()) {
@@ -44,48 +44,48 @@ namespace fix
         reject = verify<Tag::TargetCompId>(_msg.at(Tag::TargetCompId), _target);
         if (reject.first)
             return reject;
-        reject = verify<Tag::CheckSum>(_msg.at(Tag::CheckSum), Message::getChecksum(checksum));
+        reject = verify<Tag::CheckSum>(_msg.at(Tag::CheckSum), old_Message::getChecksum(checksum));
         if (reject.first)
             return reject;
         return reject;
     }
 
-    void Header::set9_bodyLength(const std::string &_val)
+    void old_Header::set9_bodyLength(const std::string &_val)
     {
         BodyLength = _val;
     }
 
-    void Header::set9_bodyLength(const size_t &_val)
+    void old_Header::set9_bodyLength(const size_t &_val)
     {
         BodyLength = std::to_string(_val);
     }
 
-    void Header::set35_MsgType(const std::string &_val)
+    void old_Header::set35_MsgType(const std::string &_val)
     {
         MsgType = _val;
     }
 
-    void Header::set34_msgSeqNum(const std::string &_val)
+    void old_Header::set34_msgSeqNum(const std::string &_val)
     {
         MsgSeqNum = _val;
     }
 
-    void Header::set34_msgSeqNum(const size_t &_val)
+    void old_Header::set34_msgSeqNum(const size_t &_val)
     {
         MsgSeqNum = std::to_string(_val);
     }
 
-    void Header::set49_SenderCompId(const std::string &_val)
+    void old_Header::set49_SenderCompId(const std::string &_val)
     {
         SenderCompId = _val;
     }
 
-    void Header::set56_TargetCompId(const std::string &_val)
+    void old_Header::set56_TargetCompId(const std::string &_val)
     {
         TargetCompId = _val;
     }
 
-    Header::operator std::string() const
+    old_Header::operator std::string() const
     {
         return "8=" + BeginString + (char)FIX_DELIMITER +
                "9=" + BodyLength + (char)FIX_DELIMITER +
@@ -96,45 +96,51 @@ namespace fix
                "52=" + SendingTime + (char)FIX_DELIMITER;
     }
 
-    void Header::setSendingTime()
+    void old_Header::setSendingTime()
     {
-        time_t currentTime = time(nullptr);
-        struct tm *timeInfo = localtime(&currentTime);
+        std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm tm = *std::gmtime(&time);
+        int year = 1900 + tm.tm_year;
+        int month = tm.tm_mon + 1;
+        int day = tm.tm_mday;
+        int hour = tm.tm_hour;
+        int minute = tm.tm_min;
+        int second = tm.tm_sec;
+        char *ptr = nullptr;
 
-        // Get the microseconds since the last second
-        struct timeval tv;
-        gettimeofday(&tv, nullptr);
-        int microseconds = tv.tv_usec;
-
-        // Format the current time as a string
-        char dateTimeBuffer[80];
-        strftime(dateTimeBuffer, sizeof(dateTimeBuffer), "%Y%m%d-%H:%M:%S", timeInfo);
-
-        // Convert the formatted time string to a C++ string
-        std::string formattedTime = dateTimeBuffer;
-
-        // Prepend two zeros to the microsecond value
-        std::string microsecondsString = std::to_string(microseconds);
-        if (microsecondsString.length() < 3)
-            microsecondsString = "00" + microsecondsString;
-
-        // Combine the formatted time string with the microsecond value
-        formattedTime = formattedTime + "." + microsecondsString.substr(0, 3);
-        // std::string formattedTime(timeBuffer);
-        SendingTime = formattedTime;
+        SendingTime.clear();
+        SendingTime.resize(17);
+        ptr = SendingTime.data();
+        ptr[0] = '0' + (year / 1000) % 10;
+        ptr[1] = '0' + (year / 100) % 10;
+        ptr[2] = '0' + (year / 10) % 10;
+        ptr[3] = '0' + (year % 10);
+        ptr[4] = '0' + month / 10;
+        ptr[5] = '0' + month % 10;
+        ptr[6] = '0' + day / 10;
+        ptr[7] = '0' + day % 10;
+        ptr[8] = '-';
+        ptr[9]  = '0' + hour / 10;
+        ptr[10] = '0' + hour % 10;
+        ptr[11] = ':';
+        ptr[12] = '0' + minute / 10;
+        ptr[13] = '0' + minute % 10;
+        ptr[14] = ':';
+        ptr[15] = '0' + second / 10;
+        ptr[16] = '0' + second % 10;
     }
 
-    uint64_t Header::getTargetCompId() const
+    uint64_t old_Header::getTargetCompId() const
     {
         return utils::to<uint64_t>(TargetCompId);
     }
 
-    void Header::updateMsgSeqNum()
+    void old_Header::updateMsgSeqNum()
     {
         MsgSeqNum = std::to_string(std::stoi(MsgSeqNum) + 1);
     }
 
-    std::string Header::getPartialHeader() const
+    std::string old_Header::getPartialHeader() const
     {
         return "35=" + MsgType + (char)FIX_DELIMITER +
                "49=" + SenderCompId + (char)FIX_DELIMITER +

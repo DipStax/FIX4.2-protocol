@@ -20,9 +20,9 @@ add_custom_command(
 )
 
 target_link_libraries(Fix_Server PRIVATE
+    Shared_Message_v2
     Shared_Configuration
     Shared_ProcessUnit
-    Shared_Message
     Shared_Core
     Shared_Thread
     Shared_Log

@@ -38,7 +38,7 @@ namespace pu
         }
     }
 
-    fix::Message FixBuilder::buildLogon(net::Buffer &_buffer)
+    fix::old_Message FixBuilder::buildLogon(net::Buffer &_buffer)
     {
         fix::Logon logon;
         ipc::msg::Logon ipc_logon;
@@ -52,7 +52,7 @@ namespace pu
         return logon;
     }
 
-    fix::Message FixBuilder::buildOrderSingle(net::Buffer &_buffer)
+    fix::old_Message FixBuilder::buildOrderSingle(net::Buffer &_buffer)
     {
         fix::NewOrderSingle order;
         ipc::msg::OrderSingle ipc_order;
@@ -64,7 +64,7 @@ namespace pu
         order.set38_orderQty(std::to_string(ipc_order.quantity));
         order.set40_ordType("2");
         order.set44_price(std::to_string(ipc_order.price));
-        order.set54_side((ipc_order.type == OrderType::Ask) ? "4" : "3");
+        order.set54_side((ipc_order.type == fix42::Side::SellPlus) ? "4" : "3");
         order.set55_symbol(ipc_order.symbol);
         return order;
     }

@@ -21,6 +21,18 @@ std::string InternalClient::getUserId() const
     return m_user_id;
 }
 
+bool InternalClient::isConnected() const
+{
+    return m_socket != nullptr && m_socket->isOpen();
+}
+
+bool InternalClient::close()
+{
+    if (m_socket == nullptr)
+        return false;
+    return m_socket->close();
+}
+
 void InternalClient::disconnect()
 {
     m_user_id = "";
@@ -39,7 +51,7 @@ bool InternalClient::shouldDisconnect() const
     return m_should_dc;
 }
 
-void InternalClient::setSeqNumber(size_t _seq_num)
+void InternalClient::setSeqNumber(uint32_t _seq_num)
 {
     m_seq_num = _seq_num;
 }
@@ -49,9 +61,14 @@ void InternalClient::nextSeqNumber()
     m_seq_num++;
 }
 
-size_t InternalClient::getSeqNumber() const
+uint32_t InternalClient::getSeqNumber() const
 {
     return m_seq_num;
+}
+
+bool InternalClient::send(const std::byte *_data, size_t _len)
+{
+    return m_socket->send(_data, _len) != -1;
 }
 
 std::shared_ptr<net::INetTcp> InternalClient::getSocket() const

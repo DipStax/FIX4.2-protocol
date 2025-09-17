@@ -47,6 +47,11 @@ void ProcessUnit<T>::stop()
 template<IsProcessUnitBase T>
 void ProcessUnit<T>::process(std::stop_token _st)
 {
+    if constexpr (IsPUStopable<T>) {
+        this->Logger->template log<logger::Level::Debug>("Calling Setup function");
+        this->setup();
+    }
+
     try {
         this->Logger->template log<logger::Level::Info>("Starting process unit...");
         T::runtime(_st);

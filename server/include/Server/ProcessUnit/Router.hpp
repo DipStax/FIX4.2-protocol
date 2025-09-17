@@ -1,38 +1,43 @@
 #pragma once
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
-#include "Server/ProcessUnit/data/Market.hpp"
+#include "Server/ProcessUnit/data/Global.hpp"
 
 #include "Shared/Log/ILogger.hpp"
 
 namespace pu
 {
     /// @brief Pipeline running action depending on received message.
-    class Router : public AInputProcess<Context<data::RouterInput>>
+    class Router : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            Router(InputNetworkOutput &_raw, QueueInputType &_logon, QueueInputType &_logout, QueueInputType &_heartbeat);
+            Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, StringOutputQueue &_error);
             virtual ~Router() = default;
 
-            void registerMarket(const std::string &_name, QueueInputType &_input);
+            // void registerMarket(const std::string &_name, QueueInputType &_input);
 
         protected:
             void onInput(InputType _input) final;
 
-        protected:
-            bool redirectToMarket(const InputType &_input);
+            // bool redirectToMarket(const InputType &_input);
 
-            bool treatUnknown(const InputType &_input);
-            bool treatRequireLogin(const InputType &_input);
-            bool treatReject(const InputType &_input);
+            /// @brief Function call when the input has an unknown message type
+            /// @param _input Input with the message type error
+            void treatUnknown(const InputType &_input);
+            /// @brief Function call when the input try to access a protected route, but isn't logged in
+            /// @param _input Input with the not logged in client
+            void treatRequireLogin(const InputType &_input);
+            /// @brief SessionReject message handler
+            /// @param _input Input with the `SessionReject` message
+            void treatReject(const InputType &_input);
 
         private:
-            std::map<std::string, QueueInputType &> m_market_input;
+            // std::map<std::string, QueueInputType &> m_market_input;
 
-            InputNetworkOutput &m_tcp_output;
+            UnparsedMessageQueue &m_logon_handler;
+            UnparsedMessageQueue &m_logout_handler;
+            UnparsedMessageQueue &m_heartbeat_handler;
 
-            QueueInputType &m_logon_handler;
-            QueueInputType &m_logout_handler;
-            QueueInputType &m_heartbeat_handler;
+            StringOutputQueue &m_error;
     };
 }

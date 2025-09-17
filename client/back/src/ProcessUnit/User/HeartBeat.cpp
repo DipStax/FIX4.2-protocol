@@ -15,7 +15,6 @@ namespace pu
     {
         // Logger = logger::Manager::newLogger("file", getProcessName());
 
-        m_thread = std::jthread(&HeartBeatHandler::heartbeatLoop, this);
     }
 
     void HeartBeatHandler::onInput(InputType _input)
@@ -26,6 +25,11 @@ namespace pu
             case fix::HeartBeat::cMsgType: handleHeartBeat(_input);
                 break;
         }
+    }
+
+    void HeartBeatHandler::setup()
+    {
+        m_thread = std::jthread(&HeartBeatHandler::heartbeatLoop, this);
     }
 
     void HeartBeatHandler::onStop()

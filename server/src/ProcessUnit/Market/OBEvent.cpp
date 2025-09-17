@@ -1,12 +1,13 @@
 #include "Server/ProcessUnit/Market/OBEvent.hpp"
 
-#include "Shared/Message/ExecutionReport.hpp"
+#include "Shared/Utils/Utils.hpp"
+#include "Shared/Message-v2/Message.hpp"
 
 namespace pu::market
 {
-    OBEvent::OBEvent(const std::string &_symbol, InputNetworkOutput &_tcp)
+    OBEvent::OBEvent(const std::string &_symbol, StringOutputQueue &_tcp_output)
         : AInputProcess<obs::Event>("Market/" + _symbol + "/OB-Event"),
-        m_symbol(_symbol), m_tcp_output(_tcp)
+        m_symbol(_symbol), m_tcp_output(_tcp_output)
     {
     }
 
@@ -18,28 +19,29 @@ namespace pu::market
         });
     }
 
-    bool OBEvent::createEvent(const InputType &_input)
+    void OBEvent::createEvent(const InputType &_input)
     {
-        fix::ExecutionReport report;
+        fix42::msg::ExecutionReport report;
         ClientStore::Client client = ClientStore::Instance().findClient(_input.userId);
 
         if (client == nullptr)
-            return false;
-        report.set6_avgPx(std::to_string(_input.avgPrice));
-        report.set14_cumQty(std::to_string(_input.orgQty - _input.remainQty));
-        report.set17_execID();
-        report.set20_execTransType("0");
-        report.set38_orderQty(std::to_string(_input.orgQty));
-        report.set37_orderID(_input.orderId);
-        report.set39_ordStatus(std::to_string(static_cast<uint8_t>(_input.ordStatus)));
-        report.set40_ordType("2");
-        report.set44_price(std::to_string(_input.price));
-        report.set54_side((_input.side == OrderType::Ask) ? "4" : "3");
-        report.set55_symbol(m_symbol);
-        report.set150_execType(std::string(1, static_cast<char>(_input.execStatus)));
-        report.set151_leavesQty(std::to_string(_input.remainQty));
-        m_tcp_output.append(client, std::chrono::system_clock::now(), std::move(report));
-        Logger->log<logger::Level::Debug>("[OBEvent] (TCP) Report created: "); // todo log
-        return true;
+            return;
+
+        report.get<fix42::tag::OrderID>().Value = _input.orderId;
+        report.get<fix42::tag::ExecId>().Value = utils::Uuid::Generate();
+        report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::New;
+        report.get<fix42::tag::ExecType>().Value = _input.execStatus;
+        report.get<fix42::tag::OrdStatus>().Value = _input.ordStatus;
+        report.get<fix42::tag::Symbol>().Value = m_symbol;
+        report.get<fix42::tag::Side>().Value = _input.side;
+        report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+        report.get<fix42::tag::Price>().Value = _input.price;
+        report.get<fix42::tag::LeavesQty>().Value = _input.remainQty;
+        report.get<fix42::tag::CumQty>().Value = _input.orgQty - _input.remainQty;
+        report.get<fix42::tag::AvgPx>().Value = _input.avgPrice;
+        report.get<fix42::tag::OrderQty>().Value = _input.orgQty;
+        // todo add exec id
+        Logger->log<logger::Level::Debug>("Report created for order Id: ", _input.orderId);
+        m_tcp_output.append(client, std::chrono::system_clock::now(), fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
     }
 }

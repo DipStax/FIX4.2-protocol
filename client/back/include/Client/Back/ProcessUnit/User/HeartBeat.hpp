@@ -17,6 +17,7 @@ namespace pu
         protected:
             void onInput(InputType _input) final;
 
+            void setup() final;
             void onStop() final;
 
         private:

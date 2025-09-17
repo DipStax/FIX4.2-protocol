@@ -1,8 +1,8 @@
 import os
 
-# File extensions and special filenames to look for
-TARGET_EXTENSIONS = {'.cpp', '.hpp', '.inl'}
+TARGET_EXTENSIONS = {'.cpp', '.hpp', '.inl', '.cs'}
 TARGET_FILENAMES = {'CMakeLists.txt'}
+EXCLUDED_DIRS = {'build'}
 
 def is_target_file(filename):
     return (
@@ -28,7 +28,9 @@ def count_files_and_lines(start_path='.'):
     total_lines = 0
     total_empty_lines = 0
 
-    for root, _, files in os.walk(start_path):
+    for root, dirs, files in os.walk(start_path):
+        dirs[:] = [d for d in dirs if d not in EXCLUDED_DIRS]
+
         for file in files:
             if is_target_file(file):
                 filepath = os.path.join(root, file)
@@ -40,7 +42,7 @@ def count_files_and_lines(start_path='.'):
     return file_count, total_lines, total_empty_lines
 
 if __name__ == '__main__':
-    path_to_scan = '.'  # Change this to your target directory
+    path_to_scan = '.'
     count, lines, empty_lines = count_files_and_lines(path_to_scan)
     print(f"Files counted: {count}")
     print(f"Total lines: {lines}")

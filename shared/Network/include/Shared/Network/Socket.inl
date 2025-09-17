@@ -18,13 +18,13 @@ namespace net::type
     }
 
     template<IsSocketDomain T>
-    size_t Stream<T>::send(const std::string &_data)
+    ssize_t Stream<T>::send(const std::string &_data)
     {
         return send(reinterpret_cast<const std::byte *>(_data.c_str()), _data.size());
     }
 
     template<IsSocketDomain T>
-    size_t Stream<T>::send(const std::byte *_data, size_t _size)
+    ssize_t Stream<T>::send(const std::byte *_data, size_t _size)
     {
         return c::Socket::send(this->FD(), _data, _size);
     }
@@ -57,13 +57,13 @@ namespace net::type
     }
 
     template<IsSocketDomain T>
-    size_t DGram<T>::send(const std::string &_data)
+    ssize_t DGram<T>::send(const std::string &_data)
     {
         return send(reinterpret_cast<const std::byte *>(_data.c_str()), _data.size());
     }
 
     template<IsSocketDomain T>
-    size_t DGram<T>::send(const std::byte *_data, size_t _size)
+    ssize_t DGram<T>::send(const std::byte *_data, size_t _size)
     {
         return c::Socket::sendTo(this->FD(), _data, _size, reinterpret_cast<struct sockaddr *>(&this->m_addr), sizeof(this->m_addr));
     }

@@ -3,15 +3,24 @@
 #include "Server/Signal.hpp"
 
 Core::Core()
+    // : m_logon(m_tcp_output.getInput()),
+    // m_router(m_tcp_output.getInput(),
+    //     m_logon.getInput(),
+    //     m_logout.getInput(),
+    //     m_heartbeat.getInput()
+    // ),
+    // m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
     : m_logon(m_tcp_output.getInput()),
     m_logout(m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
-    m_router(m_tcp_output.getInput(),
+    m_router(
         m_logon.getInput(),
         m_logout.getInput(),
-        m_heartbeat.getInput()
+        m_heartbeat.getInput(),
+        m_tcp_output.getInput()
     ),
-    m_tcp_input(m_router.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
+    m_header_validation(m_router.getInput(), m_tcp_output.getInput()),
+    m_tcp_input(m_header_validation.getInput(), m_tcp_output.getInput(), Configuration<config::Global>::Get().Config.Network.TcpPort),
     Logger(logger::Manager::newLogger("Core"))
 {
     market_init();
@@ -37,8 +46,8 @@ bool Core::start()
             m_logon.status();
             m_logout.status();
             m_heartbeat.status();
-            for (auto &[_, _pip] : m_markets)
-                _pip.status();
+            // for (auto &[_, _pip] : m_markets)
+                // _pip.status();
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
@@ -59,12 +68,13 @@ void Core::stop()
         m_running = false;
         Logger->log<logger::Level::Info>("Stoping...");
         m_tcp_input.stop();
+        m_header_validation.stop();
         m_router.stop();
         m_logon.stop();
         m_logout.stop();
         m_heartbeat.stop();
-        for (auto &[_name, _pip] : m_markets)
-            _pip.stop();
+        // for (auto &[_name, _pip] : m_markets)
+        //     _pip.stop();
         m_tcp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
     }
@@ -79,10 +89,11 @@ bool Core::internal_start()
     m_logout.start();
     m_heartbeat.start();
 
-    for (auto &[_name, _pip] : m_markets)
-        _pip.start();
+    // for (auto &[_name, _pip] : m_markets)
+    //     _pip.start();
 
     m_router.start();
+    m_header_validation.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Info>("All procesds unit launched");
     return false;
@@ -90,12 +101,12 @@ bool Core::internal_start()
 
 void Core::market_init()
 {
-    for (std::string &_name : Configuration<config::Global>::Get().Config.Fix.Market) {
-        m_markets.emplace(std::piecewise_construct,
-            std::forward_as_tuple(_name),
-            std::forward_as_tuple(_name, m_tcp_output.getInput())
-        );
+    // for (std::string &_name : Configuration<config::Global>::Get().Config.Fix.Market) {
+    //     m_markets.emplace(std::piecewise_construct,
+    //         std::forward_as_tuple(_name),
+    //         std::forward_as_tuple(_name, m_tcp_output.getInput())
+    //     );
 
-        m_router.registerMarket(_name, m_markets.at(_name).getInput());
-    }
+    //     m_router.registerMarket(_name, m_markets.at(_name).getInput());
+    // }
 }

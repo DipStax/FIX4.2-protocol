@@ -2,40 +2,56 @@
 
 #include "Server/ProcessUnit/data/Context.hpp"
 
-#include "Shared/Message/Fix.hpp"
-#include "Shared/Message/Serializer.hpp"
 #include "Shared/Thread/Queue.hpp"
+#include "Shared/Message-v2/Message.hpp"
 
 namespace data
 {
-    /// @brief Data transfered from the pip::InNetwork pipeline to the pip::Action pipeline.
-    struct RouterInput
+    struct UnparsedMessage
     {
-        RouterInput() = default;
-        RouterInput(RouterInput &&_data) noexcept = default;
-        RouterInput(const RouterInput &_data) = default;
-        RouterInput(const fix::Serializer::AnonMessage &&_message);
-        virtual ~RouterInput() = default;
+        UnparsedMessage() = default;
+        UnparsedMessage(UnparsedMessage &&_data) noexcept = default;
+        UnparsedMessage(const UnparsedMessage &_data) = default;
+        UnparsedMessage(const fix42::Header &&_header, const fix::MapMessage &&_message) noexcept;
+        virtual ~UnparsedMessage() = default;
 
-        RouterInput &operator=(RouterInput &&_data) noexcept = default;
+        UnparsedMessage &operator=(UnparsedMessage &&_data) noexcept = default;
 
-        fix::Serializer::AnonMessage Message{};     ///< Undefined message data.
+        fix42::Header Header;       ///< Message header
+        fix::MapMessage Message{};  ///< Message not parsed
     };
 
-    /// @brief Data transfered from the pip::Market pipeline to the pip::OutNetwork pipeline
-    struct OutNetworkInput
+    struct StringOutput
     {
-        OutNetworkInput() = default;
-        OutNetworkInput(OutNetworkInput &&_data) noexcept = default;
-        OutNetworkInput(const OutNetworkInput &_data) = default;
-        OutNetworkInput(const fix::Message &&_msg) noexcept;
-        virtual ~OutNetworkInput() = default;
+        StringOutput() = default;
+        StringOutput(StringOutput &&_data) noexcept = default;
+        StringOutput(const StringOutput &_data) = default;
+        StringOutput(char _msgtype, const std::string &&_msg) noexcept;
+        virtual ~StringOutput() = default;
 
-        OutNetworkInput &operator=(OutNetworkInput &&_data) noexcept = default;
+        StringOutput &operator=(StringOutput &&_data) noexcept = default;
 
-        fix::Message Message{};                     ///< Final message send to the client.
+        char MessageType;       ///< Message type of the FIX formated message
+        std::string Message{};  ///< FIX formated message into string
+    };
+
+    template<class T>
+    struct Message
+    {
+        Message() = default;
+        Message(Message &&_data) noexcept = default;
+        Message(const Message &_data) = default;
+        Message(const fix42::Header &&_header, const T &&_message) noexcept;
+        virtual ~Message() = default;
+
+        Message &operator=(Message &&_data) noexcept = default;
+
+        fix42::Header Header;   ///< Message header
+        T Message{};            ///< Parsed message
     };
 }
 
-using InputRouter = ts::Queue<Context<data::RouterInput>>;
-using InputNetworkOutput = ts::Queue<Context<data::OutNetworkInput>>;
+using UnparsedMessageQueue = ts::Queue<Context<data::UnparsedMessage>>;
+using StringOutputQueue = ts::Queue<Context<data::StringOutput>>;
+template<class T>
+using MessageQueue = ts::Queue<Context<data::Message<T>>>;

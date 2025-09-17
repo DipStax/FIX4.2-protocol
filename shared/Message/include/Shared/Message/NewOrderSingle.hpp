@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [New Order Single](https://www.onixs.biz/fix-dictionary/4.2/msgType_D_68.html) message class.
-    class NewOrderSingle : public Message
+    class NewOrderSingle : public old_Message
     {
         public:
             NewOrderSingle();

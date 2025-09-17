@@ -8,11 +8,11 @@ namespace fix
     class Reject;
 
     /// @brief Fix [Header](https://www.onixs.biz/fix-dictionary/4.2/compBlock_StandardHeader.html) class.
-    class Header
+    class old_Header
     {
         public:
-            Header() = default;
-            ~Header() = default;
+            old_Header() = default;
+            ~old_Header() = default;
 
             /// @brief Verify if the header receive is correctly formated.
             /// @param _msg Message to check.
@@ -50,7 +50,7 @@ namespace fix
             operator std::string() const;
 
         protected:
-            friend class Message;
+            friend class old_Message;
 
             void setSendingTime();
             [[deprecated("Use set34_msgSeqNum() before calling operator std::string instead")]]

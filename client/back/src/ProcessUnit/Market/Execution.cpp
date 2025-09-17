@@ -5,6 +5,7 @@
 
 #include "Client/Shared/IPC/Message/Execution.hpp"
 #include "Client/Shared/IPC/Helper.hpp"
+#include "Shared/Core/Enum.hpp"
 
 namespace pu
 {
@@ -30,10 +31,10 @@ namespace pu
     void Execution::treatNewOrder(const InputType &_input)
     {
         switch (_input.at(fix::Tag::ExecType)[0]) {
-            case ExecTypeValue::New: sendNotificationNew(_input, ipc::MessageType::ExecNew);
+            case fix42::ExecutionStatus::NewOrder: sendNotificationNew(_input, ipc::MessageType::ExecNew);
                 break;
-            case ExecTypeValue::PartiallyFilled:
-            case ExecTypeValue::Filled:
+            case fix42::ExecutionStatus::PartiallyFilled:
+            case fix42::ExecutionStatus::Filled:
                 sendNotificationNew(_input, ipc::MessageType::ExecEvent);
                 break;
         }
@@ -45,8 +46,8 @@ namespace pu
             _input.at(fix::Tag::Symbol),
             _input.at(fix::Tag::OrderID),
             _input.at(fix::Tag::ExecId),
-            std::stod(_input.at(fix::Tag::AvgPx)),
-            std::stod(_input.at(fix::Tag::Price)),
+            std::stof(_input.at(fix::Tag::AvgPx)),
+            std::stof(_input.at(fix::Tag::Price)),
             utils::to<Side>(_input.at(fix::Tag::Side)),
             utils::to<Quantity>(_input.at(fix::Tag::OrderQty)),
             utils::to<Quantity>(_input.at(fix::Tag::LeavesQty))

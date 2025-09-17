@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [Execution Report](https://www.onixs.biz/fix-dictionary/4.2/msgType_8_8.html) message class.
-    class ExecutionReport : public Message
+    class ExecutionReport : public old_Message
     {
         public:
             ExecutionReport();

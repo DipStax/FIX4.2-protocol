@@ -8,7 +8,10 @@
 | 150 | [Execution Type](https://www.onixs.biz/fix-dictionary/4.2/tagNum_150.html) | `true` | Action apply to the order |
 | 150 | [Order Status](https://www.onixs.biz/fix-dictionary/4.2/tagNum_39.html) | `true` | Current state of the order |
 | 55 | [Symbol](https://www.onixs.biz/fix-dictionary/4.2/tagNum_55.html) | `true` | |
-| 54 | [Side](https://www.onixs.biz/fix-dictionary/4.2/tagNum_54.html) | `true` | |
+| 54 | [Side](https://www.onixs.biz/fix-dictionary/4.2/tagNum_54.html) | `true` | Only support `3` (Buy Less) or `4` (Sell Plus) |
+| 38 | [Order Quantity](https://www.onixs.biz/fix-dictionary/4.2/tagNum_38.html) | `false` | |
+| 40 | [Order Type](https://www.onixs.biz/fix-dictionary/4.2/tagNum_40.html) | `false` | Only support `2` (Limit) |
+| 44 | [Price](https://www.onixs.biz/fix-dictionary/4.2/tagNum_44.html) | `false` | Required if specified in the order |
 | 151 | [Leave Quantity](https://www.onixs.biz/fix-dictionary/4.2/tagNum_151.html) | `true` | Remaining quantity on the order |
 | 14 | [Cumulative Quantity](https://www.onixs.biz/fix-dictionary/4.2/tagNum_14.html) | `true` | Quantity executed |
 | 6 | [Averga Price](https://www.onixs.biz/fix-dictionary/4.2/tagNum_6.html) | `true` | Average price of the executed quantity |

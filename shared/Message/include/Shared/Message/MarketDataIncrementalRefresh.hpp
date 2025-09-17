@@ -4,7 +4,7 @@
 
 namespace fix
 {
-    class MarketDataIncrementalRefresh : public Message
+    class MarketDataIncrementalRefresh : public old_Message
     {
         public:
             MarketDataIncrementalRefresh();

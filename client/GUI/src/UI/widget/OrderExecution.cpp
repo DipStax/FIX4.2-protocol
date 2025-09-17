@@ -31,8 +31,8 @@ namespace ui::widget
         for (const std::string &_symbol : symbols)
             m_cb_symbol->addItem(QString::fromStdString(_symbol));
 
-        m_cb_side->addItem("Ask", static_cast<int>(OrderType::Ask));
-        m_cb_side->addItem("Bid", static_cast<int>(OrderType::Bid));
+        m_cb_side->addItem("Ask", static_cast<int>(fix42::Side::SellPlus));
+        m_cb_side->addItem("Bid", static_cast<int>(fix42::Side::BuyMinus));
 
         left_layout->addWidget(new QLabel("Symbol:"));
         left_layout->addWidget(m_cb_symbol);
@@ -67,7 +67,7 @@ namespace ui::widget
             m_entry_orderid->text().toStdString(),
             std::stof(m_entry_price->text().toStdString()),
             static_cast<Quantity>(std::stoul(m_entry_qty->text().toStdString())),
-            static_cast<OrderType>(m_cb_side->currentData().toInt())
+            static_cast<fix42::Side>(m_cb_side->currentData().toInt())
         };
 
         Logger->log<logger::Level::Info>("Notifiying server of new order: ", order);

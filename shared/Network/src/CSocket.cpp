@@ -17,12 +17,12 @@ namespace net::c
         return ::accept(_fd, (struct sockaddr *)NULL, NULL);
     }
 
-    size_t Socket::send(int _fd, const std::byte *_data, size_t _size)
+    ssize_t Socket::send(int _fd, const std::byte *_data, size_t _size)
     {
         return ::send(_fd, _data, _size, 0);
     }
 
-    size_t Socket::sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size)
+    ssize_t Socket::sendTo(int _fd, const std::byte *_data, size_t _size, struct sockaddr *_addr, size_t _addr_size)
     {
         return sendto(_fd, _data, _size, 0, _addr, _addr_size);
     }

@@ -42,7 +42,7 @@ namespace ui::widget
             << remainQty
             << new QStandardItem(QString::fromStdString(std::to_string(_order.price)))
             << avgPrice
-            << new QStandardItem(_order.side == static_cast<uint8_t>(OrderType::Ask) ? "Ask" : "Bid")
+            << new QStandardItem(_order.side == static_cast<uint8_t>(fix42::Side::SellPlus) ? "SellPlus" : "BuyMinus")
             << new QStandardItem(QString::fromStdString(_order.symbol));
         for (QStandardItem* item : row)
             item->setEditable(false);
@@ -67,7 +67,7 @@ namespace ui::widget
             << new QStandardItem(QString::fromStdString(std::to_string(_order.remainQty)))
             << new QStandardItem(QString::fromStdString(std::to_string(_order.price)))
             << new QStandardItem(QString::fromStdString(std::to_string(_order.avgPrice)))
-            << new QStandardItem(_order.side == static_cast<uint8_t>(OrderType::Ask) ? "Ask" : "Bid")
+            << new QStandardItem(_order.side == static_cast<uint8_t>(fix42::Side::SellPlus) ? "SellPlus" : "BuyMinus")
             << new QStandardItem(QString::fromStdString(_order.symbol));
         for (QStandardItem* item : row)
             item->setEditable(false);

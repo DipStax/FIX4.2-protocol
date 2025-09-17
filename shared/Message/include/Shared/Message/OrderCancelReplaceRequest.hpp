@@ -5,7 +5,7 @@
 namespace fix
 {
     /// @brief Fix [Order Cancel Replace](https://www.onixs.biz/fix-dictionary/4.2/msgType_G_71.html) message class.
-    class OrderCancelReplaceRequest : public Message
+    class OrderCancelReplaceRequest : public old_Message
     {
         public:
             OrderCancelReplaceRequest();
