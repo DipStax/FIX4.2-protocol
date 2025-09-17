@@ -1,6 +1,6 @@
 #include <future>
 
-#include "Server/ProcessUnit/Market/OBAction.hpp"
+#include "Server/ProcessUnit/Market/NewOrder.hpp"
 
 
 #include "Shared/Message-v2/Parser.hpp"
@@ -9,42 +9,17 @@
 
 namespace pu::market
 {
-    OBAction::OBAction(OrderBook &_ob, StringOutputQueue &_output)
-        : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/OB-Action"),
+    NewOrder::NewOrder(OrderBook &_ob, StringOutputQueue &_output)
+        : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/New-order"),
         m_tcp_output(_output), m_ob(_ob)
     {
     }
 
-    void OBAction::onInput(InputType _input)
+    void NewOrder::onInput(InputType _input)
     {
-        switch (_input.Header.getPositional<fix42::tag::MsgType>().Value)
-        {
-            case fix42::msg::NewOrderSingle::Type:
-                treatNewOrderSingle(_input);
-                break;
-            // case fix::OrderCancelRequest::cMsgType:
-            // case fix::OrderCancelReplaceRequest::cMsgType:
-            // case fix::MarketDataRequest::cMsgType:
-            //     break;
-            // default: (void)treatUnknown(input);
-            //     break;
-        }
-    }
-
-    void OBAction::treatNewOrderSingle(InputType &_input)
-    {
-        xstd::Expected<fix42::msg::NewOrderSingle, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::NewOrderSingle>(_input.Message, _input.Header);
-
-        if (error.has_error()) {
-            Logger->log<logger::Level::Info>("Parsing of NewOrderSingle message failed: ", error.error().get<fix42::tag::Text>().Value.value());
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
-            return;
-        }
-        const fix42::msg::NewOrderSingle &order = error.value();
-
-        switch (order.get<fix42::tag::OrdType>().Value) {
+        switch (_input.Message.get<fix42::tag::OrdType>().Value) {
             case fix42::OrderType::Limit:
-                newOrderLimit(_input, order);
+                newOrderLimit(_input);
                 break;
             default:
                 // todo orderTypeNotSupported(_input);
@@ -52,9 +27,9 @@ namespace pu::market
         }
     }
 
-    void OBAction::newOrderLimit(const InputType &_input, const fix42::msg::NewOrderSingle &_order)
+    void NewOrder::newOrderLimit(const InputType &_input)
     {
-        if (!_order.get<fix42::tag::Price>().Value.has_value()) {
+        if (!_input.Message.get<fix42::tag::Price>().Value.has_value()) {
             fix42::msg::BusinessReject reject{};
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
@@ -63,7 +38,7 @@ namespace pu::market
             reject.get<fix42::tag::Text>().Value = "Price required when OrderType=Limit";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
-        } else if (!_order.get<fix42::tag::OrderQty>().Value.has_value()) {
+        } else if (!_input.Message.get<fix42::tag::OrderQty>().Value.has_value()) {
             fix42::msg::BusinessReject reject{};
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
@@ -76,12 +51,12 @@ namespace pu::market
 
         obs::OrderInfo info{};
 
-        info.side = _order.get<fix42::tag::Side>().Value;
-        info.price = _order.get<fix42::tag::Price>().Value.value();
+        info.side = _input.Message.get<fix42::tag::Side>().Value;
+        info.price = _input.Message.get<fix42::tag::Price>().Value.value();
         info.execid = utils::Uuid::Generate();
         info.order.userId = _input.Client->getUserId();
-        info.order.orderId = _order.get<fix42::tag::ClOrdID>().Value;
-        info.order.quantity = _order.get<fix42::tag::OrderQty>().Value.value();
+        info.order.orderId = _input.Message.get<fix42::tag::ClOrdID>().Value;
+        info.order.quantity = _input.Message.get<fix42::tag::OrderQty>().Value.value();
 
         Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side); // todo log
         if (!m_ob.has(info.order.orderId)) {

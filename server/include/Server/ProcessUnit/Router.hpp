@@ -11,7 +11,7 @@ namespace pu
     class Router : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, StringOutputQueue &_error);
+            Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, UnparsedMessageQueue &_market_router, StringOutputQueue &_error);
             virtual ~Router() = default;
 
             // void registerMarket(const std::string &_name, QueueInputType &_input);
@@ -37,6 +37,7 @@ namespace pu
             UnparsedMessageQueue &m_logon_handler;
             UnparsedMessageQueue &m_logout_handler;
             UnparsedMessageQueue &m_heartbeat_handler;
+            UnparsedMessageQueue &m_market_router;
 
             StringOutputQueue &m_error;
     };

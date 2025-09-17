@@ -7,9 +7,9 @@
 
 namespace pu
 {
-    Router::Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, StringOutputQueue &_error)
+    Router::Router(UnparsedMessageQueue &_logon, UnparsedMessageQueue &_logout, UnparsedMessageQueue &_heartbeat, UnparsedMessageQueue &_market_router, StringOutputQueue &_error)
         : AInputProcess<InputType>("Server/Master-Router"),
-        m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat), m_error(_error)
+        m_logon_handler(_logon), m_logout_handler(_logout), m_heartbeat_handler(_heartbeat), m_market_router(_market_router), m_error(_error)
     {
     }
 
@@ -32,11 +32,11 @@ namespace pu
                 case fix42::msg::Logout::Type:
                     m_logout_handler.push(std::move(_input));
                     break;
-                // case fix::NewOrderSingle::cMsgType:
+                case fix42::msg::NewOrderSingle::Type:
                 // case fix::OrderCancelRequest::cMsgType:
                 // case fix::OrderCancelReplaceRequest::cMsgType:
-                //     redirectToMarket(_input);
-                //     break;
+                    m_market_router.push(std::move(_input));
+                    break;
                 // case fix::MarketDataRequest::cMsgType: // todo
                 //     break;
                 case fix42::msg::SessionReject::Type:

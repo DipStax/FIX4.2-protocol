@@ -36,15 +36,15 @@ namespace data
     };
 
     template<class T>
-    struct Message
+    struct ParsedMessage
     {
-        Message() = default;
-        Message(Message &&_data) noexcept = default;
-        Message(const Message &_data) = default;
-        Message(const fix42::Header &&_header, const T &&_message) noexcept;
-        virtual ~Message() = default;
+        ParsedMessage() = default;
+        ParsedMessage(ParsedMessage &&_data) noexcept = default;
+        ParsedMessage(const ParsedMessage &_data) = default;
+        ParsedMessage(const fix42::Header &&_header, const T &&_message) noexcept;
+        virtual ~ParsedMessage() = default;
 
-        Message &operator=(Message &&_data) noexcept = default;
+        ParsedMessage &operator=(ParsedMessage &&_data) noexcept = default;
 
         fix42::Header Header;   ///< Message header
         T Message{};            ///< Parsed message
@@ -54,4 +54,6 @@ namespace data
 using UnparsedMessageQueue = ts::Queue<Context<data::UnparsedMessage>>;
 using StringOutputQueue = ts::Queue<Context<data::StringOutput>>;
 template<class T>
-using MessageQueue = ts::Queue<Context<data::Message<T>>>;
+using MessageQueue = ts::Queue<Context<data::ParsedMessage<T>>>;
+
+#include "Server/ProcessUnit/data/Global.inl"
