@@ -9,11 +9,11 @@
 
 namespace pu::market
 {
-    class OBAction : public AInputProcess<Context<data::UnparsedMessage>>
+    class NewOrder : public AInputProcess<Context<data::ParsedMessage<fix42::msg::NewOrderSingle>>>
     {
         public:
-            OBAction(OrderBook &_ob, StringOutputQueue &_output);
-            virtual ~OBAction() = default;
+            NewOrder(OrderBook &_ob, StringOutputQueue &_output);
+            virtual ~NewOrder() = default;
 
         protected:
             void onInput(InputType _input) final;
@@ -21,14 +21,12 @@ namespace pu::market
         private:
             void treatNewOrderSingle(InputType &_input);
 
-            void newOrderLimit(const InputType &_input, const fix42::msg::NewOrderSingle &_order);
+            void newOrderLimit(const InputType &_input);
 
             StringOutputQueue &m_tcp_output;
 
             OrderBook &m_ob;
 
             const std::string m_symbol;
-
-            ThreadPool<1> m_tp{};
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/ProcessUnit/Market/OBAction.hpp"
+#include "Server/ProcessUnit/Market/NewOrder.hpp"
 #include "Server/ProcessUnit/Market/OBEvent.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
@@ -9,15 +9,17 @@
 namespace pu
 {
 
-    class MarketContainer : public AProcessUnit<Context<data::UnparsedMessage>>
+    class MarketContainer : public AProcessUnitBase
     {
         public:
+            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &>;
+
             MarketContainer(const std::string &_symbol, StringOutputQueue &_tcp_output);
             virtual ~MarketContainer() = default;
 
             [[nodiscard]] const std::string &getMarketSymbol() const;
 
-            [[nodiscard]] QueueInputType &getInput();
+            [[nodiscard]] MarketTupleQueue getInput();
 
         protected:
             void runtime(std::stop_token _st) final;
@@ -29,6 +31,6 @@ namespace pu
 
             OrderBook m_ob;
 
-            ProcessUnit<pu::market::OBAction> m_market;
+            ProcessUnit<pu::market::NewOrder> m_market_neworder;
     };
 }

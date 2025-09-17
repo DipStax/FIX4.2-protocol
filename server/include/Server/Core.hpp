@@ -7,9 +7,10 @@
 #include "Server/ProcessUnit/Network/TCPInput.hpp"
 #include "Server/ProcessUnit/HeaderValidation.hpp"
 #include "Server/ProcessUnit/Router.hpp"
+#include "Server/ProcessUnit/MarketRouter.hpp"
 #include "Server/ProcessUnit/Network/TCPOutput.hpp"
 
-// #include "Server/ProcessUnit/MarketContainer.hpp"
+#include "Server/ProcessUnit/MarketContainer.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 
@@ -36,13 +37,14 @@ class Core
 
         UnparsedMessageQueue m_input;
         StringOutputQueue m_output;
-        // std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
+        std::map<std::string, ProcessUnit<pu::MarketContainer>> m_markets;
 
         ProcessUnit<pu::TcpOutputNetwork> m_tcp_output;
 
         ProcessUnit<pu::user::LogonHandler> m_logon;
         ProcessUnit<pu::user::LogoutHandler> m_logout;
         ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
+        ProcessUnit<pu::MarketRouter> m_market_router;
 
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::HeaderValidation> m_header_validation;
