@@ -1,12 +1,11 @@
-using FixGuardian.Message.Attributes;
-using FixGuardian.Message.Exceptions;
+using FixGuardian.Messages.Attributes;
+using FixGuardian.Messages.Exceptions;
+using FixGuardian.Messages.Definition;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Security.Cryptography;
-using static FixGuardian.Message.Header;
 
 namespace FixGuardian.Message
 {
@@ -75,23 +74,23 @@ namespace FixGuardian.Message
             List<KeyValuePair<ushort, string>> result = new List<KeyValuePair<ushort, string>>();
 
             if (fields.Last() != string.Empty)
-                throw new Exception("Message trailing is not empty");
+                throw new FixDecodeException("Message trailing is not empty");
             fields.RemoveAt(fields.Count - 1);
             if (fields.Where(string.IsNullOrWhiteSpace).Count() != 0)
-                throw new Exception("Message split with empty value");
+                throw new FixDecodeException("Message split with empty value");
             foreach (string field in fields)
             {
                 string[] kv = field.Split('=');
 
                 if (kv.Length != 2)
-                    throw new Exception("Message contain multiple '=' in a single field");
+                    throw new FixDecodeException("Message contain multiple '=' in a single field");
                 result.Add(new KeyValuePair<ushort, string>(Convert.ToUInt16(kv[0]), kv[1]));
             }
             return result;
         }
 
         static public T FromString<T>(List<KeyValuePair<ushort, string>> mapmsg)
-             where T : new()
+             where T : AMessage, new()
         {
             T msgobj = new T();
             IEnumerable<KeyValuePair<PropertyInfo, Tag>> props = typeof(T)

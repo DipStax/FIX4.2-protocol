@@ -1,4 +1,4 @@
-﻿namespace FixGuardian.Message.Attributes
+﻿namespace FixGuardian.Messages.Attributes
 {
     public class Tag : Attribute
     {

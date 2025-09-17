@@ -1,11 +1,6 @@
-﻿using FixGuardian.Message.Attributes;
-using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using FixGuardian.Messages.Attributes;
+using FixGuardian.Messages.Definition;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FixGuardian.Message.Tests
 {

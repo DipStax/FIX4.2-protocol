@@ -1,16 +1,16 @@
-using FixGuardian.Message.Attributes;
-using FixGuardian.Message.enums;
+using FixGuardian.Messages.Attributes;
+using FixGuardian.Messages.enums;
 
-namespace FixGuardian.Message
+namespace FixGuardian.Messages.Definition
 {
-    public class SessionReject
+    public class SessionReject : AMessage
     {
         [Tag(45)]
-        public UInt32? RefSeqNum { get; set; } = null;
+        public uint? RefSeqNum { get; set; } = null;
 
         [OptionalTag()]
         [Tag(371)]
-        public UInt16? RefTagId { get; set; } = null;
+        public ushort? RefTagId { get; set; } = null;
 
         [OptionalTag()]
         [Tag(372)]

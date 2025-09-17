@@ -1,11 +1,8 @@
-﻿using FixGuardian.Message.Attributes;
-using FixGuardian.Message.Exceptions;
-using System;
-using System.Collections;
+﻿using FixGuardian.Messages.Attributes;
+using FixGuardian.Messages.Definition;
+using FixGuardian.Messages.Exceptions;
 using System.Diagnostics;
 using System.Reflection;
-using System.Xml.Linq;
-using static FixGuardian.Message.FixHelper;
 
 namespace FixGuardian.Message
 {
@@ -75,15 +72,15 @@ namespace FixGuardian.Message
                 {
                     switch (context)
                     {
-                        case NullHandlingStrategy.None:
+                        case FixHelper.NullHandlingStrategy.None:
                             throw new FixEncodeException($"Null value for property", pair.Value.TagId);
-                        case NullHandlingStrategy.NullAsEmpty:
+                        case FixHelper.NullHandlingStrategy.NullAsEmpty:
                             result += $"{pair.Value.TagId}=\u0001";
                             continue;
-                        case NullHandlingStrategy.NullAsFullyEmpty:
+                        case FixHelper.NullHandlingStrategy.NullAsFullyEmpty:
                             result += "\u0001";
                             continue;
-                        case NullHandlingStrategy.AllowNull:
+                        case FixHelper.NullHandlingStrategy.AllowNull:
                             continue;
                         default:
                             throw new UnreachableException();

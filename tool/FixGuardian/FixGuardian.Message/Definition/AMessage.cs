@@ -1,12 +1,7 @@
-﻿using FixGuardian.Message.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using FixGuardian.Messages.Attributes;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FixGuardian.Message
+namespace FixGuardian.Messages.Definition
 {
     public class AMessage : IEquatable<AMessage>
     {

@@ -1,4 +1,4 @@
-﻿using FixGuardian.Message.Exceptions;
+﻿using FixGuardian.Messages.Exceptions;
 
 namespace FixGuardian.Message.Tests
 {
@@ -34,14 +34,14 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void WithTrailing()
             {
-                Exception? exception = Assert.Throws<Exception>(() => FixHelper.ToMap("key=value\u0001trailing"));
+                FixDecodeException? exception = Assert.Throws<FixDecodeException>(() => FixHelper.ToMap("key=value\u0001trailing"));
                 Assert.That(exception, Is.Not.Null);
             }
 
             [Test]
             public void EmptyField()
             {
-                Exception? exception = Assert.Throws<Exception>(() => FixHelper.ToMap("key=value\u0001\u0001"));
+                FixDecodeException? exception = Assert.Throws<FixDecodeException>(() => FixHelper.ToMap("key=value\u0001\u0001"));
                 Assert.That(exception, Is.Not.Null);
             }
 
@@ -55,7 +55,7 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void MultipleEqual()
             {
-                Exception? exception = Assert.Throws<Exception>(() => FixHelper.ToMap("1==1\u0001"));
+                FixDecodeException? exception = Assert.Throws<FixDecodeException>(() => FixHelper.ToMap("1==1\u0001"));
                 Assert.That(exception, Is.Not.Null);
             }
 
