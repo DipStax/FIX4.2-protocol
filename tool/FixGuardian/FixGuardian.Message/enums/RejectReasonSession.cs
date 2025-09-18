@@ -2,7 +2,7 @@ namespace FixGuardian.Messages.Enums
 {
     public enum RejectReasonSession
     {
-        InvalidTagNum = 0,
+        InvalidTagNum = 1,
         RequiredTagMissing,
         TagNotDefine,
         UndefineTag,

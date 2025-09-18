@@ -75,7 +75,14 @@ namespace FixGuardian.TestFramework.Assertions
         {
             uint checksum = 0;
 
-            Equal(mapmsg.Last().Key, 10);
+            try
+            {
+                Equal(mapmsg.Last().Key, 10);
+            }
+            catch (AssertionException ex)
+            {
+                throw new AssertionException("Checksum tag invalid", ex);
+            }
 
             for (int i = 0; i < mapmsg.Count - 1; i++)
             {
@@ -83,7 +90,14 @@ namespace FixGuardian.TestFramework.Assertions
                     checksum += c;
                 checksum += '=' + 1;
             }
-            Equal(uint.Parse(mapmsg.Last().Value), checksum % 256);
+            try
+            {
+                Equal(uint.Parse(mapmsg.Last().Value), checksum % 256);
+            }
+            catch (AssertionException ex)
+            {
+                throw new AssertionException("CheckSum value invalid", ex);
+            }
         }
 
         static public void Equal(object? actual, object? expected)
