@@ -3,6 +3,7 @@
 // #include "Client/Back/ProcessUnit/Market/Execution.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
+#include "Client/Back/ProcessUnit/HeaderValidation.hpp"
 // #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
 // #include "Client/Back/ProcessUnit/User/Auth.hpp"
 // #include "Client/Back/ProcessUnit/FixBuilder.hpp"
@@ -36,6 +37,7 @@ class Core
         // ProcessUnit<pu::Execution> m_execution;
 
         // ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::HeaderValidation> m_header_validation;
 
         ProcessUnit<pu::TcpInputNetwork> m_tcp_input;
 
