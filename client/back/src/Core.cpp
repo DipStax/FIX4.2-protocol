@@ -22,6 +22,12 @@ Core::Core()
     //     m_auth.getInput(),
     //     m_execution.getInput()
     // ),
+    m_router(
+        m_tmp,
+        m_tmp,
+        m_tmp,
+        m_tcp_output.getInput()
+    ),
     m_header_validation(m_tmp, m_tcp_output.getInput()),
     m_tcp_input(m_server, m_header_validation.getInput(), m_tcp_output.getInput()),
     Logger(logger::Manager::newLogger("Back/Core"))
