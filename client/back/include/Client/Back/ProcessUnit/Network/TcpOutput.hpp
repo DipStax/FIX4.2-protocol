@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Client/Back/ProcessUnit/data/Global.hpp"
+
 #include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Message/Fix.hpp"
 #include "Shared/Log/ILogger.hpp"
@@ -7,7 +9,7 @@
 
 namespace pu
 {
-    class TcpOutputNetwork : public AInputProcess<fix::old_Message>
+    class TcpOutputNetwork : public AInputProcess<Context<data::StringOutput>>
     {
         public:
             using Socket = std::shared_ptr<net::INetTcp>;
@@ -17,6 +19,8 @@ namespace pu
 
         protected:
             void onInput(InputType _input) final;
+
+            static void AddCheckSum(std::string &_msg);
 
         private:
             Socket m_server;

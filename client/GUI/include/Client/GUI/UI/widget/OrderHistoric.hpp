@@ -6,7 +6,7 @@
 
 #include "Client/Shared/IPC/Message/Execution.hpp"
 
-#include "Shared/Core/Order.hpp"
+#include "Shared/Core/Core.hpp"
 #include "Shared/Log/ILogger.hpp"
 
 namespace ui::widget

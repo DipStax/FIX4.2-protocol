@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Shared/Core/Order.hpp"
+#include "Shared/Core/Core.hpp"
 #include "Shared/Network/Buffer.hpp"
 
 namespace ipc::msg
