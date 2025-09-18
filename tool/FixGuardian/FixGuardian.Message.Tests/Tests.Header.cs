@@ -102,7 +102,7 @@ namespace FixGuardian.Message.Tests
         public class Function_ToString
         {
             public Header TestHeader { get; set; } = new Header();
-            
+
             [SetUp]
             public void SetUp()
             {
@@ -228,9 +228,9 @@ namespace FixGuardian.Message.Tests
         {
             static public DateTime TimeNow = DateTime.Now;
 
-            public List<KeyValuePair<ushort, string>> MapHeader { get; set; }
+            public List<KeyValuePair<ushort, string>> MapHeader { get; set; } = new List<KeyValuePair<ushort, string>>();
             public Header TestHeader { get; set; } = new Header();
-            public Header ExpectedHeader { get; set; }
+            public Header ExpectedHeader { get; set; } = new Header();
 
             [SetUp]
             public void SetUp()

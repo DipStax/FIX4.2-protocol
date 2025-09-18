@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Server/ProcessUnit/data/Market.hpp"
+#include "Server/ProcessUnit/data/Global.hpp"
 #include "Server/OrderBook.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
@@ -9,7 +9,6 @@
 #if !defined(TS_SIZE_OBEVENT) || TS_SIZE_OBEVENT <= 0
     #define TS_SIZE_OBEVENT 1
 #endif
-
 
 namespace pu::market
 {
