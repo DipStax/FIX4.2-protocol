@@ -211,38 +211,41 @@ namespace FixGuardian.Suite
             });
         }
 
-        // [TestInput<EncryptionMethod>(EncryptionMethod.DES)]
-        // [TestInput<EncryptionMethod>(EncryptionMethod.PEMDESMD5)]
-        // [TestInput<EncryptionMethod>(EncryptionMethod.PGPDES)]
-        // [TestInput<EncryptionMethod>(EncryptionMethod.PGPDESMD5)]
-        // [TestInput<EncryptionMethod>(EncryptionMethod.PKCS)]
-        // [TestInput<EncryptionMethod>(EncryptionMethod.PKCSDES)]
-        // [TestCase("(Temporary) Valid Logon - Not Supported Encryption")]
-        // public void ValidLogonUpperBoundHeartBtInt(EncryptionMethod method)
-        // {
-        //     Logon logonSend = new Logon()
-        //     {
-        //         EncryptMethod = method,
-        //         HeartBtInt = 1000,
-        //     };
-        //     Send(logonSend);
+        [TestInput(EncryptionMethod.DES)]
+        [TestInput(EncryptionMethod.PEMDESMD5)]
+        [TestInput(EncryptionMethod.PGPDES)]
+        [TestInput(EncryptionMethod.PGPDESMD5)]
+        [TestInput(EncryptionMethod.PKCS)]
+        [TestInput(EncryptionMethod.PKCSDES)]
+        [TestCase("(Temporary) Valid Logon - Not Supported Encryption")]
+        public void ValidLogonUpperBoundHeartBtInt(EncryptionMethod method)
+        {
+            Logon logonSend = new Logon()
+            {
+                EncryptMethod = method,
+                HeartBtInt = 1000,
+            };
+            Send(logonSend);
 
-        //     var (header, logon) = Assert.Received<Logon>(Receive());
-        //     Assert.Equal(header, new Header()
-        //     {
-        //         BeginString = "FIX.4.2",
-        //         BodyLength = 13,
-        //         MsgType = 'A',
-        //         MsgSeqNum = 1,
-        //         SenderCompId = "MyMarket",
-        //         TargetCompId = "Sender",
-        //         SendingTime = header.SendingTime
-        //     });
-        //     Assert.Equal(logon, new Logon()
-        //     {
-        //         EncryptMethod = EncryptionMethod.None,
-        //         HeartBtInt = 100
-        //     });
-        // }
+            var (header, logon) = Assert.Received<SessionReject>(Receive());
+            Assert.Equal(header, new Header()
+            {
+                BeginString = "FIX.4.2",
+                BodyLength = 46,
+                MsgType = '3',
+                MsgSeqNum = 1,
+                SenderCompId = "MyMarket",
+                TargetCompId = "",
+                SendingTime = header.SendingTime
+            });
+            Assert.Equal(logon, new SessionReject()
+            {
+                RefSeqNum = 0,
+                RefTagId = null,
+                RefMsgType = 'A',
+                SessionRejectReason = null,
+                Text = "Encryption method not supported"
+            });
+        }
     }
 }

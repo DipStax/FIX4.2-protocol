@@ -1,11 +1,11 @@
 namespace FixGuardian.TestFramework.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class TestInput<T> : Attribute
+    public class TestInput : Attribute
     {
-        public T Data { get; }
+        public object Data { get; }
 
-        public TestInput(T data)
+        public TestInput(object data)
         {
             Data = data;
         }

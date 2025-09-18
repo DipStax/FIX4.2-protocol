@@ -47,40 +47,52 @@ namespace FixGuardian.TestFramework
             Console.WriteLine($"=== Running Test Suite: <{TestSuiteType.FullName}> {TestSuiteName}");
             foreach (MethodInfo method in TestCases)
             {
-                bool testSucced = true;
-                TestCase testCase = method.GetCustomAttribute<TestCase>()!;
+                IEnumerable<TestInput> inputs = method.GetCustomAttributes<TestInput>();
 
-                Console.WriteLine($"=== Running test case: <{TestSuiteType.FullName}> {testCase.Name}");
-                try
-                {
-                    if (Setup != null)
-                        Setup.Invoke(testSuiteInstance, null);
-                    method.Invoke(testSuiteInstance, null);
-                    if (TearDown != null)
-                        TearDown.Invoke(testSuiteInstance, null);
-                }
-                catch (TargetInvocationException tie)
-                    when (tie.InnerException is AssertionException)
-                {
-                    AssertionException assert = tie.InnerException as AssertionException;
-                    DisplayAssertionError(assert);
-                    Console.WriteLine("==> Test failed");
-                    testSucced = false;
-                }
-                catch (Exception exception)
-                {
-                    testSucced = false;
-                    Console.WriteLine($"==> Test throw an exception: {exception}");
-                }
-                if (testSucced)
-                {
-                    Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Succed");
-                }
+                if (inputs.Count() > 0)
+                    foreach (TestInput input in inputs)
+                        RunTest(testSuiteInstance, method, input.Data);
                 else
-                {
-                    Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Failed");
-                }
+                    RunTest(testSuiteInstance, method, null);
             }
+        }
+
+        private bool RunTest(object testSuiteInstance, MethodInfo method, params object?[]? param)
+        {
+            TestCase testCase = method.GetCustomAttribute<TestCase>()!;
+
+            bool testSucced = true;
+            Console.WriteLine($"=== Running test case: <{TestSuiteType.FullName}> {testCase.Name}");
+            try
+            {
+                if (Setup != null)
+                    Setup.Invoke(testSuiteInstance, null);
+                method.Invoke(testSuiteInstance, param);
+                if (TearDown != null)
+                    TearDown.Invoke(testSuiteInstance, null);
+            }
+            catch (TargetInvocationException tie)
+                when (tie.InnerException is AssertionException)
+            {
+                AssertionException assert = tie.InnerException as AssertionException;
+                DisplayAssertionError(assert);
+                Console.WriteLine("==> Test failed");
+                testSucced = false;
+            }
+            catch (Exception exception)
+            {
+                testSucced = false;
+                Console.WriteLine($"==> Test throw an exception: {exception}");
+            }
+            if (testSucced)
+            {
+                Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Succed");
+            }
+            else
+            {
+                Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Failed");
+            }
+            return testSucced;
         }
 
         static private void DisplayAssertionError(Exception ex, int depth = 0)
