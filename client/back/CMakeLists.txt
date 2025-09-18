@@ -3,6 +3,7 @@ file(GLOB_RECURSE SRC_Fix_Client_Back
     include/**.inl
     src/ProcessUnit/Network/TcpInput.cpp
     src/ProcessUnit/Network/TcpOutput.cpp
+    src/ProcessUnit/HeaderValidation.cpp
     src/ProcessUnit/data/Global.cpp
     src/Signal.cpp
     src/User.cpp
