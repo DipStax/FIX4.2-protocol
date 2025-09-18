@@ -3,8 +3,8 @@
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
 #include "Client/Back/ProcessUnit/HeaderValidation.hpp"
-// #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
-// #include "Client/Back/ProcessUnit/User/Auth.hpp"
+#include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
+#include "Client/Back/ProcessUnit/User/Auth.hpp"
 // #include "Client/Back/ProcessUnit/FixBuilder.hpp"
 #include "Client/Back/ProcessUnit/Router.hpp"
 
@@ -31,8 +31,8 @@ class Core
 
         // ProcessUnit<pu::FixBuilder> m_builder;
 
-        // ProcessUnit<pu::HeartBeatHandler> m_heartbeat;
-        // ProcessUnit<pu::AuthHandler> m_auth;
+        ProcessUnit<pu::HeartBeatHandler> m_heartbeat;
+        ProcessUnit<pu::AuthHandler> m_auth;
         // ProcessUnit<pu::Execution> m_execution;
 
         ProcessUnit<pu::Router> m_router;

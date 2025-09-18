@@ -4,12 +4,11 @@
 #include "Client/Back/User.hpp"
 
 #include "Shared/Log/Manager.hpp"
-#include "Shared/Message/Message.hpp"
-#include "Shared/Message/Tag.hpp"
+#include "Shared/Message-v2/Parser.hpp"
 
 namespace pu
 {
-    HeartBeatHandler::HeartBeatHandler(QueueMessage &_tcp_output)
+    HeartBeatHandler::HeartBeatHandler(StringOutputQueue &_tcp_output)
         : AInputProcess<InputType>("Back/HeartBeat"),
         m_tcp_output(_tcp_output)
     {
@@ -19,10 +18,12 @@ namespace pu
 
     void HeartBeatHandler::onInput(InputType _input)
     {
-        switch (_input.at("35")[0]) {
-            case fix::TestRequest::cMsgType: handleTestRequest(_input);
+        switch (_input.Header.getPositional<fix42::tag::MsgType>().Value) {
+            case fix42::msg::TestRequest::Type:
+                handleTestRequest(_input);
                 break;
-            case fix::HeartBeat::cMsgType: handleHeartBeat(_input);
+            case fix42::msg::HeartBeat::Type:
+                handleHeartBeat(_input);
                 break;
         }
     }
@@ -40,47 +41,35 @@ namespace pu
         }
     }
 
-    bool HeartBeatHandler::handleTestRequest(InputType &_input)
+    void HeartBeatHandler::handleTestRequest(const InputType &_input)
     {
-        fix::HeartBeat hb;
-        std::pair<bool, fix::Reject> reject = fix::TestRequest::Verify(_input);
+        xstd::Expected<fix42::msg::TestRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::TestRequest>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("TestRequest | TestRequest verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("TestRequest | TestRequest verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("TestRequest | Reject moving to TCP output");
-            m_tcp_output.append(std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
         }
 
+        fix42::msg::HeartBeat hb;
+
         User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
-        Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", _input.at(fix::Tag::TestReqId));
-        hb.set112_testReqID(_input.at(fix::Tag::TestReqId));
-        m_tcp_output.append(std::move(hb));
-        return true;
+        Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", error.value().get<fix42::tag::TestReqId>().Value);
+        hb.get<fix42::tag::TestReqId>().Value = error.value().get<fix42::tag::TestReqId>().Value;
+        m_tcp_output.append(_input.ReceiveTime, fix42::msg::TestRequest::Type, std::move(hb.to_string()));
     }
 
-    bool HeartBeatHandler::handleHeartBeat(InputType &_input)
+    void HeartBeatHandler::handleHeartBeat(const InputType &_input)
     {
-        std::pair<bool, fix::Reject> reject = fix::HeartBeat::Verify(_input);
+        xstd::Expected<fix42::msg::TestRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::TestRequest>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("HeartBeat | HeartBeat verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("HeartBeat | HeartBeat verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("HeartBeat | Reject moving to TCP output");
-            m_tcp_output.append(std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
         }
-
-        User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
+        User::Instance().getHeartBeatInfo().Since = _input.Header.get<fix42::tag::SendingTime>().Value;
         Logger->log<logger::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
-        return true;
     }
 
     void HeartBeatHandler::heartbeatLoop(std::stop_token _st)
@@ -94,11 +83,9 @@ namespace pu
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
             if (User::Instance().isLogin() && std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
-                fix::HeartBeat hb;
-
                 Logger->log<logger::Level::Info>("Sending HeartBeat Message");
                 hb_info.Since = now;
-                m_tcp_output.append(std::move(hb));
+                m_tcp_output.append(std::chrono::system_clock::now(), fix42::msg::HeartBeat::Type, std::move(fix42::msg::HeartBeat{}.to_string()));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
