@@ -1,4 +1,3 @@
-#pragma once
 
 // #include "Client/Back/ProcessUnit/Market/Execution.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
@@ -7,7 +6,7 @@
 // #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
 // #include "Client/Back/ProcessUnit/User/Auth.hpp"
 // #include "Client/Back/ProcessUnit/FixBuilder.hpp"
-// #include "Client/Back/ProcessUnit/Router.hpp"
+#include "Client/Back/ProcessUnit/Router.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 #include "Shared/Log/ILogger.hpp"
@@ -36,7 +35,7 @@ class Core
         // ProcessUnit<pu::AuthHandler> m_auth;
         // ProcessUnit<pu::Execution> m_execution;
 
-        // ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::HeaderValidation> m_header_validation;
 
         ProcessUnit<pu::TcpInputNetwork> m_tcp_input;
