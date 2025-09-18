@@ -5,12 +5,12 @@
 #include "Client/Shared/IPC/Helper.hpp"
 #include "Client/Shared/IPC/Message/Logon.hpp"
 
-#include "Shared/Message/Tag.hpp"
 #include "Shared/Log/Manager.hpp"
+#include "Shared/Message-v2/Parser.hpp"
 
 namespace pu
 {
-    AuthHandler::AuthHandler(QueueMessage &_tcp_output)
+    AuthHandler::AuthHandler(StringOutputQueue &_tcp_output)
         : AInputProcess<InputType>("Back/Auth"),
         m_tcp_output(_tcp_output)
     {
@@ -18,71 +18,60 @@ namespace pu
 
     void AuthHandler::onInput(InputType _input)
     {
-        switch (_input.at(fix::Tag::MsgType)[0]) {
-            case fix::Logon::cMsgType: handleLogon(_input);
+        switch (_input.Header.getPositional<fix42::tag::MsgType>().Value) {
+            case fix42::msg::Logon::Type:
+                handleLogon(_input);
                 break;
-            case fix::Logout::cMsgType: handleLogout(_input);
+            case fix42::msg::Logout::Type:
+                handleLogout(_input);
                 break;
             default:
                 break;
         }
     }
 
-    bool AuthHandler::handleLogon(InputType &_input)
+    void AuthHandler::handleLogon(InputType &_input)
     {
-        std::pair<bool, fix::Reject> reject = fix::Logon::Verify(_input);
+        xstd::Expected<fix42::msg::Logon, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::Logon>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Logon | Logon verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Logon | Logon verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("Logon | Reject moving to TCP output");
-            m_tcp_output.append(std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
         }
 
+        fix42::msg::Logon &logon = error.value();
         User &user = User::Instance();
         User::HeartBeatInfo &hb_info = user.getHeartBeatInfo();
 
-        hb_info.Elapsing = utils::to<float>(_input.at(fix::Tag::HeartBtInt));
+        hb_info.Elapsing = static_cast<float>(logon.get<fix42::tag::HeartBtInt>().Value);
         Logger->log<logger::Level::Debug>("Using Elapsing as: ", hb_info.Elapsing);
-        user.login(_input.at(fix::Tag::TargetCompId));
+        user.login(_input.Header.get<fix42::tag::TargetCompId>().Value);
 
-        ipc::msg::Logon ipc_logon{
+        FrontManager::Instance().send(ipc::Helper::Logon(ipc::msg::Logon{
             user.getUserId(),
             static_cast<uint32_t>(user.getSeqNumber()),
             hb_info.Elapsing
-        };
-        FrontManager::Instance().send(ipc::Helper::Logon(ipc_logon));
-        return true;
+        }));
     }
 
-    bool AuthHandler::handleLogout(InputType &_input)
+    void AuthHandler::handleLogout(InputType &_input)
     {
-        std::pair<bool, fix::Reject> reject = fix::Logout::Verify(_input);
+        xstd::Expected<fix42::msg::Logout, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::Logout>(_input.Message, _input.Header);
 
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Info>("Logout | Logout verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Warning>("Logout | Logout verification failed for unknown reason");
-            reject.second.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-            Logger->log<logger::Level::Debug>("Logout | Reject moving to TCP output");
-            m_tcp_output.append(std::move(reject.second));
-            return false;
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
         }
 
         if (User::Instance().logoutRequested()) {
             Logger->log<logger::Level::Info>("Server accepted logout");
-            // close server
+            // todo close server
         } else {
             Logger->log<logger::Level::Info>("Logout send from server");
             User::Instance().shouldDisconnect(true);
-            Logger->log<logger::Level::Debug>("Reply with client logout movingto TCP output");
-            m_tcp_output.push(std::move(fix::Logout{}));
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::Logout::Type, std::move(fix42::msg::Logout{}.to_string()));
         }
-        return true;
     }
 }

@@ -1,26 +1,25 @@
 #pragma once
 
-#include "Client/Back/ProcessUnit/TransitName.hpp"
+#include "Client/Back/ProcessUnit/data/Global.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
-#include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
 #include "Shared/Log/ILogger.hpp"
 
 namespace pu
 {
-    class AuthHandler : public AInputProcess<TransitMessage>
+    class AuthHandler : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            AuthHandler(QueueMessage &_tcp_output);
+            AuthHandler(StringOutputQueue &_tcp_output);
             virtual ~AuthHandler() = default;
 
         protected:
             void onInput(InputType _input) final;
 
         private:
-            bool handleLogon(InputType &_input);
-            bool handleLogout(InputType &_input);
+            void handleLogon(InputType &_input);
+            void handleLogout(InputType &_input);
 
-            QueueMessage &m_tcp_output;
+            StringOutputQueue &m_tcp_output;
     };
 }
