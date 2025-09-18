@@ -8,7 +8,7 @@
 #include "Client/Shared/IPC/Message/OrderSingle.hpp"
 
 #include "Shared/Log/Manager.hpp"
-#include "Shared/Core/Order.hpp"
+#include "Shared/Core/Core.hpp"
 
 namespace ui::widget
 {

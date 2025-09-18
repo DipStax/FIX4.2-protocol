@@ -33,8 +33,8 @@ namespace pu
             AddCheckSum(data);
 
             if (_input.Client->isConnected()) {
-                if (!_input.Client->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size()) == data.size()) {
-                    Logger->log<logger::Level::Error>("Unable to send messsage to client: ", _input.Client->getUserId());
+                if (!_input.Client->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size())) {
+                    Logger->log<logger::Level::Error>("Unable to send messsage to client: ", _input.Client->getUserId(), ": ", strerror(errno));
                     ClientStore::Instance().removeClient(_input.Client);
                     Logger->log<logger::Level::Verbose>("Removing client session from the server, requested");
                 } else {

@@ -14,16 +14,40 @@ namespace pu
 
     void TcpOutputNetwork::onInput(InputType _input)
     {
-        _input.header.set34_msgSeqNum(std::to_string(User::Instance().getSeqNumber()));
-        _input.header.set49_SenderCompId(User::Instance().getUserId());
-        _input.header.set56_TargetCompId(Configuration<config::Global>::Get().Config.FixServer.ProviderName);
+        fix42::Header header{};
+
+        header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
+        header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
+        header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;
+        header.get<fix42::tag::MsgSeqNum>().Value = User::Instance().getSeqNumber();
+        header.get<fix42::tag::SenderCompId>().Value = Configuration<config::Global>::Get().Config.FixServer.ProviderName;
+        header.get<fix42::tag::TargetCompId>().Value = User::Instance().getUserId();
+        header.get<fix42::tag::SendingTime>().Value = std::chrono::system_clock::now();
+        Logger->log<logger::Level::Verbose>("Header info filled");
+
         User::Instance().nextSeqNumber();
 
-        std::string data = _input.to_string();
+        std::string data = header.to_string() + _input.Message;
 
-        if (m_server->send(data) == 0)
-            Logger->log<logger::Level::Error>("Failed to send message to server: ", data);
-        else
-            Logger->log<logger::Level::Info>("Sended new message: ", data);
+        AddCheckSum(data);
+
+        if (m_server->isOpen()) {
+            if (!m_server->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size())) {
+                Logger->log<logger::Level::Error>("Unable to send messsage to server: ", strerror(errno));
+            } else {
+                Logger->log<logger::Level::Info>("Message send successfuly: ", data);
+            }
+        } else {
+            Logger->log<logger::Level::Fatal>("Client not connected but still present, removing from server");
+        }
+    }
+
+    void TcpOutputNetwork::AddCheckSum(std::string &_msg)
+    {
+        uint32_t checksum = 0;
+
+        for (char _c : _msg)
+            checksum += _c;
+        _msg += "10=" + std::to_string(static_cast<uint8_t>(checksum % 256)) + "\1";
     }
 }
