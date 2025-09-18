@@ -56,6 +56,10 @@ namespace FixGuardian.TestFramework.Assertions
             {
                 throw new AssertionException("Mapping failed", ex);
             }
+            catch (FixDecodeException ex)
+            {
+                throw new AssertionException("Decoding message failed", ex);
+            }
             return (header, message);
         }
 

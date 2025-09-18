@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Cryptography;
 using FixGuardian.TestFramework.Assertions;
 using FixGuardian.TestFramework.Attributes;
 
@@ -84,19 +85,27 @@ namespace FixGuardian.TestFramework
 
         static private void DisplayAssertionError(Exception ex, int depth = 0)
         {
+            string padding = new string('\t', depth);
+
             if (ex is AssertionException)
             {
-                string padding = new string('\t', depth);
                 AssertionException? assertex = ex as AssertionException;
 
                 Console.Write($"{padding}Assertion failed: ");
                 Console.WriteLine(ex.Message);
-                Console.WriteLine($"{padding}\tExpected: <{GetNameOrValue(assertex.Expected, depth)}>");
-                Console.WriteLine($"{padding}\tActual: <{GetNameOrValue(assertex.Actual, depth)}>");
+                if (ex.InnerException != null)
+                {
+                    DisplayAssertionError(ex.InnerException, depth + 1);
+                }
+                else
+                {
+                    Console.WriteLine($"{padding}\tExpected: <{GetNameOrValue(assertex.Expected, depth)}>");
+                    Console.WriteLine($"{padding}\tActual: <{GetNameOrValue(assertex.Actual, depth)}>");
+                }
             }
-            if (ex.InnerException != null)
+            else
             {
-                DisplayAssertionError(ex.InnerException, depth + 1);
+                Console.WriteLine($"{padding}Error message: {ex.Message}");
             }
 
             static string GetNameOrValue(object? obj, int depth)
