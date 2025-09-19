@@ -4,7 +4,7 @@ using FixGuardian.Messages.Exceptions;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace FixGuardian.Message
+namespace FixGuardian.Messages
 {
     public class Header : AMessage
     {

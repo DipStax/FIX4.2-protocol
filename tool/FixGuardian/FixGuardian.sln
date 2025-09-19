@@ -5,13 +5,13 @@ VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian", "FixGuardian\FixGuardian.csproj", "{E1317BBC-A202-452E-9FB6-4489C0ED2550}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Messages", "FixGuardian.Message\FixGuardian.Messages.csproj", "{96BF5CC2-4981-461C-9229-4780F533AB7C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Messages", "FixGuardian.Messages\FixGuardian.Messages.csproj", "{96BF5CC2-4981-461C-9229-4780F533AB7C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.TestFramework", "FixGuardian.TestFramework\FixGuardian.TestFramework.csproj", "{D9BEE5A7-6886-4187-98FF-8E34A4567A1C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Message.Tests", "FixGuardian.Message.Tests\FixGuardian.Message.Tests.csproj", "{B8797DCD-9379-ACC1-5151-33F4D6B58D36}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixGuardian.Messages.Tests", "FixGuardian.Messages.Tests\FixGuardian.Messages.Tests.csproj", "{B8797DCD-9379-ACC1-5151-33F4D6B58D36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

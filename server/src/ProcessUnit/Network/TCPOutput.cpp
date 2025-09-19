@@ -41,6 +41,7 @@ namespace pu
                     Logger->log<logger::Level::Info>("Message send successfuly: ", data);
                 }
                 if (_input.Client->shouldDisconnect()) {
+                    _input.Client->close();
                     ClientStore::Instance().removeClient(_input.Client);
                     Logger->log<logger::Level::Debug>("Client has been disconnected: ", _input.Client->getUserId());
                 }

@@ -1,4 +1,4 @@
-using FixGuardian.Message;
+using FixGuardian.Messages;
 using FixGuardian.Message.Tests.Comparer;
 using FixGuardian.Messages.Definition;
 using FixGuardian.Messages.Exceptions;
@@ -11,8 +11,12 @@ namespace FixGuardian.TestFramework.Assertions
         public object? Expected { get; }
         public object? Actual { get; }
 
-        public AssertionException()
+        public bool WithValue { get; }
+
+        public AssertionException(string msg)
+            : base(msg)
         {
+            WithValue = false;
         }
 
         public AssertionException(string msg, object? expected, object? actual)
@@ -20,11 +24,13 @@ namespace FixGuardian.TestFramework.Assertions
         {
             Expected = expected;
             Actual = actual;
+            WithValue = true;
         }
 
         public AssertionException(string msg, Exception inner)
             : base(msg, inner)
         {
+            WithValue = false;
         }
     }
 

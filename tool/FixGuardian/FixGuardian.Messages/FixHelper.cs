@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace FixGuardian.Message
+namespace FixGuardian.Messages
 {
     public class FixHelper
     {
