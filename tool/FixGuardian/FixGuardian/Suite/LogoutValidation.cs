@@ -16,7 +16,9 @@ namespace FixGuardian.Suite
 
             client.Logon();
 
+            client.Send(new Logout());
             Logout _ = client.Receive<Logout>();
+
             client.AssertServerDisconnet();
         }
     }

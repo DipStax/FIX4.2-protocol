@@ -3,8 +3,9 @@ using FixGuardian.Messages.Enums;
 
 namespace FixGuardian.Messages.Definition
 {
-    public class SessionReject : AMessage
+    public class SessionReject : AMessage, IMessage
     {
+        public char MsgType { get; } = '3';
         [Tag(45)]
         public uint? RefSeqNum { get; set; } = null;
 

@@ -29,35 +29,39 @@ namespace FixGuardian.TestFramework
 
         public void Logon(uint heartbeat = 100)
         {
-            string body = FixHelper.ToString(new Logon()
+            Logon send_logon = new Logon()
             {
                 EncryptMethod = EncryptionMethod.None,
                 HeartBtInt = heartbeat,
-            });
-            string message = FixHelper.AddCheckSum(GetHeader((uint)body.Length).ToString() + body);
-            byte[] data = Encoding.UTF8.GetBytes(message);
-
-            TcpStream.Write(data, 0, data.Length);
-            SequenceNumber += 1;
-
-            byte[] buffer = new byte[4096];
-            int bytesRead = TcpStream.Read(buffer, 0, buffer.Length);
+            };
+            Send(send_logon);
 
             try
             {
-                Assert.Received<Logon>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                Logon logon = Receive<Logon>();
+                Assert.Equal(logon, send_logon);
             }
             catch (AssertionException ex)
             {
-                throw new AssertionException("During logon procesedur", ex);
+                throw new AssertionException("During receive of Logon", ex);
             }
             IsLoggedIn = true;
+        }
+
+        public void Send<T>(T message)
+            where T : AMessage, IMessage, new()
+        {
+            string body = FixHelper.ToString(message);
+            string messageStr = FixHelper.AddCheckSum(GetHeader((uint)body.Length, message.MsgType).ToString() + body);
+            byte[] data = Encoding.UTF8.GetBytes(messageStr);
+
+            TcpStream.Write(data, 0, data.Length);
+            SequenceNumber++;
         }
 
         public T Receive<T>()
             where T : AMessage, new()
         {
-
             byte[] buffer = new byte[4096];
             int bytesRead = TcpStream.Read(buffer, 0, buffer.Length);
 
@@ -69,26 +73,29 @@ namespace FixGuardian.TestFramework
                 MsgType = header.MsgType,
                 SenderCompId = "MyMarket",
                 TargetCompId = Name,
-                MsgSeqNum = SequenceNumber - 1,
+                MsgSeqNum = SequenceNumber ,
                 SendingTime = header.SendingTime,
             });
+            SequenceNumber++;
             return message;
         }
 
         public void AssertServerDisconnet()
         {
-            byte[] buffer = new byte[1024];
+            Socket socket = TcpSocket.Client;
 
-            int bytesRead =  TcpStream.Read(buffer, 0, buffer.Length);
+            if (socket.Poll(100_000, SelectMode.SelectRead) && socket.Available == 0)
+                return;
+            throw new AssertionException("Client not disconenct");
         }
 
-        private Header GetHeader(uint bodyLength)
+        private Header GetHeader(uint bodyLength, char msgType)
         {
             return new Header()
             {
                 BeginString = "FIX.4.2",
                 BodyLength = bodyLength,
-                MsgType = 'A',
+                MsgType = msgType,
                 SenderCompId = Name,
                 TargetCompId = "MyMarket",
                 MsgSeqNum = SequenceNumber,
