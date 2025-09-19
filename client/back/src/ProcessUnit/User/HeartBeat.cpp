@@ -53,7 +53,6 @@ namespace pu
 
         fix42::msg::HeartBeat hb;
 
-        User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
         Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", error.value().get<fix42::tag::TestReqId>().Value);
         hb.get<fix42::tag::TestReqId>().Value = error.value().get<fix42::tag::TestReqId>().Value;
         m_tcp_output.append(_input.ReceiveTime, fix42::msg::HeartBeat::Type, std::move(hb.to_string()));
@@ -68,7 +67,6 @@ namespace pu
             m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        User::Instance().getHeartBeatInfo().Since = _input.Header.get<fix42::tag::SendingTime>().Value;
         Logger->log<logger::Level::Info>("HeartBeat | HeartBeat hiting server correctly");
     }
 
@@ -82,9 +80,10 @@ namespace pu
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-            if (User::Instance().isLogin() && now - hb_info.Since > std::chrono::seconds(hb_info.Elapsing)) {
-                Logger->log<logger::Level::Info>("Sending HeartBeat Message");
+            if (/*User::Instance().isLogin() &&*/ std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count() >= hb_info.Elapsing) {
+                Logger->log<logger::Level::Info>("Sending HeartBeat Message, ", std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count());
                 hb_info.Since = now;
+                Logger->log<logger::Level::Info>("Sending HeartBeat Message, ", std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count());
                 m_tcp_output.append(std::chrono::system_clock::now(), fix42::msg::HeartBeat::Type, std::move(fix42::msg::HeartBeat{}.to_string()));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

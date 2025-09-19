@@ -14,7 +14,7 @@ namespace pu::user
         m_tcp_output(_tcp_output)
     {
         ClientStore::OnNewClient([this] (const ClientStore::Client &_client) {
-            _client->getHeartBeatInfo().Since = std::chrono::system_clock::now();
+            _client->getHeartBeatInfo().setSince(std::chrono::system_clock::now());
         });
 
     }
@@ -97,7 +97,7 @@ namespace pu::user
 
         fix42::msg::HeartBeat heartbeat_reply{};
 
-        hb.Since = _input.ReceiveTime;
+        hb.setSince(_input.ReceiveTime);
         Logger->log<logger::Level::Info>("Sending validation heartbeat to client: (", _input.Client->getUserId(), ")");
         m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::HeartBeat::Type, std::move(heartbeat_reply.to_string()));
     }
@@ -131,11 +131,11 @@ namespace pu::user
 
                 if (_client->shouldDisconnect() || !_client->isLoggedin())
                     return;
-                if (now - hb_info.Since > std::chrono::seconds(hb_info.Elapsing)) {
+                if (now - hb_info.getSince() > std::chrono::seconds(hb_info.Elapsing)) {
                     if (!hb_info.TestRequest) {
                         fix42::msg::TestRequest testreq;
 
-                        hb_info.Since = now;
+                        hb_info.setSince(now);
                         hb_info.TestRequest = true;
                         hb_info.TestValue = std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(now));
                         testreq.get<fix42::tag::TestReqId>().Value = hb_info.TestValue.value();
