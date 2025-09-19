@@ -16,6 +16,9 @@ namespace pu
     {
         fix42::Header header{};
 
+        if (!User::Instance().isLogin())
+            User::Instance().nextSeqNumber();
+
         header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
         header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
         header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;

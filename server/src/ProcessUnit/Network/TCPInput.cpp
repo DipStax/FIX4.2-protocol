@@ -74,6 +74,8 @@ namespace pu
             return true;
         }
 
+        if (_client->isLoggedin())
+            _client->nextSeqNumber();
         buildHeader(_client, data);
         return false;
     }

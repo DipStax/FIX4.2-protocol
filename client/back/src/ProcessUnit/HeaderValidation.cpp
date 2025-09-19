@@ -29,7 +29,6 @@ namespace pu
             return;
         }
         // todo verify time accuracy
-        User::Instance().nextSeqNumber();
         Logger->log<logger::Level::Info>("Validated user specific tag from message");
         m_output.push(std::move(_input));
     }
@@ -81,7 +80,7 @@ namespace pu
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::SenderCompId;
                 reject.get<fix42::tag::Text>().Value = "Incorrect sender Id";
                 return reject;
-            } else if (_header.get<fix42::tag::MsgSeqNum>().Value != User::Instance().getSeqNumber()) {
+            } else if (_header.get<fix42::tag::MsgSeqNum>().Value != User::Instance().getSeqNumber() - 1) {
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgSeqNum;
                 reject.get<fix42::tag::Text>().Value = "Inccorect message sequence number";

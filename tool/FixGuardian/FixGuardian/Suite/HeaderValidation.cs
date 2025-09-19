@@ -53,7 +53,7 @@ namespace FixGuardian.Suite
                 MsgType = 'Z',
                 SenderCompId = "Sender",
                 TargetCompId = "MyMarket",
-                MsgSeqNum = 1,
+                MsgSeqNum = 0,
                 SendingTime = DateTime.Now
             };
             Send(headerSend.ToString(FixHelper.NullHandlingStrategy.AllowNull));
@@ -66,7 +66,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -89,7 +89,7 @@ namespace FixGuardian.Suite
                 MsgType = 'Z',
                 SenderCompId = "Sender",
                 TargetCompId = "MyMarket",
-                MsgSeqNum = 1,
+                MsgSeqNum = 0,
                 SendingTime = DateTime.Now
             };
             Send(headerSend.ToString(FixHelper.NullHandlingStrategy.NullAsEmpty));
@@ -102,7 +102,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -125,7 +125,7 @@ namespace FixGuardian.Suite
                 MsgType = 'Z',
                 SenderCompId = "Sender",
                 TargetCompId = "MyMarket",
-                MsgSeqNum = 1,
+                MsgSeqNum = 0,
                 SendingTime = DateTime.Now
             };
             Send(headerSend.ToString(FixHelper.NullHandlingStrategy.NullAsFullyEmpty));
@@ -138,7 +138,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -161,7 +161,7 @@ namespace FixGuardian.Suite
                 MsgType = null,
                 SenderCompId = "Sender",
                 TargetCompId = "MyMarket",
-                MsgSeqNum = 1,
+                MsgSeqNum = 0,
                 SendingTime = DateTime.Now
             };
             Send(headerSend.ToString(FixHelper.NullHandlingStrategy.AllowNull));
@@ -174,7 +174,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -213,7 +213,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -249,7 +249,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -285,7 +285,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
@@ -321,7 +321,7 @@ namespace FixGuardian.Suite
                 MsgType = '3',
                 SenderCompId = "MyMarket",
                 TargetCompId = "",
-                MsgSeqNum = 0,
+                MsgSeqNum = 1,
                 SendingTime = header.SendingTime,
             });
             Assert.Equal(reject, new SessionReject()
