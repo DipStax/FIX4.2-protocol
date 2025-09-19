@@ -48,7 +48,7 @@ namespace pu
         _buffer >> ipc_logon;
         Logger->log<logger::Level::Info>("Building Logon message with: ", ipc_logon);
         logon.get<fix42::tag::EncryptMethod>().Value = fix42::EncryptionMethod::None;
-        logon.get<fix42::tag::HeartBtInt>().Value = ipc_logon.HeartBeat;
+        logon.get<fix42::tag::HeartBtInt>().Value = ipc_logon.HeartBeat + 1;
 
         User::Instance().setUserId(ipc_logon.UserId);
         User::Instance().setSeqNumber(ipc_logon.SeqNum);

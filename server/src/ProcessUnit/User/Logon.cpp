@@ -43,7 +43,7 @@ namespace pu::user
                 _input.Client->setSeqNumber(_input.Header.get<fix42::tag::MsgSeqNum>().Value + 1);
                 Logger->log<logger::Level::Info>("User logged in: ", _input.Client->getUserId());
 
-                hb_info.Since = std::chrono::system_clock::now();
+                hb_info.setSince(std::chrono::system_clock::now());
                 hb_info.Elapsing = std::max(1.f, std::min(Configuration<config::Global>::Get().Config.User.Heartbeat.MaxTO, static_cast<float>(logon.get<fix42::tag::HeartBtInt>().Value)));
 
                 Logger->log<logger::Level::Debug>("User (", _input.Client->getUserId(), ") use ", hb_info.Elapsing, "s as elapsing time between each HeartBeat");
