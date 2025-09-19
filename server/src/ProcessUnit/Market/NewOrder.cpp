@@ -65,11 +65,12 @@ namespace pu::market
             report.get<fix42::tag::OrderID>().Value = info.order.orderId;
             report.get<fix42::tag::ExecId>().Value = info.execid;
             report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::New;
-            report.get<fix42::tag::ExecType>().Value = fix42::OrderStatus::NewOrder;
+            report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::NewOrder;
             report.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::NewOrder;
             report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
             report.get<fix42::tag::Side>().Value = info.side;
             report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+            report.get<fix42::tag::OrderQty>().Value = info.order.quantity;
             report.get<fix42::tag::Price>().Value = info.price;
             report.get<fix42::tag::LeavesQty>().Value = info.order.quantity;
             report.get<fix42::tag::CumQty>().Value = 0.f;

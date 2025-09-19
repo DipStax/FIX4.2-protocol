@@ -42,8 +42,8 @@ bool Core::start()
             m_logout.status();
             m_heartbeat.status();
             m_market_router.status();
-            // for (auto &[_, _pip] : m_markets)
-                // _pip.status();
+            for (auto &[_, _pip] : m_markets)
+                _pip.status();
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
@@ -70,8 +70,8 @@ void Core::stop()
         m_logon.stop();
         m_logout.stop();
         m_heartbeat.stop();
-        // for (auto &[_name, _pip] : m_markets)
-        //     _pip.stop();
+        for (auto &[_name, _pip] : m_markets)
+            _pip.stop();
         m_tcp_output.stop();
         Logger->log<logger::Level::Info>("All process unit are stoped");
     }
@@ -87,8 +87,8 @@ bool Core::internal_start()
     m_heartbeat.start();
 
     m_market_router.start();
-    // for (auto &[_name, _pip] : m_markets)
-    //     _pip.start();
+    for (auto &[_name, _pip] : m_markets)
+        _pip.start();
     m_router.start();
     m_header_validation.start();
     m_tcp_input.start();
