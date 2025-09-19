@@ -6,7 +6,7 @@
 namespace pu
 {
     HeaderValidation::HeaderValidation(UnparsedMessageQueue &_output, StringOutputQueue &_error)
-        : AInputProcess<InputType>("Server/Header-verification"),
+        : AInputProcess<InputType>("Back/Header-verification"),
         m_output(_output), m_error(_error)
     {
     }
@@ -20,6 +20,7 @@ namespace pu
             m_error.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
+        Logger->log<logger::Level::Info>("Validated positional tag from message");
         // todo handle secure data
         reject = verifyUserSpecific(_input.Header);
         if (reject.has_value()) {
@@ -28,7 +29,9 @@ namespace pu
             return;
         }
         // todo verify time accuracy
+        Logger->log<logger::Level::Info>("Validated user specific tag from message");
         User::Instance().nextSeqNumber();
+        Logger->log<logger::Level::Verbose>("Increasing the sequence number");
         m_output.push(std::move(_input));
     }
 

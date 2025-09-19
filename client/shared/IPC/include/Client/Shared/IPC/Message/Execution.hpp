@@ -12,7 +12,7 @@ namespace ipc::msg
         std::string execId;
         Price avgPrice;
         Price price;
-        Side side;
+        fix42::Side side;
         Quantity quantity;
         Quantity remainQty;
 

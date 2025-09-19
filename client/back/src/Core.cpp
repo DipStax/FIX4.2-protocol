@@ -12,17 +12,17 @@
 Core::Core()
     : m_server(std::make_shared<net::INetTcp>()),
     m_tcp_output(m_server),
-    // m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
+    m_builder(FrontManager::Instance().getMessageQueue(), m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
     m_auth(m_tcp_output.getInput()),
-    // m_execution(m_tcp_output.getInput()),
+    m_execution(m_tcp_output.getInput()),
     m_router(
         m_heartbeat.getInput(),
         m_auth.getInput(),
-        m_tmp,
+        m_execution.getInput(),
         m_tcp_output.getInput()
     ),
-    m_header_validation(m_tmp, m_tcp_output.getInput()),
+    m_header_validation(m_router.getInput(), m_tcp_output.getInput()),
     m_tcp_input(m_server, m_header_validation.getInput(), m_tcp_output.getInput()),
     Logger(logger::Manager::newLogger("Back/Core"))
 {
@@ -45,10 +45,10 @@ bool Core::start()
     Logger->log<logger::Level::Info>("Starting client backend...");
 
     m_tcp_output.start();
-    // m_builder.start();
+    m_builder.start();
     m_heartbeat.start();
     m_auth.start();
-    // m_execution.start();
+    m_execution.start();
     m_router.start();
     m_tcp_input.start();
     Logger->log<logger::Level::Debug>("Notifying front of running status");
@@ -57,10 +57,10 @@ bool Core::start()
     {
         try {
             m_tcp_output.status();
-            // m_builder.status();
-            // m_heartbeat.status();
+            m_builder.status();
+            m_heartbeat.status();
             m_auth.status();
-            // m_execution.status();
+            m_execution.status();
             m_router.status();
             m_tcp_input.status();
         } catch (std::future_error &_e) {
@@ -83,9 +83,9 @@ void Core::stop()
         m_running = false;
         Logger->log<logger::Level::Info>("Stoping...");
         m_tcp_input.stop();
-        // m_builder.stop();
+        m_builder.stop();
         m_router.stop();
-        // m_execution.stop();
+        m_execution.stop();
         m_auth.stop();
         m_heartbeat.stop();
         m_tcp_output.stop();

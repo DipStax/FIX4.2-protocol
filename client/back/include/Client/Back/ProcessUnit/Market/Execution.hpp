@@ -1,26 +1,27 @@
 #pragma once
 
-#include "Client/Back/ProcessUnit/TransitName.hpp"
+#include "Client/Back/ProcessUnit/data/Global.hpp"
 
 #include "Client/Shared/IPC/MessageType.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
+#include "Shared/Message-v2/Message.hpp"
 
 namespace pu
 {
-    class Execution :  public AInputProcess<TransitMessage>
+    class Execution :  public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            Execution(QueueMessage &_tcp_output);
+            Execution(StringOutputQueue &_tcp_output);
             virtual ~Execution() = default;
 
         protected:
             void onInput(InputType _input) final;
 
         private:
-            void treatNewOrder(const InputType &_input);
-            void sendNotificationNew(const InputType &_input, ipc::MessageType _msgtype);
+            void treatNewOrder(const fix42::msg::ExecutionReport &_report);
+            void sendNotificationNew(const fix42::msg::ExecutionReport &_report, ipc::MessageType _msgtype);
 
-            QueueMessage &m_tcp_output;
+            StringOutputQueue &m_tcp_output;
     };
 }

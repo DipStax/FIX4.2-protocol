@@ -30,7 +30,6 @@ add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Log)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ProcessUnit)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/FIX-Message)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Message-v2)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Message)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Network)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Utils)
 

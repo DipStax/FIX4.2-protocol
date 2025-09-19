@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Client/Back/ProcessUnit/TransitName.hpp"
+#include "Client/Back/ProcessUnit/data/Global.hpp"
 
 #include "Shared/ProcessUnit/AProcessUnitBase.hpp"
 #include "Shared/Log/ILogger.hpp"
@@ -11,7 +11,7 @@ namespace pu
     class FixBuilder : public AProcessUnitBase
     {
         public:
-            FixBuilder(ts::Queue<net::Buffer> &_input, QueueMessage &_output);
+            FixBuilder(ts::Queue<net::Buffer> &_input, StringOutputQueue &_output);
             virtual ~FixBuilder() = default;
 
         protected:
@@ -19,10 +19,10 @@ namespace pu
 
         private:
 
-            fix::old_Message buildLogon(net::Buffer &_buffer);
-            fix::old_Message buildOrderSingle(net::Buffer &_buffer);
+            data::StringOutput buildLogon(net::Buffer &_buffer);
+            data::StringOutput buildOrderSingle(net::Buffer &_buffer);
 
             ts::Queue<net::Buffer> &m_input;
-            QueueMessage &m_output;
+            StringOutputQueue &m_output;
     };
 }

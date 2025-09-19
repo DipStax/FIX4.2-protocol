@@ -25,8 +25,8 @@ namespace ui::screen
         m_progress(new QProgressBar()),
         Logger(logger::Manager::newLogger("Screen/Login"))
     {
-        m_hb_entry->setValidator(new QDoubleValidator(0, 100, 2));
-        m_hb_entry->setText("5.00");
+        m_hb_entry->setValidator(new QIntValidator(1, 100));
+        m_hb_entry->setText("5");
         m_seqnum_entry->setValidator(new QIntValidator(1, 255));
         m_seqnum_entry->setText("1");
         m_progress->setRange(0, 7);
@@ -106,8 +106,8 @@ namespace ui::screen
                 m_progress->setValue(6);
                 logon = {
                     m_uid_entry->text().toStdString(),
-                    static_cast<uint32_t>(std::stoul(m_seqnum_entry->text().toStdString())),
-                    std::stof(m_hb_entry->text().toStdString())
+                    m_seqnum_entry->text().toUInt(),
+                    m_hb_entry->text().toUInt()
                 };
 
                 Logger->log<logger::Level::Info>("Sending request to login to the backend");

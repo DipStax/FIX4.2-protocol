@@ -46,6 +46,7 @@ namespace pu
 
         hb_info.Elapsing = static_cast<float>(logon.get<fix42::tag::HeartBtInt>().Value);
         Logger->log<logger::Level::Debug>("Using Elapsing as: ", hb_info.Elapsing);
+        user.setSeqNumber(_input.Header.get<fix42::tag::MsgSeqNum>().Value);
         user.login(_input.Header.get<fix42::tag::TargetCompId>().Value);
 
         FrontManager::Instance().send(ipc::Helper::Logon(ipc::msg::Logon{

@@ -3,7 +3,6 @@
 #include "Client/Back/ProcessUnit/data/Global.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
-#include "Shared/Message/Fix.hpp"
 #include "Shared/Log/ILogger.hpp"
 #include "Shared/Network/Socket.hpp"
 

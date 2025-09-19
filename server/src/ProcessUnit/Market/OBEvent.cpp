@@ -40,7 +40,6 @@ namespace pu::market
         report.get<fix42::tag::CumQty>().Value = _input.orgQty - _input.remainQty;
         report.get<fix42::tag::AvgPx>().Value = _input.avgPrice;
         report.get<fix42::tag::OrderQty>().Value = _input.orgQty;
-        // todo add exec id
         Logger->log<logger::Level::Debug>("Report created for order Id: ", _input.orderId);
         m_tcp_output.append(client, std::chrono::system_clock::now(), fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
     }
