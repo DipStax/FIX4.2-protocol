@@ -16,7 +16,7 @@ class InternalClient
         {
             std::shared_ptr<InternalClient> Client = nullptr;
             std::chrono::system_clock::time_point Since{};
-            float Elapsing = 1.f;
+            uint32_t Elapsing = 1;
             bool TestRequest = false;
             std::optional<std::string> TestValue = std::nullopt;
         };

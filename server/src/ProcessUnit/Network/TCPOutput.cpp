@@ -17,6 +17,7 @@ namespace pu
         m_tp.enqueue([this, _input] () mutable {
             fix42::Header header{};
 
+
             header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
             header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
             header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;

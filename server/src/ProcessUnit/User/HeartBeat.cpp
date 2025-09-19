@@ -131,7 +131,7 @@ namespace pu::user
 
                 if (_client->shouldDisconnect() || !_client->isLoggedin())
                     return;
-                if (std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
+                if (now - hb_info.Since > std::chrono::seconds(hb_info.Elapsing)) {
                     if (!hb_info.TestRequest) {
                         fix42::msg::TestRequest testreq;
 
