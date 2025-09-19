@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Client/Back/ProcessUnit/TransitName.hpp"
+#include <thread>
+
+#include "Client/Back/ProcessUnit/data/Global.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
@@ -8,10 +10,10 @@
 
 namespace pu
 {
-    class HeartBeatHandler : public AInputProcess<TransitMessage>, IProcessUnitStopable
+    class HeartBeatHandler : public AInputProcess<Context<data::UnparsedMessage>>, IProcessUnitStopable
     {
         public:
-            HeartBeatHandler(QueueMessage &_tcp_output);
+            HeartBeatHandler(StringOutputQueue &_tcp_output);
             virtual ~HeartBeatHandler() = default;
 
         protected:
@@ -21,13 +23,13 @@ namespace pu
             void onStop() final;
 
         private:
-            bool handleTestRequest(InputType &_input);
-            bool handleHeartBeat(InputType &_input);
+            void handleTestRequest(const InputType &_input);
+            void handleHeartBeat(const InputType &_input);
 
             void heartbeatLoop(std::stop_token _st);
 
             std::jthread m_thread;
 
-            QueueMessage &m_tcp_output;
+            StringOutputQueue &m_tcp_output;
     };
 }

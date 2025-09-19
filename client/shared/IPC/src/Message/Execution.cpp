@@ -4,12 +4,16 @@ namespace ipc::msg
 {
     net::Buffer &operator<<(net::Buffer &_buffer, const Execution &_exec)
     {
-        return _buffer << _exec.symbol << _exec.orderId << _exec.execId << _exec.avgPrice << _exec.price << _exec.side << _exec.quantity << _exec.remainQty;
+        return _buffer << _exec.symbol << _exec.orderId << _exec.execId << _exec.avgPrice << _exec.price << static_cast<uint8_t>(_exec.side) << _exec.quantity << _exec.remainQty;
     }
 
     net::Buffer &operator>>(net::Buffer &_buffer, Execution &_exec)
     {
-        return _buffer >> _exec.symbol >> _exec.orderId >> _exec.execId >> _exec.avgPrice >> _exec.price >> _exec.side >> _exec.quantity >> _exec.remainQty;
+        uint8_t side = 0;
+        _buffer >> _exec.symbol >> _exec.orderId >> _exec.execId >> _exec.avgPrice >> _exec.price >> side >> _exec.quantity >> _exec.remainQty;
+
+        _exec.side = static_cast<fix42::Side>(side);
+        return _buffer;
     }
 
     std::ostream &operator<<(std::ostream &_os, const Execution &_exec)

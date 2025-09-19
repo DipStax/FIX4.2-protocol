@@ -1,4 +1,21 @@
+#include <mutex>
+#include <shared_mutex>
+
 #include "Server/InternalClient.hpp"
+
+void InternalClient::HeartBeatInfo::setSince(const std::chrono::system_clock::time_point &_since)
+{
+    std::unique_lock lock(m_mutex);
+
+    m_since = _since;
+}
+
+std::chrono::system_clock::time_point InternalClient::HeartBeatInfo::getSince()
+{
+    std::shared_lock lock(m_mutex);
+
+    return m_since;
+}
 
 InternalClient::InternalClient(std::shared_ptr<net::INetTcp> _socket)
     : m_socket(_socket)

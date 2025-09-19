@@ -1,11 +1,12 @@
-#include "Server/ProcessUnit/HeaderValidation.hpp"
+#include "Client/Back/ProcessUnit/HeaderValidation.hpp"
 
-#include "Server/Config.hpp"
+#include "Client/Back/User.hpp"
+#include "Client/Back/Config.hpp"
 
 namespace pu
 {
     HeaderValidation::HeaderValidation(UnparsedMessageQueue &_output, StringOutputQueue &_error)
-        : AInputProcess<InputType>("Server/Header-verification"),
+        : AInputProcess<InputType>("Back/Header-verification"),
         m_output(_output), m_error(_error)
     {
     }
@@ -16,18 +17,20 @@ namespace pu
 
         if (reject.has_value()) {
             Logger->log<logger::Level::Error>("Positional tag verification failed: ", reject.value().get<fix42::tag::Text>().Value.value());
-            m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
+            m_error.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
+        Logger->log<logger::Level::Info>("Validated positional tag from message");
         // todo handle secure data
-        reject = verifyUserSpecific(_input.Header, _input.Client);
+        reject = verifyUserSpecific(_input.Header);
         if (reject.has_value()) {
             Logger->log<logger::Level::Error>("User specific verification failed: ", reject.value().get<fix42::tag::Text>().Value.value());
-            m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
+            m_error.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
-        _input.Client->nextSeqNumber();
         // todo verify time accuracy
+        User::Instance().nextSeqNumber();
+        Logger->log<logger::Level::Info>("Validated user specific tag from message");
         m_output.push(std::move(_input));
     }
 
@@ -51,7 +54,6 @@ namespace pu
             case fix42::msg::ExecutionReport::Type:
             case fix42::msg::BusinessReject::Type:
             case fix42::msg::Logon::Type:
-            case fix42::msg::NewOrderSingle::Type:
                 return std::nullopt;
             default:
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::InvalidMsgType;
@@ -61,26 +63,25 @@ namespace pu
         }
     }
 
-    std::optional<fix42::msg::SessionReject> HeaderValidation::verifyUserSpecific(const fix42::Header &_header, const ClientStore::Client &_client)
+    std::optional<fix42::msg::SessionReject> HeaderValidation::verifyUserSpecific(const fix42::Header &_header)
     {
         fix42::msg::SessionReject reject{};
 
         reject.get<fix42::tag::RefSeqNum>().Value = _header.get<fix42::tag::MsgSeqNum>().Value;
         reject.get<fix42::tag::RefMsgType>().Value = _header.getPositional<fix42::tag::MsgType>().Value;
-        if (_header.get<fix42::tag::TargetCompId>().Value != Configuration<config::Global>::Get().Config.Fix.ProviderName) {
+        if (_header.get<fix42::tag::SenderCompId>().Value != Configuration<config::Global>::Get().Config.FixServer.ProviderName) {
             reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
             reject.get<fix42::tag::RefTagId>().Value = fix42::tag::TargetCompId;
             reject.get<fix42::tag::Text>().Value = "Incorrect target Id";
             return reject;
         }
-        if (_client->isLoggedin()) {
-            Logger->log<logger::Level::Debug>("MsgSeqNum: ", _header.get<fix42::tag::MsgSeqNum>().Value, " ", _client->getSeqNumber());
-            if (_header.get<fix42::tag::SenderCompId>().Value != _client->getUserId()) {
+        if (User::Instance().isLogin()) {
+            if (_header.get<fix42::tag::TargetCompId>().Value != User::Instance().getUserId()) {
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::SenderCompId;
                 reject.get<fix42::tag::Text>().Value = "Incorrect sender Id";
                 return reject;
-            } else if (_header.get<fix42::tag::MsgSeqNum>().Value != _client->getSeqNumber()) {
+            } else if (_header.get<fix42::tag::MsgSeqNum>().Value != User::Instance().getSeqNumber()) {
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgSeqNum;
                 reject.get<fix42::tag::Text>().Value = "Inccorect message sequence number";
@@ -89,5 +90,4 @@ namespace pu
         }
         return std::nullopt;
     }
-
 }

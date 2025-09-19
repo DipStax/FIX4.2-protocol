@@ -5,20 +5,28 @@
 #include <unordered_map>
 #include <set>
 
-#include "Shared/Core/Order.hpp"
+#include "Shared/Core/Core.hpp"
 #include "Shared/Network/Socket.hpp"
 #include "Shared/Log/ILogger.hpp"
 
 class InternalClient
 {
     public:
-        struct HeartBeatInfo
+        class HeartBeatInfo
         {
-            std::shared_ptr<InternalClient> Client = nullptr;
-            std::chrono::system_clock::time_point Since{};
-            float Elapsing = 1.f;
-            bool TestRequest = false;
-            std::optional<std::string> TestValue = std::nullopt;
+            public:
+                // std::shared_ptr<InternalClient> Client = nullptr;
+                uint32_t Elapsing = 1;
+                bool TestRequest = false;
+                std::optional<std::string> TestValue = std::nullopt;
+
+                void setSince(const std::chrono::system_clock::time_point &_since);
+                std::chrono::system_clock::time_point getSince();
+
+            private:
+                std::shared_mutex m_mutex;
+
+                std::chrono::system_clock::time_point m_since{};
         };
 
         InternalClient(std::shared_ptr<net::INetTcp> _socket = nullptr);

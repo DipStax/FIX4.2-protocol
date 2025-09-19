@@ -1,8 +1,8 @@
-#pragma once
 
 #include "Client/Back/ProcessUnit/Market/Execution.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpInput.hpp"
 #include "Client/Back/ProcessUnit/Network/TcpOutput.hpp"
+#include "Client/Back/ProcessUnit/HeaderValidation.hpp"
 #include "Client/Back/ProcessUnit/User/HeartBeat.hpp"
 #include "Client/Back/ProcessUnit/User/Auth.hpp"
 #include "Client/Back/ProcessUnit/FixBuilder.hpp"
@@ -21,7 +21,9 @@ class Core
         bool start();
         void stop();
     private:
-        bool m_running;
+        bool m_running = false;
+
+        UnparsedMessageQueue m_tmp{};
 
         std::shared_ptr<net::INetTcp> m_server;
 
@@ -34,10 +36,10 @@ class Core
         ProcessUnit<pu::Execution> m_execution;
 
         ProcessUnit<pu::Router> m_router;
+        ProcessUnit<pu::HeaderValidation> m_header_validation;
 
         ProcessUnit<pu::TcpInputNetwork> m_tcp_input;
 
-        QueueMessage m_tmp;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 };

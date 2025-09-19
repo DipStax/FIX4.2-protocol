@@ -17,6 +17,7 @@ namespace pu
         m_tp.enqueue([this, _input] () mutable {
             fix42::Header header{};
 
+
             header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
             header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
             header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;
@@ -33,8 +34,8 @@ namespace pu
             AddCheckSum(data);
 
             if (_input.Client->isConnected()) {
-                if (!_input.Client->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size()) == data.size()) {
-                    Logger->log<logger::Level::Error>("Unable to send messsage to client: ", _input.Client->getUserId());
+                if (!_input.Client->send(reinterpret_cast<const std::byte *>(data.c_str()), data.size())) {
+                    Logger->log<logger::Level::Error>("Unable to send messsage to client: ", _input.Client->getUserId(), ": ", strerror(errno));
                     ClientStore::Instance().removeClient(_input.Client);
                     Logger->log<logger::Level::Verbose>("Removing client session from the server, requested");
                 } else {

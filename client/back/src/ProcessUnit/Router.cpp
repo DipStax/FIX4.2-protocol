@@ -3,77 +3,62 @@
 #include "Client/Back/Config.hpp"
 
 #include "Shared/Log/Manager.hpp"
-#include "Shared/Message/Message.hpp"
-#include "Shared/Message/Tag.hpp"
 
 namespace pu
 {
-    Router::Router(QueueMessage &_tcp_output, QueueTransit &_heartbeat, QueueTransit &_auth, QueueTransit &_exec)
+    Router::Router(UnparsedMessageQueue &_heartbeat, UnparsedMessageQueue &_auth, UnparsedMessageQueue &_exec, StringOutputQueue &_tcp_output)
         : AInputProcess<InputType>("Back/Master-Router"),
-        m_tcp_output(_tcp_output), m_heartbeat(_heartbeat), m_auth(_auth), m_execution(_exec)
+        m_heartbeat(_heartbeat), m_auth(_auth), m_execution(_exec), m_error(_tcp_output)
     {
     }
 
     void Router::onInput(InputType _input)
     {
-        std::pair<bool, fix::Reject> reject = fix::old_Header::Verify(_input, Configuration<config::Global>::Get().Config.FixServer.ProviderName, User::Instance().getUserId(), User::Instance().getSeqNumber());
-
-        User::Instance().nextSeqNumber();
-        if (reject.first) {
-            if (reject.second.contains(fix::Tag::Text))
-                Logger->log<logger::Level::Warning>("Header verification failed: (", reject.second.get(fix::Tag::RefTagId), ") ", reject.second.get(fix::Tag::Text));
-            else
-                Logger->log<logger::Level::Error>("Header verification failed for unknown reason");
-            m_tcp_output.append(std::move(reject.second));
-            return;
-        }
-        Logger->log<logger::Level::Debug>("Header verification validated");
-
-        switch (_input.at(fix::Tag::MsgType)[0])
-        {
-            case fix::Logon::cMsgType:
-            case fix::Logout::cMsgType:
+        switch (_input.Header.getPositional<fix42::tag::MsgType>().Value) {
+            case fix42::msg::Logon::Type:
+            case fix42::msg::Logout::Type:
                 m_auth.push(std::move(_input));
                 break;
-            case fix::HeartBeat::cMsgType:
-            case fix::TestRequest::cMsgType:
+            case fix42::msg::HeartBeat::Type:
+            case fix42::msg::TestRequest::Type:
                 m_heartbeat.push(std::move(_input));
                 break;
-            case fix::ExecutionReport::cMsgType:
+            case fix42::msg::ExecutionReport::Type:
                 m_execution.push(std::move(_input));
                 break;
-            case fix::BusinessMessageReject::cMsgType: treatBusinessReject(_input);
+            case fix42::msg::BusinessReject::Type:
+                treatBusinessReject(_input);
                 break;
-            case fix::Reject::cMsgType: treatReject(_input);
+            case fix42::msg::SessionReject::Type:
+                treatReject(_input);
                 break;
             default:
                 unknownMessage(_input);
         };
     }
 
-    bool Router::unknownMessage(const InputType &_input)
+    void Router::unknownMessage(const InputType &_input)
     {
-        fix::Reject reject;
+        fix42::msg::SessionReject reject{};
 
-        Logger->log<logger::Level::Info>("Rejecting request from server with request type: ", _input.at(fix::Tag::MsgType));
-        reject.set45_refSeqNum(_input.at(fix::Tag::MsqSeqNum));
-        reject.set371_refTagId(fix::Tag::MsgType);
-        reject.set373_sessionRejectReason(fix::Reject::NotSupporType);
-        reject.set58_text("Unknown message type");
-        Logger->log<logger::Level::Debug>("Moving Reject Unknown from server to TCP Output");
-        m_tcp_output.append(std::move(reject));
-        return true;
+        Logger->log<logger::Level::Info>("Rejecting request from server with request type: ", _input.Header.get<fix42::tag::MsgSeqNum>().Value);
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgType;
+        reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+        reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::InvalidMsgType;
+        reject.get<fix42::tag::Text>().Value = "Unknown message type";
+        m_error.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.to_string()));
     }
 
-    bool Router::treatReject(const InputType &_input)
+    void Router::treatReject(const InputType &_input)
     {
-        Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), ", text: ", _input.at(fix::Tag::Text)," }");
-        return true;
+        // todo log
+        // Logger->log<logger::Level::Error>("Rejected message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", refTagId: ", _input.at(fix::Tag::RefTagId), ", reason: ", _input.at(fix::Tag::SessionRejectReason), ", text: ", _input.at(fix::Tag::Text)," }");
     }
 
-    bool Router::treatBusinessReject(InputType &_input)
+    void Router::treatBusinessReject(InputType &_input)
     {
-        Logger->log<logger::Level::Error>("Reject Business message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", reject refId: ", _input.at(fix::Tag::BusinessRejectRefId), ", reason", _input.at(fix::Tag::BusinessRejectReason),", text: ", _input.at(fix::Tag::Text));
-        return true;
+        // todo log
+        // Logger->log<logger::Level::Error>("Reject Business message: { refSeqNum: ", _input.at(fix::Tag::RefSeqNum), ", reject refId: ", _input.at(fix::Tag::BusinessRejectRefId), ", reason", _input.at(fix::Tag::BusinessRejectReason),", text: ", _input.at(fix::Tag::Text));
     }
 }

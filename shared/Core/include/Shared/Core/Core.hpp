@@ -20,3 +20,5 @@ struct Order
 std::ostream &operator<<(std::ostream &_os, const Order &_order);
 
 using OrderList = std::list<Order>;
+
+#include "Shared/Core/Enum.hpp"
