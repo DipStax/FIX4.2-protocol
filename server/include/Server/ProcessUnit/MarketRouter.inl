@@ -8,6 +8,7 @@ namespace pu
         const std::string &symbol = _msg.template get<fix42::tag::Symbol>().Value;
 
         if (m_markets.contains(symbol)) {
+            Logger->log<logger::Level::Info>("Redirecting to market: ", symbol);
             std::get<MessageQueue<T> &>(m_markets.at(symbol)).append(_input.Client, _input.ReceiveTime, std::move(_input.Header), std::move(_msg));
         } else {
             fix42::msg::BusinessReject reject{};
