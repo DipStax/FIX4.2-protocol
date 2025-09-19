@@ -46,7 +46,7 @@ namespace pu
         xstd::Expected<fix42::msg::TestRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::TestRequest>(_input.Message, _input.Header);
 
         if (error.has_error()) {
-            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            Logger->log<logger::Level::Info>("Parsing of TestRequest message failed: ", error.error().get<fix42::tag::Text>().Value.value());
             m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
@@ -56,15 +56,15 @@ namespace pu
         User::Instance().getHeartBeatInfo().Since = std::chrono::system_clock::now();
         Logger->log<logger::Level::Info>("TestRequest | TestRequest with Id: ", error.value().get<fix42::tag::TestReqId>().Value);
         hb.get<fix42::tag::TestReqId>().Value = error.value().get<fix42::tag::TestReqId>().Value;
-        m_tcp_output.append(_input.ReceiveTime, fix42::msg::TestRequest::Type, std::move(hb.to_string()));
+        m_tcp_output.append(_input.ReceiveTime, fix42::msg::HeartBeat::Type, std::move(hb.to_string()));
     }
 
     void HeartBeatHandler::handleHeartBeat(const InputType &_input)
     {
-        xstd::Expected<fix42::msg::TestRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::TestRequest>(_input.Message, _input.Header);
+        xstd::Expected<fix42::msg::HeartBeat, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::HeartBeat>(_input.Message, _input.Header);
 
         if (error.has_error()) {
-            Logger->log<logger::Level::Info>("Parsing of Logon message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            Logger->log<logger::Level::Info>("Parsing of HeartBeat message failed: ", error.error().get<fix42::tag::Text>().Value.value());
             m_tcp_output.append(_input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
@@ -82,7 +82,7 @@ namespace pu
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-            if (User::Instance().isLogin() && std::chrono::duration<double>(now - hb_info.Since).count() > hb_info.Elapsing) {
+            if (User::Instance().isLogin() && now - hb_info.Since > std::chrono::seconds(hb_info.Elapsing)) {
                 Logger->log<logger::Level::Info>("Sending HeartBeat Message");
                 hb_info.Since = now;
                 m_tcp_output.append(std::chrono::system_clock::now(), fix42::msg::HeartBeat::Type, std::move(fix42::msg::HeartBeat{}.to_string()));
@@ -90,5 +90,4 @@ namespace pu
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
-
 }

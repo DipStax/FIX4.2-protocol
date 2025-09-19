@@ -29,9 +29,8 @@ namespace pu
             return;
         }
         // todo verify time accuracy
-        Logger->log<logger::Level::Info>("Validated user specific tag from message");
         User::Instance().nextSeqNumber();
-        Logger->log<logger::Level::Verbose>("Increasing the sequence number");
+        Logger->log<logger::Level::Info>("Validated user specific tag from message");
         m_output.push(std::move(_input));
     }
 
@@ -70,14 +69,14 @@ namespace pu
 
         reject.get<fix42::tag::RefSeqNum>().Value = _header.get<fix42::tag::MsgSeqNum>().Value;
         reject.get<fix42::tag::RefMsgType>().Value = _header.getPositional<fix42::tag::MsgType>().Value;
-        if (_header.get<fix42::tag::TargetCompId>().Value != Configuration<config::Global>::Get().Config.FixServer.ProviderName) {
+        if (_header.get<fix42::tag::SenderCompId>().Value != Configuration<config::Global>::Get().Config.FixServer.ProviderName) {
             reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
             reject.get<fix42::tag::RefTagId>().Value = fix42::tag::TargetCompId;
             reject.get<fix42::tag::Text>().Value = "Incorrect target Id";
             return reject;
         }
         if (User::Instance().isLogin()) {
-            if (_header.get<fix42::tag::SenderCompId>().Value != User::Instance().getUserId()) {
+            if (_header.get<fix42::tag::TargetCompId>().Value != User::Instance().getUserId()) {
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::SenderCompId;
                 reject.get<fix42::tag::Text>().Value = "Incorrect sender Id";
