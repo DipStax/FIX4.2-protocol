@@ -20,8 +20,8 @@ namespace pu
         header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
         header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;
         header.get<fix42::tag::MsgSeqNum>().Value = User::Instance().getSeqNumber();
-        header.get<fix42::tag::SenderCompId>().Value = Configuration<config::Global>::Get().Config.FixServer.ProviderName;
-        header.get<fix42::tag::TargetCompId>().Value = User::Instance().getUserId();
+        header.get<fix42::tag::SenderCompId>().Value = User::Instance().getUserId();
+        header.get<fix42::tag::TargetCompId>().Value = Configuration<config::Global>::Get().Config.FixServer.ProviderName;
         header.get<fix42::tag::SendingTime>().Value = std::chrono::system_clock::now();
         Logger->log<logger::Level::Verbose>("Header info filled");
 

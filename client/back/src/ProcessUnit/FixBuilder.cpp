@@ -8,7 +8,7 @@
 
 namespace pu
 {
-    FixBuilder::FixBuilder(ts::Queue<net::Buffer> &_input, QueueMessage &_output)
+    FixBuilder::FixBuilder(ts::Queue<net::Buffer> &_input, StringOutputQueue &_output)
         : AProcessUnitBase("Back/FixBuilder"),
         m_input(_input), m_output(_output)
     {
@@ -26,9 +26,11 @@ namespace pu
                 buffer >> header;
                 switch (header.MsgType)
                 {
-                    case ipc::MessageType::Logon: m_output.push(buildLogon(buffer));
+                    case ipc::MessageType::Logon:
+                        m_output.append(std::chrono::system_clock::now(), std::move(buildLogon(buffer)));
                         break;
-                    case ipc::MessageType::OrderSingle: m_output.push(buildOrderSingle(buffer));
+                    case ipc::MessageType::OrderSingle:
+                        m_output.append(std::chrono::system_clock::now(), std::move(buildOrderSingle(buffer)));
                         break;
                     default:
                         Logger->log<logger::Level::Error>("Unknow message type");
@@ -38,34 +40,36 @@ namespace pu
         }
     }
 
-    fix::old_Message FixBuilder::buildLogon(net::Buffer &_buffer)
+    data::StringOutput FixBuilder::buildLogon(net::Buffer &_buffer)
     {
-        fix::Logon logon;
+        fix42::msg::Logon logon;
         ipc::msg::Logon ipc_logon;
 
         _buffer >> ipc_logon;
         Logger->log<logger::Level::Info>("Building Logon message with: ", ipc_logon);
-        User::Instance().setSeqNumber(ipc_logon.SeqNum);
+        logon.get<fix42::tag::EncryptMethod>().Value = fix42::EncryptionMethod::None;
+        logon.get<fix42::tag::HeartBtInt>().Value = ipc_logon.HeartBeat;
+
         User::Instance().setUserId(ipc_logon.UserId);
-        logon.set108_HeartBtInt(std::to_string(ipc_logon.HeartBeat));
-        logon.set98_EncryptMethod("0");
-        return logon;
+        User::Instance().setSeqNumber(ipc_logon.SeqNum);
+
+        return {fix42::msg::Logon::Type, std::move(logon.to_string())};
     }
 
-    fix::old_Message FixBuilder::buildOrderSingle(net::Buffer &_buffer)
+    data::StringOutput FixBuilder::buildOrderSingle(net::Buffer &_buffer)
     {
-        fix::NewOrderSingle order;
+        fix42::msg::NewOrderSingle order;
         ipc::msg::OrderSingle ipc_order;
 
         _buffer >> ipc_order;
         Logger->log<logger::Level::Info>("Building NewOrderSingle message with: ", ipc_order);
-        order.set11_clOrdID(ipc_order.orderId);
-        order.set21_handlInst("3");
-        order.set38_orderQty(std::to_string(ipc_order.quantity));
-        order.set40_ordType("2");
-        order.set44_price(std::to_string(ipc_order.price));
-        order.set54_side((ipc_order.type == fix42::Side::SellPlus) ? "4" : "3");
-        order.set55_symbol(ipc_order.symbol);
-        return order;
+        order.get<fix42::tag::ClOrdID>().Value = ipc_order.orderId;
+        order.get<fix42::tag::HandlInst>().Value = fix42::HandleInstance::Manual;
+        order.get<fix42::tag::OrderQty>().Value = ipc_order.quantity;
+        order.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+        order.get<fix42::tag::Price>().Value = ipc_order.price;
+        order.get<fix42::tag::Side>().Value = ipc_order.type;
+        order.get<fix42::tag::Symbol>().Value = ipc_order.symbol;
+        return {fix42::msg::NewOrderSingle::Type, std::move(order.to_string())};
     }
 }

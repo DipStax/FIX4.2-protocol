@@ -14,7 +14,7 @@ class User
         struct HeartBeatInfo
         {
             std::chrono::system_clock::time_point Since{};
-            float Elapsing;
+            uint32_t Elapsing;
         };
 
         void setSeqNumber(size_t _seqnum);
