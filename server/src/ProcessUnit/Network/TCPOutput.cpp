@@ -19,7 +19,6 @@ namespace pu
 
             if (!_input.Client->isLoggedin())
                 _input.Client->nextSeqNumber();
-
             header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
             header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
             header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;
