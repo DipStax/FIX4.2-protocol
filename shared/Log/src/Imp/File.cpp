@@ -34,10 +34,8 @@ namespace logger::imp
     {
         std::filesystem::path fullpath(std::format("{}.{}.log", _path.string(), _it));
 
-        std::cout << fullpath << std::endl;
         if (std::filesystem::exists(fullpath))
             moveFile(_path, _it + 1);
-        std::cout << "renaming: " << fullpath << " to " << std::format("{}.{}.log", _path.string(), _it + 1) << std::endl;
         std::rename(fullpath.string().c_str(), std::format("{}.{}.log", _path.string(), _it + 1).c_str());
     }
 
