@@ -1,9 +1,12 @@
+#include <pqxx/pqxx>
+
 #include "Client/Initiator/Config.hpp"
 #include "Client/Initiator/Session.hpp"
 
 #include "Client/Shared/IPC/Helper.hpp"
 
 #include "Shared/Log/Manager.hpp"
+#include "Shared/PgSQL/ConnectionPool.hpp"
 
 
 Session::Session(const std::shared_ptr<net::INetTcp> &_front)
@@ -70,6 +73,20 @@ std::string Session::GenerateToken()
     return std::to_string(token);
 }
 
+void Session::close()
+{
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::work tnx_update{*(conn.Conn)};
+        (void)tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{false, m_frontend.apikey, m_frontend.name});
+
+        tnx_update.commit();
+        conn.done();
+    }
+    if (m_backend.cmd != nullptr)
+        m_backend.cmd->stop();
+}
+
 void Session::handleFrontend(const ipc::Header &_header, net::Buffer &_buffer)
 {
     Logger->log<logger::Level::Error>("Received new message from frontend: message type: ", (int)_header.MsgType);
@@ -91,8 +108,14 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         Logger->log<logger::Level::Verbose>("API Key not set, verifying authentification");
         _buffer >> authfront;
         Logger->log<logger::Level::Info>("Frontend identify with info: ", authfront);
+
+        std::optional<std::string> server_name = login(authfront.apikey, authfront.name);
+
+        if (!server_name.has_value())
+            return;
+        m_frontend.name = server_name.value();
         m_frontend.apikey = authfront.apikey;
-        valid_auth.apikey = authfront.apikey;
+        valid_auth.name = m_frontend.name;
         Logger->log<logger::Level::Debug>("Sending auth validation to frontend: ", valid_auth);
         send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
         buildShellBack();
@@ -102,6 +125,44 @@ void Session::identifyFrontend(net::Buffer &_buffer)
     } else {
         Logger->log<logger::Level::Error>("Frontend try to reauth with the initiator");
     }
+}
+
+std::optional<std::string> Session::login(const std::string &_apikey, const std::string &_name)
+{
+    pqxx::result result{};
+
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::read_transaction tnx_select{*(conn.Conn)};
+        result = tnx_select.exec("SELECT connected, server_name, apikey, client_name FROM dev.client WHERE apikey = $1 AND client_name = $2 LIMIT 1", pqxx::params{_apikey, _name});
+
+        tnx_select.commit();
+        conn.done();
+    }
+    if (result.empty()) {
+        Logger->log<logger::Level::Info>("User trying to connect not found: ", _name);
+        ipc::msg::Reject reject{"No user found"};
+        send(ipc::Helper::Reject(reject), Side::Front);
+        return std::nullopt;
+    }
+
+    auto [connect, server_name, _, __] = result.at(0).as<bool, std::string, std::string, std::string>();
+
+    if (connect) {
+        Logger->log<logger::Level::Warning>("User trying to reconnect: ", _name);
+        ipc::msg::Reject reject{"User already logged in"};
+        send(ipc::Helper::Reject(reject), Side::Front);
+        return std::nullopt;
+    }
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::work tnx_update{*(conn.Conn)};
+        (void)tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{true, _apikey, _name});
+
+        tnx_update.commit();
+        conn.done();
+    }
+    return server_name;
 }
 
 void Session::buildShellBack()

@@ -35,12 +35,18 @@ void InitiatorManager::startConnection()
     }
     Logger->log<logger::Level::Info>("Successfully connected to Initiator");
     emit connectionReady();
+    m_ready = true;
     receiveLoop(m_stopsource.get_token());
 }
 
 void InitiatorManager::send(const net::Buffer &_buffer)
 {
     m_socket->send(_buffer.data(), _buffer.size());
+}
+
+bool InitiatorManager::isConnectionReady() const
+{
+    return m_ready;
 }
 
 void InitiatorManager::stop()
@@ -79,6 +85,7 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
 
     ipc::msg::AuthInitiatorToFront auth{};
     ipc::msg::InitiatorToFrontValidToken token{};
+    ipc::msg::Reject reject{};
 
     _buffer >> header;
     Logger->log<logger::Level::Info>("Received new data from Initiator, with message type: ", (int)header.MsgType);
@@ -90,6 +97,10 @@ void InitiatorManager::onReceive(net::Buffer &_buffer)
         case ipc::MessageType::InitiatorToFrontValidToken:
             _buffer >> token;
             emit received_ValidationToken(token);
+            break;
+        case ipc::MessageType::Reject:
+            _buffer >> reject;
+            emit received_Reject(reject);
             break;
         default:
             Logger->log<logger::Level::Error>("Unknown received message type: ", static_cast<int>(header.MsgType));

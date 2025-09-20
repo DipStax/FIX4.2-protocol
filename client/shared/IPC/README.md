@@ -11,53 +11,66 @@
 
 ## Message type
 
+0. **Reject**
+
+| Field | Description | Size |
+|---|---|---|
+| **Message** | Reject reason | `string` |
+
+- Message code: **0**
+- Related structure: `ipc::msg::Reject` ([Reject.hpp](../IPC/include/Client/Shared/IPC/Message/Reject.hpp))
+- Way: From `Frontend`, `Backend` and `Initiator` to `Frontend`, `Backend` and `Initiator`
+
+Message used when an error occured during any step in the life of the application. Either at network level or system level.
+
 ### Authentication
 
-0. **FrontToInitiatorAuth**
+1. **FrontToInitiatorAuth**
 
 | Field | Description | Size |
 |---|---|---|
 | **API Key** | API key to authenticat the frontend | `string` |
+| **Name** | Name of the account to authenticat | `string` |
 
-- Message code: **0**
+- Message code: **1**
 - Related structure: `ipc::msg::wAuthFrontToInitiator` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))
 - Way: `Frontend` to `Initiator`
 
 Message used to authenticat the **Frontend** to the **Initiator**.
 
-1. **InitiatorToFrontAuth**
+2. **InitiatorToFrontAuth**
 
 | Field | Description | Size |
 |---|---|---|
-| **API Key** | API key use to authenticat the frontend | `string` |
+| **Name** | Name used for login to the FIX server | `string` |
 
-- Message code: **1**
+- Message code: **2**
 - Related structure: `ipc::msg::AuthInitiatorToFront` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))
 - Way: `Initiator` to `Frontend`
 
 Validat the authentication of the **Frontend**.
 
-2. **BackToInitiatorAuth**
+3. **BackToInitiatorAuth**
 
 | Field | Description | Size |
 |---|---|---|
 | **API Key** | API key to synchronize the session between the frontend and the backend, by the initiator  | `string` |
 | **Port** | Port number on wich the backend await the frontend connection | `string` |
 
-- Message code: **2**
+- Message code: **3**
 - Related structure: `ipc::msg::AuthBackToInitiator` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))
 - Way: `Initiator` to `Backend`
 
 Message used to authenticat the **Backend** to the **Initiator**
 
-3. **InitiatorToBackAuth**
+4. **InitiatorToBackAuth**
 
 | Field | Description | Size |
 |---|---|---|
 | **API Key** | API key used to synchronize the session between the frontend and the backend, by the initiator  | `string` |
 | **Token** | Token use to authenticat frontend connection to the backend | `string` |
 
-- Message code: **3**
+- Message code: **4**
 - Related structure: `ipc::msg::AuthBackToInitiator` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))
 - Way: `Backend` to `Initiator`
 
@@ -67,39 +80,39 @@ Validat the authentication of the **Backend** and the linking with the **Fronten
 
 ### Token Validation
 
-4. InitiatorToFrontValidToken
+5. InitiatorToFrontValidToken
 
 | Field | Description | Size |
 |---|---|---|
 | **Port** | Port on wich the frontend should connect to the backend | `uint32_t` |
 | **Token** | Token use to authenticat frontend connection to the backend | `string` |
 
-- Message code: **4**
+- Message code: **5**
 - Related structure: `ipc::msg::InitiatorToFrontValidToken` ([TokenValidation.hpp](../IPC/include/Client/Shared/IPC/Message/TokenValidation.hpp))
 - Way: `Initiator` to `Frontend`
 
 Notify the **Frontend** that the **Backend** is ready for connection with the `token` provided.
 
-5. **FrontToBackValidToken**
+6. **FrontToBackValidToken**
 
 | Field | Description | Size |
 |---|---|---|
 | **Token** | Token authenticating frontend connection to the backend | `string` |
 
 
-- Message code: **4**
+- Message code: **6**
 - Related structure: `ipc::msg::BackToFrontValidToken` ([TokenValidation.hpp](../IPC/include/Client/Shared/IPC/Message/TokenValidation.hpp))
 - Way: `Frontend` to `Backend`
 
 Message used to autneticat the **Frontend** on the **Backend**.
 
-6. **BackToFrontValidToken**
+7. **BackToFrontValidToken**
 
 | Field | Description | Size |
 |---|---|---|
 | **Token** | Token used to authenticat frontend connection to the backend | `string` |
 
-- Message code: **4**
+- Message code: **7**
 - Related structure: `ipc::msg::FrontToBackValidToken` ([TokenValidation.hpp](../IPC/include/Client/Shared/IPC/Message/TokenValidation.hpp))
 - Way: `Backend` to `Frontend`
 
@@ -109,19 +122,19 @@ Notify the **Frontend** that the connection is authenticated and ready for use.
 
 ### Session runtime
 
-6. **Status**
+8. **Status**
 
 | Field | Description | Size |
 |---|---|---|
 | **Status** | Status in the backend core of it's process unit | sizeof(`PUStatus`) == **1** |
 
-- Message code: **5**
+- Message code: **8**
 - Way: `Backend` to `Frontend`
 > This message is not embeded in a structure.
 
 Notify the status of the backend process unit during startup.
 
-7. **Logon**
+9. **Logon**
 
 | Field | Description | Size |
 |---|---|---|
@@ -129,7 +142,7 @@ Notify the status of the backend process unit during startup.
 | **Sequence Number** | First sequence number use to login | `uint32_t` |
 | **HeartBeat** | Maximum elapsing time between each `HeartBeat` message generated by the backend | `float` |
 
-- Message code: **7**
+- Message code: **9**
 - Related structure: `ipc::msg::Logon` ([Logon.hpp](../IPC/include/Client/Shared/IPC/Message/Logon.hpp))
 - Way: two way between `Frontend` and `backend`
 
@@ -137,7 +150,7 @@ Notify the status of the backend process unit during startup.
 
 <ins>`Backend` to `Frontend`</ins>: inform the frontend that the client backend is correctly connected to the server. The data return is the one used by the server.
 
-8. **Single Order**
+10. **Single Order**
 
 | Field | Description | Size |
 |---|---|---|
@@ -147,13 +160,13 @@ Notify the status of the backend process unit during startup.
 | **Quantity** | Quantity of the order | `uint32_t` |
 | **Type** | Type of order that is placed | `uint8_t` |
 
-- Message code: **8**
+- Message code: **10**
 - Related structure: `ipc::msg::OrderSingle` ([OrderSingle.hpp](../IPC/include/Client/Shared/IPC/Message/OrderSingle.hpp))
 - Way: `front` to `back`
 
 Notify the backend to create a order with the provided information.
 
-9. New execution:
+11. New execution:
 
 | Field | Description | Size |
 |---|---|---|
@@ -165,13 +178,13 @@ Notify the backend to create a order with the provided information.
 | **Quantity** | Original quantity of the order | `uint32_t` |
 | **Remaining Quantity** | Remaing quantity on the order (always the same as **Quantity** for `NewExecution`) | `uint32_t` |
 
-- Message code: **9**
+- Message code: **11**
 - Related structure: `ipc::msg::Execution` ([Execution.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
 - Way: `front` to `back`
 
 Event notify after a `Single Order` message. This message contain the information about an aknowledge order placed on the server.
 
-10. **Execution event**
+12. **Execution event**
 
 | Field | Description | Size |
 |---|---|---|
@@ -183,7 +196,7 @@ Event notify after a `Single Order` message. This message contain the informatio
 | **Quantity** | Original quantity of the order | `uint32_t` |
 | **Remaining Quantity** | Remaing quantity on the order after sold/buy | `uint32_t` |
 
-- Message code: **10**
+- Message code: **12**
 - Related structure: `ipc::msg::Execution` ([Execution.hpp](../IPC/include/Client/Shared/IPC/Message/Execution.hpp))
 - Way: `back` to `front`
 

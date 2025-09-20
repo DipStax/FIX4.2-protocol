@@ -9,6 +9,7 @@
 #include "Shared/Log/Imp/Buffer.hpp"
 #include "Shared/Log/Imp/Console.hpp"
 #include "Shared/Log/Imp/File.hpp"
+#include "Shared/PgSQL/ConnectionPool.hpp"
 
 int help(int _return)
 {
@@ -32,6 +33,8 @@ int main(int _ac, const char **_av)
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
+
+    sql::ConnectionPool<1>::Init(Configuration<config::Global>::Get().Config.DBConfig.ConnectionString);
 
     Core core{};
 

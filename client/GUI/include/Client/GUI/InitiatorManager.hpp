@@ -4,6 +4,7 @@
 
 #include "Client/Shared/IPC/Message/Authentication.hpp"
 #include "Client/Shared/IPC/Message/TokenValidation.hpp"
+#include "Client/Shared/IPC/Message/Reject.hpp"
 #include "Client/Shared/IPC/IPCNetworkManager.hpp"
 
 #include "Shared/Log/ILogger.hpp"
@@ -26,8 +27,11 @@ class InitiatorManager : public QObject, IPCNetworkManager<net::INetTcp>
 
         void received_IdentifyFront(ipc::msg::AuthInitiatorToFront _auth);
         void received_ValidationToken(ipc::msg::InitiatorToFrontValidToken _token);
+        void received_Reject(ipc::msg::Reject _reject);
 
     public:
+        [[nodiscard]] bool isConnectionReady() const;
+
         void stop();
 
     protected:
@@ -42,6 +46,8 @@ class InitiatorManager : public QObject, IPCNetworkManager<net::INetTcp>
 
     private:
         std::stop_source m_stopsource{};
+
+        bool m_ready = false;
 
         inline static InitiatorManager *m_instance = nullptr;
 };

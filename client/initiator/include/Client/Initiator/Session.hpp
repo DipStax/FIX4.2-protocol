@@ -38,14 +38,18 @@ class Session
 
         [[nodiscard]] const std::string &getApiKey() const;
 
-        static std::string GenerateToken();
+        [[nodiscard]] static std::string GenerateToken();
+
+        void close();
 
     private:
+
         struct SessionFrontend
         {
             std::optional<std::string> apikey = std::nullopt;
 
             std::shared_ptr<net::INetTcp> socket = nullptr;
+            std::string name{};
         };
 
         struct SessionBackend
@@ -58,6 +62,7 @@ class Session
 
         void handleFrontend(const ipc::Header &_header, net::Buffer &_buffer);
         void identifyFrontend(net::Buffer &_buffer);
+        [[nodiscard]] std::optional<std::string> login(const std::string &_apikey, const std::string &_name);
         void buildShellBack();
 
         void handleBackend(const ipc::Header &_header, net::Buffer &_buffer);

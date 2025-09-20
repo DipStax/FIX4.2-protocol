@@ -10,6 +10,7 @@
 #include "Client/Shared/IPC/Message/Logon.hpp"
 #include "Client/Shared/IPC/Message/Authentication.hpp"
 #include "Client/Shared/IPC/Message/TokenValidation.hpp"
+#include "Client/Shared/IPC/Message/Reject.hpp"
 
 #include "Shared/ProcessUnit/ProcessUnit.hpp"
 #include "Shared/Log/ILogger.hpp"
@@ -31,7 +32,10 @@ namespace ui::screen
 
         private slots:
             void sendIdentification();
+
             void validatedIdentification(ipc::msg::AuthInitiatorToFront _identify);
+            void invalidIdentification(ipc::msg::Reject _reject);
+
             void tokenAuth(ipc::msg::InitiatorToFrontValidToken _token);
             void tokenValidated(ipc::msg::BackToFrontValidToken _token);
 
@@ -49,6 +53,8 @@ namespace ui::screen
 
             QPushButton *m_button = nullptr;
             QProgressBar *m_progress = nullptr;
+
+            std::string m_name{};
 
             std::unique_ptr<logger::ILogger> Logger = nullptr;
 

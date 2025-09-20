@@ -19,8 +19,11 @@ namespace config
 
         back.at("exec-path").get_to(_config.Back.Executable);
         back.at("args").get_to(_config.Back.ExecArgs);
-        back.at("api-key").get_to(_config.Back.ApiKey);
         back.at("address").get_to(_config.Back.Address);
+
+        const nlohmann::json &db = _json.at("database");
+
+        db.at("connstr").get_to(_config.DBConfig.ConnectionString);
     }
 
     void to_json(nlohmann::json &_json, const config::Global &_config)
@@ -30,9 +33,11 @@ namespace config
             {"back",  {
                 {"exec-path", _config.Back.Executable},
                 {"args", _config.Back.ExecArgs},
-                {"api-key", _config.Back.ApiKey},
                 {"address", _config.Back.Address}
             }},
+            {"database", {
+                {"connstr", _config.DBConfig.ConnectionString}
+            }}
         };
     }
 }

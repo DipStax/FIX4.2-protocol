@@ -7,6 +7,9 @@ namespace pu
     BackHandler::BackHandler()
         : AProcessUnitBase("Initiator/BackHandler")
     {
+        SessionManager::OnRemoveSession([this] (const std::shared_ptr<Session> &_session) {
+            m_selector.erase(_session->getBackSocket());
+        });
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Back.Address);
         Logger->log<logger::Level::Debug>("Listening on socket: ", Configuration<config::Global>::Get().Config.Back.Address);
         m_acceptor.setBlocking(false);

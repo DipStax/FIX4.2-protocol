@@ -4,17 +4,32 @@ namespace ipc::msg
 {
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthFrontToInitiator &_auth)
     {
-        return _buffer << _auth.apikey;
+        return _buffer << _auth.apikey << _auth.name;
     }
 
     net::Buffer &operator>>(net::Buffer &_buffer, AuthFrontToInitiator &_auth)
     {
-        return _buffer >> _auth.apikey;
+        return _buffer >> _auth.apikey >> _auth.name;
     }
 
     std::ostream &operator<<(std::ostream &_os, const AuthFrontToInitiator &_auth)
     {
-        return _os << "{ ApiKey: " << _auth.apikey <<" }";
+        return _os << "{ ApiKey: " << _auth.apikey << ", Name: " << _auth.name << " }";
+    }
+
+    net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToFront &_auth)
+    {
+        return _buffer << _auth.name;
+    }
+
+    net::Buffer &operator>>(net::Buffer &_buffer, AuthInitiatorToFront &_auth)
+    {
+        return _buffer >> _auth.name;
+    }
+
+    std::ostream &operator<<(std::ostream &_os, const AuthInitiatorToFront &_auth)
+    {
+        return _os << "{ Name: " << _auth.name << " }";
     }
 
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToBack &_auth)

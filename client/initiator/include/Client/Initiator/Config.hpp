@@ -10,7 +10,6 @@ namespace config
         {
             std::string Executable{};
             std::vector<std::string> ExecArgs{};
-            std::string ApiKey{};
             std::string Address{};
         };
 
@@ -19,8 +18,14 @@ namespace config
             uint32_t Port = 0;
         };
 
+        struct DataBaseConfig
+        {
+            std::string ConnectionString{};
+        };
+
         FrontendConfig Front{};
         BackendConfig Back{};
+        DataBaseConfig DBConfig{};
 
         friend std::ostream &operator<<(std::ostream &_os, const config::Global &_config);
     };

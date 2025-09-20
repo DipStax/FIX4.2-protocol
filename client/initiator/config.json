@@ -7,7 +7,9 @@
         "args": [
             "../back/config.json"
         ],
-        "api-key": "api-key",
         "address": "/tmp/fix.initiator.socket"
+    },
+    "database": {
+        "connstr": "postgres://admin:admin@localhost:5432/client"
     }
 }
