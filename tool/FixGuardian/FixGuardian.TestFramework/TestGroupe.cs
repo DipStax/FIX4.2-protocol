@@ -41,17 +41,19 @@ namespace FixGuardian.TestFramework
                 .Select(method => new TestMethod(method, Setup, TearDown));
         }
 
-        public void Run()
+        public bool Run()
         {
             object? testSuiteInstance = Activator.CreateInstance(TestSuiteType);
+            bool result = true;
 
             if (testSuiteInstance == null)
                 throw new Exception($"Failed to instiate the type: <{TestSuiteType.FullName}>");
             Console.WriteLine($"=== Running Test Suite: <{TestSuiteType.FullName}> {TestSuiteName}");
             foreach (TestMethod method in TestCase)
             {
-                method.Run(testSuiteInstance);
+                result &= method.Run(testSuiteInstance);
             }
+            return result;
         }
     }
 }

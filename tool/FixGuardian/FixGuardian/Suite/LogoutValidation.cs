@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace FixGuardian.Suite
 {
-    [TestSuite("Logout Validation")]
+    [RequireSuite("Logon validation")]
+    [TestSuite("Logout validation")]
     public class LogoutValidation
     {
         [TestCase("Valide Logout")]

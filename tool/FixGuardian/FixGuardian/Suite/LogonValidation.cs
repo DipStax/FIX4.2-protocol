@@ -8,7 +8,7 @@ using FixGuardian.Messages;
 
 namespace FixGuardian.Suite
 {
-    [RequireSuite("Header Validation")]
+    [RequireSuite("Header validation")]
     [TestSuite("Logon validation")]
     public class LogonValidation
     {
