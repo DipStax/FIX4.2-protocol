@@ -25,6 +25,7 @@ namespace ipc
             static net::Buffer BackToFront(const msg::BackToFrontValidToken &_validation);
         };
 
+        static net::Buffer Reject(const msg::Reject &_reject);
         static net::Buffer Status(PUStatus _status);
         static net::Buffer Logon(const msg::Logon &_logon);
         static net::Buffer OrderSingle(const msg::OrderSingle &_order);

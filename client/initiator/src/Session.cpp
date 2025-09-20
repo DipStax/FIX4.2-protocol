@@ -141,7 +141,8 @@ std::optional<std::string> Session::login(const std::string &_apikey, const std:
     }
     if (result.empty()) {
         Logger->log<logger::Level::Info>("User trying to connect not found: ", _name);
-        // todo reject
+        ipc::msg::Reject reject{"No user found"};
+        send(ipc::Helper::Reject(reject), Side::Front);
         return std::nullopt;
     }
 
@@ -149,7 +150,8 @@ std::optional<std::string> Session::login(const std::string &_apikey, const std:
 
     if (connect) {
         Logger->log<logger::Level::Warning>("User trying to reconnect: ", _name);
-        // todo reject
+        ipc::msg::Reject reject{"User already logged in"};
+        send(ipc::Helper::Reject(reject), Side::Front);
         return std::nullopt;
     }
     {

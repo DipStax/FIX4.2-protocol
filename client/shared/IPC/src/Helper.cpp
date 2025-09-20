@@ -87,6 +87,17 @@ namespace ipc
         return buffer;
     }
 
+    net::Buffer Helper::Reject(const msg::Reject &_reject)
+    {
+        net::Buffer buffer;
+        ipc::Header header{
+            ipc::MessageType::Reject,
+            static_cast<uint32_t>(sizeof(uint32_t) + _reject.message.size())
+        };
+
+        return buffer << header << _reject;
+    }
+
     net::Buffer Helper::Status(PUStatus _status)
     {
         net::Buffer buffer;

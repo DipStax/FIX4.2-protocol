@@ -1,6 +1,7 @@
 #include <QLabel>
 #include <QIntValidator>
 #include <QDoubleValidator>
+#include <QMessageBox>
 
 #include "Client/GUI/UI/screen/Login.hpp"
 #include "Client/GUI/BackManager.hpp"
@@ -30,6 +31,7 @@ namespace ui::screen
         m_seqnum_entry->setValidator(new QIntValidator(1, 255));
         m_seqnum_entry->setText("1");
         m_progress->setRange(0, 7);
+        m_progress->hide();
 
         m_layout->addWidget(new QLabel("Login:"));
         m_layout->addWidget(m_uid_entry);
@@ -38,12 +40,12 @@ namespace ui::screen
         m_layout->addWidget(new QLabel("Seqence Number:"));
         m_layout->addWidget(m_seqnum_entry);
         m_layout->addWidget(m_button);
+        m_layout->addWidget(m_progress);
         setLayout(m_layout);
 
         connect(m_button, &QPushButton::clicked, this, &Login::onSubmit);
         connect(this, &Login::requestInitiatorConnection, InitiatorManager::Instance(), &InitiatorManager::startConnection, Qt::QueuedConnection);
         connect(this, &Login::requestBackConnection, BackManager::Instance(), &BackManager::startConnection, Qt::QueuedConnection);
-
         setWindowTitle("FIX4.2 Login");
     }
 
@@ -55,6 +57,7 @@ namespace ui::screen
         auth.name = m_uid_entry->text().toStdString();
         Logger->log<logger::Level::Info>("Sending request to identify frontend to initiator");
         m_progress->setValue(1);
+        connect(InitiatorManager::Instance(), &InitiatorManager::received_Reject, this, &Login::invalidIdentification);
         connect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
         InitiatorManager::Instance()->send(ipc::Helper::Auth::FrontToInitiator(auth));
     }
@@ -68,6 +71,18 @@ namespace ui::screen
         Logger->log<logger::Level::Info>("Authentication validated, waiting for token approval");
         connect(InitiatorManager::Instance(), &InitiatorManager::received_ValidationToken, this, &Login::tokenAuth);
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
+    }
+
+    void Login::invalidIdentification(ipc::msg::Reject _reject)
+    {
+        disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
+        disconnect(InitiatorManager::Instance(), &InitiatorManager::received_Reject, this, &Login::invalidIdentification);
+        QMessageBox::warning(this, "Error during login", QString("login rejected from Initiator:\n%1").arg(QString::fromStdString(_reject.message)));
+        m_uid_entry->setEnabled(true);
+        m_hb_entry->setEnabled(true);
+        m_seqnum_entry->setEnabled(true);
+        m_button->setEnabled(true);
+        m_progress->hide();
     }
 
     void Login::tokenAuth(ipc::msg::InitiatorToFrontValidToken _token)
@@ -134,10 +149,16 @@ namespace ui::screen
     void Login::onSubmit()
     {
         m_uid_entry->setEnabled(false);
+        m_hb_entry->setEnabled(false);
+        m_seqnum_entry->setEnabled(false);
         m_button->setEnabled(false);
-        m_layout->addWidget(m_progress);
+        m_progress->show();
+        m_progress->setValue(0);
 
-        connect(InitiatorManager::Instance(), &InitiatorManager::connectionReady, this, &Login::sendIdentification);
+        if (InitiatorManager::Instance()->isConnectionReady())
+            sendIdentification();
+        else
+            connect(InitiatorManager::Instance(), &InitiatorManager::connectionReady, this, &Login::sendIdentification);
         emit requestInitiatorConnection();
     }
 }
