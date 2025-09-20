@@ -17,7 +17,8 @@ namespace pu
         m_tp.enqueue([this, _input] () mutable {
             fix42::Header header{};
 
-
+            if (!_input.Client->isLoggedin())
+                _input.Client->nextSeqNumber();
             header.getPositional<fix42::tag::BeginString>().Value = "FIX.4.2";
             header.getPositional<fix42::tag::BodyLength>().Value = _input.Message.size();
             header.getPositional<fix42::tag::MsgType>().Value = _input.MessageType;
@@ -42,6 +43,7 @@ namespace pu
                     Logger->log<logger::Level::Info>("Message send successfuly: ", data);
                 }
                 if (_input.Client->shouldDisconnect()) {
+                    _input.Client->close();
                     ClientStore::Instance().removeClient(_input.Client);
                     Logger->log<logger::Level::Debug>("Client has been disconnected: ", _input.Client->getUserId());
                 }

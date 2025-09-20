@@ -33,6 +33,8 @@ namespace pu
                     continue;
                 }
                 Logger->log<logger::Level::Info>("New message received: ", data);
+                if (User::Instance().isLogin())
+                    User::Instance().nextSeqNumber();
                 buildHeader(data);
             }
         }

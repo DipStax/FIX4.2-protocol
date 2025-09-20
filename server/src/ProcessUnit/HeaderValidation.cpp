@@ -26,7 +26,6 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(reject.value().to_string()));
             return;
         }
-        _input.Client->nextSeqNumber();
         // todo verify time accuracy
         m_output.push(std::move(_input));
     }
@@ -80,7 +79,7 @@ namespace pu
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::SenderCompId;
                 reject.get<fix42::tag::Text>().Value = "Incorrect sender Id";
                 return reject;
-            } else if (_header.get<fix42::tag::MsgSeqNum>().Value != _client->getSeqNumber()) {
+           } else if (_header.get<fix42::tag::MsgSeqNum>().Value != _client->getSeqNumber() - 1) {
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::ValueOutOfRange;
                 reject.get<fix42::tag::RefTagId>().Value = fix42::tag::MsgSeqNum;
                 reject.get<fix42::tag::Text>().Value = "Inccorect message sequence number";

@@ -1,14 +1,14 @@
-using FixGuardian.Message;
 using FixGuardian.Messages.Definition;
 using FixGuardian.TestFramework.Assertions;
 using FixGuardian.TestFramework.Attributes;
 using FixGuardian.Messages.Enums;
 using System.Net.Sockets;
 using System.Text;
+using FixGuardian.Messages;
 
 namespace FixGuardian.Suite
 {
-    // [RequiredSuite("Header Validation")]
+    [RequireSuite("Header validation")]
     [TestSuite("Logon validation")]
     public class LogonValidation
     {

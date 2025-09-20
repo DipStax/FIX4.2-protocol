@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using FixGuardian.TestFramework.Assertions;
@@ -13,7 +14,7 @@ namespace FixGuardian.TestFramework
         private MethodInfo? Setup { get; set; }
         private MethodInfo? TearDown { get; set; }
 
-        private IEnumerable<MethodInfo> TestCases { get; }
+        private IEnumerable<TestMethod> TestCase { get; }
 
         public TestGroup(Type type)
         {
@@ -35,117 +36,24 @@ namespace FixGuardian.TestFramework
             if (teardown.Count() > 1)
                 throw new Exception($"Only one teardown is allowed, found {teardown.Count()} in {type.FullName}");
             TearDown = teardown.FirstOrDefault();
-            TestCases = methods.Where(method => method.GetCustomAttribute<TestCase>() != null);
+            TestCase = methods
+                .Where(method => method.GetCustomAttribute<TestCase>() != null)
+                .Select(method => new TestMethod(method, Setup, TearDown));
         }
 
-        public void Run()
+        public bool Run()
         {
             object? testSuiteInstance = Activator.CreateInstance(TestSuiteType);
+            bool result = true;
 
             if (testSuiteInstance == null)
                 throw new Exception($"Failed to instiate the type: <{TestSuiteType.FullName}>");
             Console.WriteLine($"=== Running Test Suite: <{TestSuiteType.FullName}> {TestSuiteName}");
-            foreach (MethodInfo method in TestCases)
+            foreach (TestMethod method in TestCase)
             {
-                IEnumerable<TestInput> inputs = method.GetCustomAttributes<TestInput>();
-
-                if (inputs.Count() > 0)
-                    foreach (TestInput input in inputs)
-                        RunTest(testSuiteInstance, method, input.Data);
-                else
-                    RunTest(testSuiteInstance, method, null);
+                result &= method.Run(testSuiteInstance);
             }
-        }
-
-        private bool RunTest(object testSuiteInstance, MethodInfo method, params object?[]? param)
-        {
-            TestCase testCase = method.GetCustomAttribute<TestCase>()!;
-
-            bool testSucced = true;
-            Console.WriteLine($"=== Running test case: <{TestSuiteType.FullName}> {testCase.Name}");
-            try
-            {
-                if (Setup != null)
-                    Setup.Invoke(testSuiteInstance, null);
-                method.Invoke(testSuiteInstance, param);
-                if (TearDown != null)
-                    TearDown.Invoke(testSuiteInstance, null);
-            }
-            catch (TargetInvocationException tie)
-                when (tie.InnerException is AssertionException)
-            {
-                AssertionException assert = tie.InnerException as AssertionException;
-                DisplayAssertionError(assert);
-                Console.WriteLine("==> Test failed");
-                testSucced = false;
-            }
-            catch (Exception exception)
-            {
-                testSucced = false;
-                Console.WriteLine($"==> Test throw an exception: {exception}");
-            }
-            if (testSucced)
-            {
-                Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Succed");
-            }
-            else
-            {
-                Console.WriteLine($"=== <{TestSuiteType.FullName}> {testCase.Name} | Case Failed");
-            }
-            return testSucced;
-        }
-
-        static private void DisplayAssertionError(Exception ex, int depth = 0)
-        {
-            string padding = new string('\t', depth);
-
-            if (ex is AssertionException)
-            {
-                AssertionException? assertex = ex as AssertionException;
-
-                Console.Write($"{padding}Assertion failed: ");
-                Console.WriteLine(ex.Message);
-                if (ex.InnerException != null)
-                {
-                    DisplayAssertionError(ex.InnerException, depth + 1);
-                }
-                else
-                {
-                    Console.WriteLine($"{padding}\tExpected: <{GetNameOrValue(assertex.Expected, depth)}>");
-                    Console.WriteLine($"{padding}\tActual: <{GetNameOrValue(assertex.Actual, depth)}>");
-                }
-            }
-            else
-            {
-                Console.WriteLine($"{padding}Error message: {ex.Message}");
-            }
-
-            static string GetNameOrValue(object? obj, int depth)
-            {
-                if (obj == null)
-                    return "null";
-
-                Type type = obj.GetType();
-
-                if (type == null)
-                    return "Unknown";
-
-                MethodInfo method = type.GetMethod("ToString", Type.EmptyTypes)!;
-                if (method.GetBaseDefinition().DeclaringType != typeof(object))
-                    return type.FullName!;
-                string value = obj.ToString()!;
-                if (value.Contains('\n'))
-                {
-                    string padding = $"\n{new string('\t', depth + 2)}";
-
-                    value = value.Replace("\n", padding);
-
-                    int index = value.LastIndexOf(padding, StringComparison.Ordinal);
-
-                    value = (value.Remove(index, padding.Length) + '\n').Insert(0, padding);
-                }
-                return value;
-            }
+            return result;
         }
     }
 }

@@ -29,8 +29,9 @@ namespace FixGuardian
                 .Where(type => type.GetCustomAttribute<TestSuite>() != null)
                 .Select(type => new TestGroup(type));
 
-            foreach (TestGroup group in testgroups)
-                group.Run();
+            TestTree testTree = new TestTree(testgroups);
+
+            testTree.Run();
         }
 
     }

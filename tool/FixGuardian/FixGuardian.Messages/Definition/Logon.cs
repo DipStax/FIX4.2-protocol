@@ -3,8 +3,10 @@ using FixGuardian.Messages.Enums;
 
 namespace FixGuardian.Messages.Definition
 {
-    public class Logon : AMessage
+    public class Logon : AMessage, IMessage
     {
+        public char MsgType { get; } = 'A';
+
         [Tag(98)]
         public EncryptionMethod? EncryptMethod { get; set; } = null;
 
