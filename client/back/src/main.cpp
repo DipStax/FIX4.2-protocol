@@ -30,6 +30,8 @@ int main(int _ac, const char **_av)
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
+    logger::imp::File::Init("./logs/Back");
+
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
 
     InitiatorManager::Instance().connect();
@@ -40,5 +42,6 @@ int main(int _ac, const char **_av)
     core.start();
 
     logger::imp::Buffer::Stop();
+    logger::imp::File::Deinit();
     return 0;
 }

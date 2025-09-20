@@ -13,11 +13,16 @@ namespace logger::imp
             File(const std::string &_name);
             ~File();
 
+            static void Init(const std::string _file);
+            static void Deinit();
+
             void newEventLog(Event _event);
 
         private:
-            std::mutex m_mutex;
+            static void moveFile(const std::filesystem::path &_file, size_t _it = 0);
 
-            std::ofstream m_stream;
+            inline static std::mutex m_mutex{};
+
+            inline static std::ofstream m_stream{};
     };
 }

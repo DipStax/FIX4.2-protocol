@@ -10,21 +10,39 @@ namespace logger::imp
     File::File(const std::string &_name)
         : Base(_name)
     {
-        std::filesystem::path path(std::format("./logs/{}.log", _name));
+    }
+
+    void File::Init(const std::string _file)
+    {
+        std::filesystem::path path(std::format("{}.0.log", _file));
         std::filesystem::path dir = path.parent_path();
 
-        // Create directories if they don't exist
-        if (!std::filesystem::exists(dir)) {
-            if (!std::filesystem::create_directories(dir)) {
+        if (!std::filesystem::exists(dir))
+            if (!std::filesystem::create_directories(dir))
                 std::cerr << "Failed to create directory: " << dir << std::endl;
-            }
-        }
+        if (std::filesystem::exists(path))
+            moveFile(path.parent_path() / path.stem().stem());
         m_stream.open(path);
+    }
+
+    void File::Deinit()
+    {
+        m_stream.close();
+    }
+
+    void File::moveFile(const std::filesystem::path &_path, size_t _it)
+    {
+        std::filesystem::path fullpath(std::format("{}.{}.log", _path.string(), _it));
+
+        std::cout << fullpath << std::endl;
+        if (std::filesystem::exists(fullpath))
+            moveFile(_path, _it + 1);
+        std::cout << "renaming: " << fullpath << " to " << std::format("{}.{}.log", _path.string(), _it + 1) << std::endl;
+        std::rename(fullpath.string().c_str(), std::format("{}.{}.log", _path.string(), _it + 1).c_str());
     }
 
     File::~File()
     {
-        m_stream.close();
     }
 
     void File::newEventLog(Event _event)
