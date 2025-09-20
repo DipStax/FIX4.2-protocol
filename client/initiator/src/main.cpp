@@ -32,6 +32,8 @@ int main(int _ac, const char **_av)
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
+    logger::imp::File::Init("./logs/initiator");
+
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
 
     sql::ConnectionPool<1>::Init(Configuration<config::Global>::Get().Config.DBConfig.ConnectionString);
@@ -41,5 +43,6 @@ int main(int _ac, const char **_av)
     core.start();
 
     logger::imp::Buffer::Stop();
+    logger::imp::File::Deinit();
     return 0;
 }

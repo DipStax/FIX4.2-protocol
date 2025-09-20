@@ -29,6 +29,8 @@ int main(int _ac, char *_av[])
     logger::Manager::registerNewLogger<logger::imp::Buffer>("buffer");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
+    logger::imp::File::Init("./logs/GUI");
+
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
 
     qRegisterMetaType<net::Buffer>();
@@ -40,5 +42,10 @@ int main(int _ac, char *_av[])
     if (login.exec() == QDialog::Accepted) {
         main.show();
     }
-    return app.exec();
+    int result = app.exec();
+
+    logger::imp::Buffer::Stop();
+    logger::imp::File::Deinit();
+
+    return result;
 }

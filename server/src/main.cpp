@@ -27,6 +27,8 @@ int main(int _ac, const char **_av)
     logger::Manager::registerNewLogger<logger::imp::File>("file");
     logger::Manager::registerDefaultLogger<logger::imp::Buffer>();
 
+    logger::imp::File::Init("./logs/server");
+
     Configuration<config::Global>::Load(_av[1], Configuration<config::Global>::Get());
 
     Core core{};
@@ -34,5 +36,6 @@ int main(int _ac, const char **_av)
     int result = core.start();
 
     logger::imp::Buffer::Stop();
+    logger::imp::File::Deinit();
     return result;
 }
