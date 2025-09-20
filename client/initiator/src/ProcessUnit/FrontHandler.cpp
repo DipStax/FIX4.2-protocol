@@ -11,6 +11,9 @@ namespace pu
     FrontHandler::FrontHandler()
         : AProcessUnitBase("Initiator/FrontHandler")
     {
+        SessionManager::OnRemoveSession([this] (const std::shared_ptr<Session> &_session) {
+            m_selector.erase(_session->getFrontSocket());
+        });
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Front.Port);
         Logger->log<logger::Level::Debug>("Listening on port: ", Configuration<config::Global>::Get().Config.Front.Port);
         m_acceptor.setBlocking(false);
@@ -34,8 +37,8 @@ namespace pu
             for (const std::shared_ptr<net::INetTcp> &_client : clients) {
                 std::shared_ptr<Session> session = SessionManager::Instance().findSession(_client);
 
-                if (process(_client, session)) {
-                    // disconnect client
+                if (!process(_client, session)) {
+                    session->close();
                 }
             }
         }

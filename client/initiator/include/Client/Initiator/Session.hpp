@@ -40,6 +40,8 @@ class Session
 
         [[nodiscard]] static std::string GenerateToken();
 
+        void close();
+
     private:
 
         struct SessionFrontend
@@ -47,6 +49,7 @@ class Session
             std::optional<std::string> apikey = std::nullopt;
 
             std::shared_ptr<net::INetTcp> socket = nullptr;
+            std::string name{};
         };
 
         struct SessionBackend

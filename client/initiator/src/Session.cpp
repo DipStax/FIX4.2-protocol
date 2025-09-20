@@ -73,6 +73,20 @@ std::string Session::GenerateToken()
     return std::to_string(token);
 }
 
+void Session::close()
+{
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::work tnx_update{*(conn.Conn)};
+        (void)tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{false, m_frontend.apikey, m_frontend.name});
+
+        tnx_update.commit();
+        conn.done();
+    }
+    if (m_backend.cmd != nullptr)
+        m_backend.cmd->stop();
+}
+
 void Session::handleFrontend(const ipc::Header &_header, net::Buffer &_buffer)
 {
     Logger->log<logger::Level::Error>("Received new message from frontend: message type: ", (int)_header.MsgType);
@@ -99,9 +113,9 @@ void Session::identifyFrontend(net::Buffer &_buffer)
 
         if (!server_name.has_value())
             return;
-
+        m_frontend.name = server_name.value();
         m_frontend.apikey = authfront.apikey;
-        valid_auth.name = server_name.value();
+        valid_auth.name = m_frontend.name;
         Logger->log<logger::Level::Debug>("Sending auth validation to frontend: ", valid_auth);
         send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
         buildShellBack();
@@ -140,8 +154,8 @@ std::optional<std::string> Session::login(const std::string &_apikey, const std:
     }
     {
         sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
-        pqxx::nontransaction tnx_update{*(conn.Conn)};
-        tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{true, _apikey, _name});
+        pqxx::work tnx_update{*(conn.Conn)};
+        (void)tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{true, _apikey, _name});
 
         tnx_update.commit();
         conn.done();
