@@ -6,6 +6,7 @@
 #include "Client/Shared/IPC/Helper.hpp"
 
 #include "Shared/Log/Manager.hpp"
+#include "Shared/PgSQL/ConnectionPool.hpp"
 
 
 Session::Session(const std::shared_ptr<net::INetTcp> &_front)
@@ -93,8 +94,14 @@ void Session::identifyFrontend(net::Buffer &_buffer)
         Logger->log<logger::Level::Verbose>("API Key not set, verifying authentification");
         _buffer >> authfront;
         Logger->log<logger::Level::Info>("Frontend identify with info: ", authfront);
+
+        std::optional<std::string> server_name = login(authfront.apikey, authfront.name);
+
+        if (!server_name.has_value())
+            return;
+
         m_frontend.apikey = authfront.apikey;
-        valid_auth.apikey = authfront.apikey;
+        valid_auth.name = server_name.value();
         Logger->log<logger::Level::Debug>("Sending auth validation to frontend: ", valid_auth);
         send(ipc::Helper::Auth::InitiatorToFront(valid_auth), Side::Front);
         buildShellBack();
@@ -104,6 +111,42 @@ void Session::identifyFrontend(net::Buffer &_buffer)
     } else {
         Logger->log<logger::Level::Error>("Frontend try to reauth with the initiator");
     }
+}
+
+std::optional<std::string> Session::login(const std::string &_apikey, const std::string &_name)
+{
+    pqxx::result result{};
+
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::read_transaction tnx_select{*(conn.Conn)};
+        result = tnx_select.exec("SELECT connected, server_name, apikey, client_name FROM dev.client WHERE apikey = $1 AND client_name = $2 LIMIT 1", pqxx::params{_apikey, _name});
+
+        tnx_select.commit();
+        conn.done();
+    }
+    if (result.empty()) {
+        Logger->log<logger::Level::Info>("User trying to connect not found: ", _name);
+        // todo reject
+        return std::nullopt;
+    }
+
+    auto [connect, server_name, _, __] = result.at(0).as<bool, std::string, std::string, std::string>();
+
+    if (connect) {
+        Logger->log<logger::Level::Warning>("User trying to reconnect: ", _name);
+        // todo reject
+        return std::nullopt;
+    }
+    {
+        sql::Connection &conn = sql::ConnectionPool<1>::GetAvailableConnection();
+        pqxx::nontransaction tnx_update{*(conn.Conn)};
+        tnx_update.exec("UPDATE dev.client SET connected = $1 WHERE apikey = $2 AND client_name = $3", pqxx::params{true, _apikey, _name});
+
+        tnx_update.commit();
+        conn.done();
+    }
+    return server_name;
 }
 
 void Session::buildShellBack()

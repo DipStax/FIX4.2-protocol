@@ -9,6 +9,7 @@ namespace ipc::msg
     struct AuthFrontToInitiator
     {
         std::string apikey{};
+        std::string name{};
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const AuthFrontToInitiator &_auth);
         friend net::Buffer &operator>>(net::Buffer &_buffer, AuthFrontToInitiator &_auth);
@@ -16,7 +17,15 @@ namespace ipc::msg
         friend std::ostream &operator<<(std::ostream &_os, const AuthFrontToInitiator &_auth);
     };
 
-    using AuthInitiatorToFront = AuthFrontToInitiator;
+    struct AuthInitiatorToFront
+    {
+        std::string name{};
+
+        friend net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToFront &_auth);
+        friend net::Buffer &operator>>(net::Buffer &_buffer, AuthInitiatorToFront &_auth);
+
+        friend std::ostream &operator<<(std::ostream &_os, const AuthInitiatorToFront &_auth);
+    };
 
     struct AuthInitiatorToBack
     {

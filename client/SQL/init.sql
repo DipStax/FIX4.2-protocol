@@ -7,5 +7,7 @@ CREATE SCHEMA dev AUTHORIZATION db_admin;
 CREATE TABLE dev.client (
     id int NOT NULL PRIMARY KEY,
     apikey CHAR(36),
+    client_name varchar,
+    server_name varchar,
     connected BOOLEAN
 );

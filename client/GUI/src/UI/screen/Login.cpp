@@ -52,6 +52,7 @@ namespace ui::screen
         ipc::msg::AuthFrontToInitiator auth;
 
         auth.apikey = Configuration<config::Global>::Get().Config.ApiKey;
+        auth.name = m_uid_entry->text().toStdString();
         Logger->log<logger::Level::Info>("Sending request to identify frontend to initiator");
         m_progress->setValue(1);
         connect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
@@ -63,6 +64,7 @@ namespace ui::screen
         std::ignore = _identify;
 
         m_progress->setValue(2);
+        m_name = _identify.name;
         Logger->log<logger::Level::Info>("Authentication validated, waiting for token approval");
         connect(InitiatorManager::Instance(), &InitiatorManager::received_ValidationToken, this, &Login::tokenAuth);
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
@@ -105,7 +107,7 @@ namespace ui::screen
             case PUStatus::Running:
                 m_progress->setValue(6);
                 logon = {
-                    m_uid_entry->text().toStdString(),
+                    m_name,
                     m_seqnum_entry->text().toUInt(),
                     m_hb_entry->text().toUInt()
                 };

@@ -8,7 +8,7 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::FrontToInitiatorAuth,
-            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+            static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size() + _auth.name.size())
         };
 
         buffer << header << _auth;
@@ -20,7 +20,7 @@ namespace ipc
         net::Buffer buffer;
         ipc::Header header{
             ipc::MessageType::InitiatorToFrontAuth,
-            static_cast<uint32_t>(sizeof(uint32_t) + _auth.apikey.size())
+            static_cast<uint32_t>(sizeof(uint32_t) + _auth.name.size())
         };
 
         buffer << header << _auth;

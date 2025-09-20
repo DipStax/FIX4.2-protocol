@@ -18,6 +18,7 @@
 | Field | Description | Size |
 |---|---|---|
 | **API Key** | API key to authenticat the frontend | `string` |
+| **Name** | Name of the account to authenticat | `string` |
 
 - Message code: **0**
 - Related structure: `ipc::msg::wAuthFrontToInitiator` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))
@@ -29,7 +30,7 @@ Message used to authenticat the **Frontend** to the **Initiator**.
 
 | Field | Description | Size |
 |---|---|---|
-| **API Key** | API key use to authenticat the frontend | `string` |
+| **Name** | Name used for login to the FIX server | `string` |
 
 - Message code: **1**
 - Related structure: `ipc::msg::AuthInitiatorToFront` ([Authentication.hpp](../IPC/include/Client/Shared/IPC/Message/Authentication.hpp))

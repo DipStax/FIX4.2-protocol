@@ -50,6 +50,8 @@ namespace ui::screen
             QPushButton *m_button = nullptr;
             QProgressBar *m_progress = nullptr;
 
+            std::string m_name{};
+
             std::unique_ptr<logger::ILogger> Logger = nullptr;
 
     };
