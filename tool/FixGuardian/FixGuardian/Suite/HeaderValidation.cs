@@ -43,12 +43,6 @@ namespace FixGuardian.Suite
             return Encoding.UTF8.GetString(buffer, 0, bytesRead);
         }
 
-        [TestCase("Dummy")]
-        public void DummyTest()
-        {
-            Assert.Equal(0, 1);
-        }
-
         [TestCase("Invalid first positional (BeginString)")]
         public void InvalidBeginString()
         {
