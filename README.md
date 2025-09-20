@@ -40,8 +40,7 @@ The project is currently, both the client and the server, under heavy refactor t
 - C++20 compatible compiler
 - CMake 3.10 or higher
 - Qt6 developement tool kit
-- Doxygen (optional)
-- Draw.io extension (optional)
+- libpq-dev
 
 ### Building the Project
 

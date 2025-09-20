@@ -1,3 +1,5 @@
+include(FetchContent)
+
 file(GLOB_RECURSE SRC_Fix_Client_Initiator
     include/**.hpp
     include/**.inl
@@ -17,12 +19,15 @@ add_custom_command(
         -P ${CMAKE_SOURCE_DIR}/cmake/copy_config.cmake
 )
 
+
+
 target_link_libraries(Fix_Client_Initiator PRIVATE
     Client_Shared_IPC
     Shared_Core
     Shared_Network
     Shared_ProcessUnit
     Shared_Configuration
+    Shared_PgSQL
 )
 
 target_include_directories(Fix_Client_Initiator PUBLIC include)

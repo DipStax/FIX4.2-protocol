@@ -1,3 +1,5 @@
+#include <pqxx/pqxx>
+
 #include "Client/Initiator/Config.hpp"
 #include "Client/Initiator/Session.hpp"
 
