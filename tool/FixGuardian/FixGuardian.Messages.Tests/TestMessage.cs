@@ -2,7 +2,7 @@
 using FixGuardian.Messages.Definition;
 using System.Runtime.Serialization;
 
-namespace FixGuardian.Message.Tests
+namespace FixGuardian.Messages.Tests
 {
     public class TestMessage : AMessage
     {
