@@ -9,38 +9,6 @@
 
 namespace utils
 {
-    bool is_numeric(const std::string &_str)
-    {
-        std::string::const_iterator it = _str.begin();
-
-        for (; it != _str.end() && std::isdigit(*it); it++) {}
-        return !_str.empty() && it == _str.end();
-    }
-
-    bool is_double(const std::string &_str)
-    {
-        std::istringstream stream(_str);
-        double f = 0.f;
-
-        stream >> std::noskipws >> f;
-        return stream.eof() && !stream.fail();
-    }
-
-    std::string id() {
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_int_distribution<> dis(0, 9999999);
-
-        unsigned int id = dis(gen);
-        std::string idStr = std::to_string(id);
-
-        while (idStr.length() < 7) {
-            idStr = "0" + idStr;
-        }
-
-        return idStr;
-    }
-
     std::vector<std::string> space_split(const std::string &_str)
     {
         std::stringstream stream(_str);
@@ -55,30 +23,33 @@ namespace utils
         return result;
     }
 
-    std::string get_timestamp()
+    std::string trunc(const std::string &_str, size_t _size)
     {
-        time_t currentTime = time(nullptr);
-        struct tm *timeInfo = localtime(&currentTime);
+        return _str.substr(0, _size) + "...";
+    }
 
-        // Get the microseconds since the last second
-        struct timeval tv;
-        gettimeofday(&tv, nullptr);
-        int microseconds = tv.tv_usec;
+    std::string Uuid::Generate()
+    {
+        static thread_local std::random_device rd;
+        static thread_local std::mt19937_64 gen(rd());
+        static thread_local std::uniform_int_distribution<unsigned int> dist(0, 255);
 
-        // Format the current time as a string
-        char dateTimeBuffer[80];
-        strftime(dateTimeBuffer, sizeof(dateTimeBuffer), "%Y%m%d-%H:%M:%S", timeInfo);
+        std::array<unsigned char, 16> bytes{};
 
-        // Convert the formatted time string to a C++ string
-        std::string formattedTime = dateTimeBuffer;
+        for (auto &b : bytes)
+            b = static_cast<unsigned char>(dist(gen));
+        std::ostringstream oss;
 
-        // Prepend two zeros to the microsecond value
-        std::string microsecondsString = std::to_string(microseconds);
-        if (microsecondsString.length() < 3)
-            microsecondsString = "00" + microsecondsString;
+        bytes[6] = (bytes[6] & 0x0F) | 0x40;
+        bytes[8] = (bytes[8] & 0x3F) | 0x80;
+        oss << std::hex << std::setfill('0');
+        for (size_t i = 0; i < bytes.size(); i++) {
+            oss << std::setw(2) << static_cast<int>(bytes[i]);
+            if (i == 3 || i == 5 || i == 7 || i == 9) {
+                oss << "-";
+            }
+        }
 
-        // Combine the formatted time string with the microsecond value
-        formattedTime = formattedTime + "." + microsecondsString.substr(0, 3);
-        return formattedTime;
+        return oss.str();
     }
 }

@@ -7,7 +7,7 @@
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/PgSQL/ConnectionPool.hpp"
-
+#include "Shared/Utils/Utils.hpp"
 
 Session::Session(const std::shared_ptr<net::INetTcp> &_front)
     : m_session_id(GetSessionId()), Logger(logger::Manager::newLogger("Initiator/Session/" + m_session_id))
@@ -44,9 +44,12 @@ void Session::setBackendSocket(const std::shared_ptr<net::UnixStream> &_socket)
 
 std::string Session::GetSessionId()
 {
-    static size_t id = 0;
+    return utils::Uuid::Generate();
+}
 
-    return std::to_string(id++);
+const std::string &Session::getId() const
+{
+    return m_session_id;
 }
 
 std::shared_ptr<net::INetTcp> Session::getFrontSocket() const
@@ -140,11 +143,12 @@ std::optional<std::string> Session::login(const std::string &_apikey, const std:
         conn.done();
     }
     if (result.empty()) {
-        Logger->log<logger::Level::Info>("User trying to connect not found: ", _name);
+        Logger->log<logger::Level::Warning>("User trying to connect not found: ", _name);
         ipc::msg::Reject reject{"No user found"};
         send(ipc::Helper::Reject(reject), Side::Front);
         return std::nullopt;
     }
+    Logger->log<logger::Level::Info>("User validated from database");
 
     auto [connect, server_name, _, __] = result.at(0).as<bool, std::string, std::string, std::string>();
 
@@ -162,6 +166,7 @@ std::optional<std::string> Session::login(const std::string &_apikey, const std:
         tnx_update.commit();
         conn.done();
     }
+    Logger->log<logger::Level::Info>("User set as connected in the database");
     return server_name;
 }
 

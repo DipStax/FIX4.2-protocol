@@ -28,7 +28,7 @@ void BackManager::setTargetPort(uint32_t _port)
     m_socket = std::make_shared<net::INetTcp>();
     Logger->log<logger::Level::Debug>("Connecting to: ", Configuration<config::Global>::Get().Config.Back.Ip, ":", _port);
     while (!m_socket->connect(Configuration<config::Global>::Get().Config.Back.Ip, _port)) {
-        Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
+        Logger->log<logger::Level::Error>("Unable to connect to the Initiator, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     Logger->log<logger::Level::Info>("Successfully connected to backend");
@@ -36,12 +36,18 @@ void BackManager::setTargetPort(uint32_t _port)
 
 void BackManager::startConnection()
 {
+    if (m_running) {
+        Logger->log<logger::Level::Warning>("Backend connection is already running");
+        return;
+    }
+
     net::Selector<net::INetTcp> selector;
 
     selector.timeout(1000);
     selector.client(m_socket);
-
-    while (true) {
+    Logger->log<logger::Level::Info>("Backend connection is now running");
+    m_running = true;
+    while (m_running) {
         std::vector<net::Selector<net::INetTcp>::Client> clients = selector.pull();
 
         if (!clients.empty()) {
@@ -79,6 +85,11 @@ void BackManager::startConnection()
 void BackManager::send(const net::Buffer &_buffer)
 {
     m_socket->send(_buffer.data(), _buffer.size());
+}
+
+void BackManager::stop()
+{
+    m_running = false;
 }
 
 BackManager::BackManager(QObject *_parent)

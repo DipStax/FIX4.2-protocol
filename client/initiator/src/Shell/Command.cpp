@@ -6,6 +6,8 @@
 
 #include "Client/Initiator/Shell/Command.hpp"
 
+#include "Shared/Utils/Utils.hpp"
+
 namespace shell
 {
     Command::~Command()
@@ -95,7 +97,7 @@ namespace shell
             _os << " " << _arg;
         _os << "\"";
         for (const auto &[_key, _value] : _cmd.m_env)
-            _os << "\n\tENV: " << _key << "=" << _value;
+            _os << "\n\tENV: " << _key << "=" << utils::trunc(_value);
         return _os;
     }
 

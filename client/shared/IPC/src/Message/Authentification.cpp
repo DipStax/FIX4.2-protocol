@@ -1,5 +1,7 @@
 #include "Client/Shared/IPC/Message/Authentication.hpp"
 
+#include "Shared/Utils/Utils.hpp"
+
 namespace ipc::msg
 {
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthFrontToInitiator &_auth)
@@ -14,7 +16,7 @@ namespace ipc::msg
 
     std::ostream &operator<<(std::ostream &_os, const AuthFrontToInitiator &_auth)
     {
-        return _os << "{ ApiKey: " << _auth.apikey << ", Name: " << _auth.name << " }";
+        return _os << "{ ApiKey: " << utils::trunc(_auth.apikey) << ", Name: " << _auth.name << " }";
     }
 
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthInitiatorToFront &_auth)
@@ -44,7 +46,7 @@ namespace ipc::msg
 
     std::ostream &operator<<(std::ostream &_os, const AuthInitiatorToBack &_auth)
     {
-        return _os << "{ Token: " << _auth.token << ", ApiKey: " << _auth.apikey << "}";
+        return _os << "{ Token: " << _auth.token << ", ApiKey: " << utils::trunc(_auth.apikey) << "}";
     }
 
     net::Buffer &operator<<(net::Buffer &_buffer, const AuthBackToInitiator &_auth)
@@ -59,6 +61,6 @@ namespace ipc::msg
 
     std::ostream &operator<<(std::ostream &_os, const AuthBackToInitiator &_auth)
     {
-        return _os << "{ ApiKey: " << _auth.apikey << ", Port: " << _auth.port << "}";
+        return _os << "{ ApiKey: " << utils::trunc(_auth.apikey) << ", Port: " << _auth.port << "}";
     }
 }

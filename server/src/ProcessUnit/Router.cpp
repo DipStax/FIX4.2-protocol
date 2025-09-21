@@ -37,7 +37,7 @@ namespace pu
                 // case fix::OrderCancelReplaceRequest::cMsgType:
                     m_market_router.push(std::move(_input));
                     break;
-                // case fix::MarketDataRequest::cMsgType: // todo
+                // case fix::MarketDataRequest::cMsgType:
                 //     break;
                 case fix42::msg::SessionReject::Type:
                     treatReject(_input);
@@ -94,7 +94,7 @@ namespace pu
 
     void Router::treatReject(const InputType &_input)
     {
-        Logger->log<logger::Level::Error>("Received a reject message from client: ", _input.Client->getUserId(), ", reject info: "); // todo
+        Logger->log<logger::Level::Error>("Received a reject message from client: ", _input.Client->getUserId(), ", reject info: "); // todo log
     }
 
     // bool Router::treatMarketDataRequest(InputType &_input)

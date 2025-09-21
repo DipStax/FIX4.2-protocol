@@ -53,9 +53,10 @@ namespace ui::screen
     {
         ipc::msg::AuthFrontToInitiator auth;
 
+        Logger->log<logger::Level::Debug>("Initiator connection ready for use");
         auth.apikey = Configuration<config::Global>::Get().Config.ApiKey;
         auth.name = m_uid_entry->text().toStdString();
-        Logger->log<logger::Level::Info>("Sending request to identify frontend to initiator");
+        Logger->log<logger::Level::Info>("Sending authentication to Initiator: ", auth);
         m_progress->setValue(1);
         connect(InitiatorManager::Instance(), &InitiatorManager::received_Reject, this, &Login::invalidIdentification);
         connect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
@@ -68,7 +69,7 @@ namespace ui::screen
 
         m_progress->setValue(2);
         m_name = _identify.name;
-        Logger->log<logger::Level::Info>("Authentication validated, waiting for token approval");
+        Logger->log<logger::Level::Info>("Authentication validated from Initiator, waiting for token approval");
         connect(InitiatorManager::Instance(), &InitiatorManager::received_ValidationToken, this, &Login::tokenAuth);
         disconnect(InitiatorManager::Instance(), &InitiatorManager::received_IdentifyFront, this, &Login::validatedIdentification);
     }
@@ -155,10 +156,13 @@ namespace ui::screen
         m_progress->show();
         m_progress->setValue(0);
 
-        if (InitiatorManager::Instance()->isConnectionReady())
+        if (InitiatorManager::Instance()->isConnectionReady()) {
+            Logger->log<logger::Level::Debug>("Connection already running, sending auhentication");
             sendIdentification();
-        else
+        } else {
+            Logger->log<logger::Level::Info>("Starting connection in queued thread");
             connect(InitiatorManager::Instance(), &InitiatorManager::connectionReady, this, &Login::sendIdentification);
+        }
         emit requestInitiatorConnection();
     }
 }

@@ -12,6 +12,7 @@ namespace pu
         : AProcessUnitBase("Initiator/FrontHandler")
     {
         SessionManager::OnRemoveSession([this] (const std::shared_ptr<Session> &_session) {
+            Logger->log<logger::Level::Info>("Removing session from selector: ", _session->getId());
             m_selector.erase(_session->getFrontSocket());
         });
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Front.Port);
@@ -38,7 +39,7 @@ namespace pu
                 std::shared_ptr<Session> session = SessionManager::Instance().findSession(_client);
 
                 if (!process(_client, session)) {
-                    session->close();
+                    SessionManager::Instance().removeSession(session);
                 }
             }
         }

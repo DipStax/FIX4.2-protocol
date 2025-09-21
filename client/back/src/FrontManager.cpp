@@ -5,6 +5,7 @@
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Network/Selector.hpp"
+#include "Shared/Utils/Utils.hpp"
 
 FrontManager &FrontManager::Instance()
 {
@@ -95,9 +96,10 @@ uint32_t FrontManager::initAcceptor()
 
 void FrontManager::setupToken(const std::string &_token)
 {
-    Logger->log<logger::Level::Debug>("Using token: ", _token);
+    Logger->log<logger::Level::Debug>("Authenticate with token: ", utils::trunc(_token));
     m_token = _token;
     m_socket = m_acceptor.accept();
+    Logger->log<logger::Level::Debug>("Accepted frontend connection");
     m_thread = std::jthread(&FrontManager::receiveLoop, this);
 }
 

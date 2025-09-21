@@ -58,7 +58,7 @@ namespace pu::market
         info.order.orderId = _input.Message.get<fix42::tag::ClOrdID>().Value;
         info.order.quantity = _input.Message.get<fix42::tag::OrderQty>().Value.value();
 
-        Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side); // todo log
+        Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side);
         if (!m_ob.has(info.order.orderId)) {
             fix42::msg::ExecutionReport report;
 

@@ -32,6 +32,7 @@ class Session
         void setBackendSocket(const std::shared_ptr<net::UnixStream> &_socket);
 
         [[nodiscard]] static std::string GetSessionId();
+        [[nodiscard]] const std::string &getId() const;
 
         [[nodiscard]] std::shared_ptr<net::INetTcp> getFrontSocket() const;
         [[nodiscard]] std::shared_ptr<net::UnixStream> getBackSocket() const;
