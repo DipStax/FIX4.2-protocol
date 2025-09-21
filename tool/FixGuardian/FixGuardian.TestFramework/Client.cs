@@ -8,7 +8,7 @@ using FixGuardian.TestFramework.Assertions;
 
 namespace FixGuardian.TestFramework
 {
-    public class Client
+    public class FixClient
     {
         private TcpClient TcpSocket { get; }
         public NetworkStream TcpStream { get; }
@@ -18,7 +18,7 @@ namespace FixGuardian.TestFramework
 
         public bool IsLoggedIn { get; private set; } = false;
 
-        public Client(string name, uint seqnum = 0)
+        public FixClient(string name, uint seqnum = 0)
         {
             TcpSocket = new TcpClient("127.0.0.1", 8080);
             TcpStream = TcpSocket.GetStream();
@@ -46,6 +46,22 @@ namespace FixGuardian.TestFramework
                 throw new AssertionException("During receive of Logon", ex);
             }
             IsLoggedIn = true;
+        }
+
+        public void Logout()
+        {
+            Send(new Logout());
+
+            try
+            {
+                Receive<Logout>();
+            }
+            catch (AssertionException ex)
+            {
+                throw new AssertionException("During receive of logout", ex);
+            }
+            TcpStream.Close();
+            TcpSocket.Close();
         }
 
         public void Send<T>(T message)
@@ -80,11 +96,16 @@ namespace FixGuardian.TestFramework
             return message;
         }
 
-        public void AssertServerDisconnet()
+        public bool IsConnected()
         {
             Socket socket = TcpSocket.Client;
 
-            if (socket.Poll(100_000, SelectMode.SelectRead) && socket.Available == 0)
+            return socket.Poll(1000, SelectMode.SelectRead) && socket.Available != 0;
+        }
+
+        public void AssertServerDisconnet()
+        {
+            if (!IsConnected())
                 return;
             throw new AssertionException("Client not disconenct");
         }
