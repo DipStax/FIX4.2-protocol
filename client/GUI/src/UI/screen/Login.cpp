@@ -108,8 +108,10 @@ namespace ui::screen
 
         m_progress->setValue(4);
         Logger->log<logger::Level::Info>("Backend synchronized");
+
         disconnect(BackManager::Instance(), &BackManager::received_TokenValidation, this, &Login::tokenValidated);
         connect(BackManager::Instance(), &BackManager::received_Status, this, &Login::backNotifyStatus);
+        BackManager::Instance()->send(ipc::Helper::Auth::HandShake());
     }
 
     void Login::backNotifyStatus(PUStatus _status)

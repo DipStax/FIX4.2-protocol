@@ -6,7 +6,7 @@ namespace ipc::msg
 {
     struct Reject
     {
-        std::string message{};
+        std::string message;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const Reject &_order);
         friend net::Buffer &operator>>(net::Buffer &_buffer, Reject &_order);

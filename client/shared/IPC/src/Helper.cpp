@@ -5,7 +5,7 @@ namespace ipc
 {
     net::Buffer Helper::Auth::FrontToInitiator(const msg::AuthFrontToInitiator &_auth)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::FrontToInitiatorAuth,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size() + _auth.name.size())
@@ -17,7 +17,7 @@ namespace ipc
 
     net::Buffer Helper::Auth::InitiatorToFront(const msg::AuthInitiatorToFront &_auth)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::InitiatorToFrontAuth,
             static_cast<uint32_t>(sizeof(uint32_t) + _auth.name.size())
@@ -29,7 +29,7 @@ namespace ipc
 
     net::Buffer Helper::Auth::BackToInitiator(const msg::AuthBackToInitiator &_auth)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::BackToInitiatorAuth,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size())
@@ -41,7 +41,7 @@ namespace ipc
 
     net::Buffer Helper::Auth::InitiatorToBack(const msg::AuthInitiatorToBack &_auth)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::InitiatorToBackAuth,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _auth.apikey.size() + _auth.token.size())
@@ -51,9 +51,22 @@ namespace ipc
         return buffer;
     }
 
+    net::Buffer Helper::Auth::HandShake()
+    {
+        net::Buffer buffer{};
+        ipc::Header header{
+            ipc::MessageType::HandShakeAuth,
+            0
+        };
+
+        buffer << header;
+        return buffer;
+    }
+
+
     net::Buffer Helper::ValidationToken::InitiatorToFront(const msg::InitiatorToFrontValidToken &_validation)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::InitiatorToFrontValidToken,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _validation.token.size())
@@ -65,7 +78,7 @@ namespace ipc
 
     net::Buffer Helper::ValidationToken::FrontToBack(const msg::FrontToBackValidToken &_validation)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::FrontToBackValidToken,
             static_cast<uint32_t>(sizeof(uint32_t) + _validation.token.size())
@@ -77,7 +90,7 @@ namespace ipc
 
     net::Buffer Helper::ValidationToken::BackToFront(const msg::BackToFrontValidToken &_validation)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::BackToFrontValidToken,
             static_cast<uint32_t>(sizeof(uint32_t) + _validation.token.size())
@@ -89,7 +102,7 @@ namespace ipc
 
     net::Buffer Helper::Reject(const msg::Reject &_reject)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::Reject,
             static_cast<uint32_t>(sizeof(uint32_t) + _reject.message.size())
@@ -100,7 +113,7 @@ namespace ipc
 
     net::Buffer Helper::Status(PUStatus _status)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::Status,
             sizeof(PUStatus)
@@ -111,7 +124,7 @@ namespace ipc
 
     net::Buffer Helper::Logon(const msg::Logon &_logon)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::Logon,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _logon.UserId.size() + sizeof(float))
@@ -123,7 +136,7 @@ namespace ipc
 
     net::Buffer Helper::OrderSingle(const msg::OrderSingle &_order)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             ipc::MessageType::OrderSingle,
             static_cast<uint32_t>(sizeof(uint32_t) * 2 + _order.symbol.size() + _order.orderId.size() + sizeof(Price) + sizeof(Quantity) + sizeof(uint8_t))
@@ -135,7 +148,7 @@ namespace ipc
 
     net::Buffer Helper::ExecutionEvent(const msg::Execution &_exec, ipc::MessageType _type)
     {
-        net::Buffer buffer;
+        net::Buffer buffer{};
         ipc::Header header{
             _type,
             static_cast<uint32_t>(sizeof(uint32_t) * 3 + _exec.symbol.size() + _exec.orderId.size() + _exec.execId.size() + sizeof(Price) * 2 + sizeof(Side) + sizeof(Quantity) * 2)
@@ -144,5 +157,4 @@ namespace ipc
         buffer << header << _exec;
         return buffer;
     }
-
 }

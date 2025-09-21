@@ -6,8 +6,8 @@ namespace ipc::msg
 {
     struct InitiatorToFrontValidToken
     {
-        std::string token{};
-        uint32_t port = 0;
+        std::string token;
+        uint32_t port;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const InitiatorToFrontValidToken &_validation);
         friend net::Buffer &operator>>(net::Buffer &_buffer, InitiatorToFrontValidToken &_validation);
@@ -17,7 +17,7 @@ namespace ipc::msg
 
     struct FrontToBackValidToken
     {
-        std::string token{};
+        std::string token;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const FrontToBackValidToken &_validation);
         friend net::Buffer &operator>>(net::Buffer &_buffer, FrontToBackValidToken &_validation);
