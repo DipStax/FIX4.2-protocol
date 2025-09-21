@@ -20,35 +20,6 @@ jobs:
           IMAGE=$(echo $IMAGE | tr '[:upper:]' '[:lower:]')
           echo "image_name=$IMAGE" >> $GITHUB_OUTPUT
 
-      - name: Backup log folder
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            set -e
-
-            SRC="/server-logs"
-            DEST_DIR="/backup"
-
-            if [ ! -d "$SRC" ]; then
-                sudo mkdir "$SRC"
-                exit 0
-            fi
-            sudo mkdir -p "$DEST_DIR"
-            i=1
-            while true; do
-                DEST_PATH="$DEST_DIR/server-logs_$i"
-                if [ ! -e "$DEST_PATH" ]; then
-                    break
-                fi
-                ((i++))
-            done
-            sudo mv "$SRC" "$DEST_PATH"
-            sudo mkdir "$SRC"
-
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.2.2
         with:

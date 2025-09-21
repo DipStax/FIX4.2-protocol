@@ -8,6 +8,7 @@ namespace pu
         : AProcessUnitBase("Initiator/BackHandler")
     {
         SessionManager::OnRemoveSession([this] (const std::shared_ptr<Session> &_session) {
+            Logger->log<logger::Level::Info>("Removin session from selector: ", _session->getId());
             m_selector.erase(_session->getBackSocket());
         });
         m_acceptor.listen(Configuration<config::Global>::Get().Config.Back.Address);
@@ -31,7 +32,7 @@ namespace pu
                 Logger->log<logger::Level::Info>("Event pulled from: ", clients.size(), " backend(s)");
             for (const std::shared_ptr<net::UnixStream> &_client : clients) {
                 if (process(_client)) {
-                    // disconnect client
+                    // todo do something about it
                 }
             }
         }

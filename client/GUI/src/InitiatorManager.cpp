@@ -30,7 +30,7 @@ void InitiatorManager::startConnection()
     m_socket = std::make_shared<net::INetTcp>();
     Logger->log<logger::Level::Debug>("Connecting to: ", Configuration<config::Global>::Get().Config.Initiator.Ip, ":", Configuration<config::Global>::Get().Config.Initiator.Port);
     while (!m_socket->connect(Configuration<config::Global>::Get().Config.Initiator.Ip, Configuration<config::Global>::Get().Config.Initiator.Port)) {
-        Logger->log<logger::Level::Error>("Unable to connect to the backend, retrying in 5s");
+        Logger->log<logger::Level::Error>("Unable to connect to the Initiator, retrying in 5s");
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
     Logger->log<logger::Level::Info>("Successfully connected to Initiator");

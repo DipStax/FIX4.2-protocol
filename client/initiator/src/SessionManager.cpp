@@ -57,6 +57,17 @@ void SessionManager::OnRemoveSession(OnSessionCallback _callback)
     m_onremove.push_back(_callback);
 }
 
+void SessionManager::purge()
+{
+    {
+        std::unique_lock lock(m_session_mutex);
+
+        for (const std::shared_ptr<Session> &_session : m_session)
+            removeSession(_session);
+    }
+    m_tp_onremove.stop(TPFinishStrategy::WaitEmpty);
+}
+
 void SessionManager::removeSession(const std::shared_ptr<Session> &_session)
 {
     _session->close();

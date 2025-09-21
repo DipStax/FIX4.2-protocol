@@ -24,6 +24,7 @@ class SessionManager
 
         static void OnRemoveSession(OnSessionCallback _callback);
         void removeSession(const std::shared_ptr<Session> &_session);
+        void purge();
 
     private:
         std::shared_mutex m_session_mutex{};

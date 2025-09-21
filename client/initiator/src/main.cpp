@@ -4,6 +4,7 @@
 #include "Client/Initiator/Signal.hpp"
 
 #include "Client/Initiator/Core.hpp"
+#include "Client/Initiator/SessionManager.hpp"
 
 #include "Shared/Log/Manager.hpp"
 #include "Shared/Log/Imp/Buffer.hpp"
@@ -41,6 +42,8 @@ int main(int _ac, const char **_av)
     Core core{};
 
     core.start();
+
+    SessionManager::Instance().purge();
 
     logger::imp::Buffer::Stop();
     logger::imp::File::Deinit();

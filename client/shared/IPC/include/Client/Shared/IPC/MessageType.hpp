@@ -14,6 +14,7 @@ namespace ipc
         InitiatorToFrontValidToken,
         FrontToBackValidToken,
         BackToFrontValidToken,
+        HandShakeAuth,
         Status,
         Logon,
         OrderSingle,

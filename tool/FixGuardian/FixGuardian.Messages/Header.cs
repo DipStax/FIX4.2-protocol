@@ -109,9 +109,9 @@ namespace FixGuardian.Messages
             foreach (KeyValuePair<PropertyInfo, Tag> prop in PositionalProperty)
             {
                 if (mapmsg.Count == 0)
-                    throw new FixDecodeException($"Missing positional {prop.Key.Name}"); // todo
+                    throw new FixDecodeException($"Missing positional {prop.Key.Name}");
                 if (prop.Value.TagId != mapmsg[0].Key)
-                    throw new FixDecodeException($"Incorrect position tag: '{prop.Value.TagId}' != '{mapmsg[0].Key}'"); // todo
+                    throw new FixDecodeException($"Incorrect position tag: '{prop.Value.TagId}' != '{mapmsg[0].Key}'");
 
                 object? value = FixHelper.ConvertValue(mapmsg[0].Value, prop.Key.PropertyType);
 

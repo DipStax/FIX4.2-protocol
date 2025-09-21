@@ -23,6 +23,7 @@ class BackManager : public QObject
     public slots:
         void startConnection();
         void send(const net::Buffer &_buffer);
+        void stop();
 
     signals:
         void received_TokenValidation(ipc::msg::BackToFrontValidToken _token);
@@ -36,6 +37,8 @@ class BackManager : public QObject
 
     private:
         void ipcReceived(net::Buffer &_buffer);
+
+        bool m_running = false;
 
         uint32_t m_port = 0;
 

@@ -16,6 +16,7 @@ namespace ipc
             static net::Buffer InitiatorToFront(const msg::AuthInitiatorToFront &_auth);
             static net::Buffer BackToInitiator(const msg::AuthBackToInitiator &_auth);
             static net::Buffer InitiatorToBack(const msg::AuthInitiatorToBack &_auth);
+            static net::Buffer HandShake();
         };
 
         struct ValidationToken
