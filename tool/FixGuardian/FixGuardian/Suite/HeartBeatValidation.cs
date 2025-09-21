@@ -11,7 +11,7 @@ namespace FixGuardian.Suite
     {
         public FixClient Client;
 
-        [TestSetup()]
+        [TestSetup]
         public void Setup()
         {
             Client = new FixClient("Sender");
@@ -19,6 +19,7 @@ namespace FixGuardian.Suite
             Client.Logon(1);
         }
 
+        [TestTearDown]
         public void TearDown()
         {
             if (Client.IsConnected())

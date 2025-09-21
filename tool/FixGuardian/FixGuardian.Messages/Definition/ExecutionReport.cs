@@ -3,8 +3,10 @@ using FixGuardian.Messages.Enums;
 
 namespace FixGuardian.Messages.Definition
 {
-    public class ExecutionReport
+    public class ExecutionReport : AMessage, IMessage
     {
+        public char MsgType { get; } = '8';
+
         [Tag(37)]
         public string? OrderID { get; set; } = null;
 

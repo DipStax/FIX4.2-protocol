@@ -4,7 +4,7 @@ namespace FixGuardian.Messages.Enums
 {
     public enum OrderStatus
     {
-        NewOrder = '0',
+        New = 0,
         PartiallyFilled,
         Filled,
         DoneForDay,

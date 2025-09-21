@@ -11,7 +11,7 @@ namespace FixGuardian.Messages.Definition
         public string? ClOrdId { get; set; } = null;
 
         [Tag(21)]
-        public HandleInstance? HeartBtInt { get; set; } = null;
+        public HandleInstance? HandlInst { get; set; } = null;
 
         [Tag(55)]
         public string? Symbol { get; set; } = null;
