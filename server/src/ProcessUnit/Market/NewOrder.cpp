@@ -22,9 +22,22 @@ namespace pu::market
                 newOrderLimit(_input);
                 break;
             default:
-                // todo orderTypeNotSupported(_input);
+                // tmp
+                notSupportedOrderType(_input);
                 break;
         }
+    }
+
+    void NewOrder::notSupportedOrderType(const InputType &_input)
+    {
+        fix42::msg::BusinessReject reject{};
+
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+        reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+        reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
+        reject.get<fix42::tag::Text>().Value = "Not supported order type";
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
     }
 
     void NewOrder::newOrderLimit(const InputType &_input)
@@ -34,8 +47,9 @@ namespace pu::market
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
             reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
             reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
-            reject.get<fix42::tag::Text>().Value = "Price required when OrderType=Limit";
+            reject.get<fix42::tag::Text>().Value = "Price required when OrderType is Limit";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
         } else if (!_input.Message.get<fix42::tag::OrderQty>().Value.has_value()) {
@@ -43,10 +57,21 @@ namespace pu::market
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
             reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
             reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
             reject.get<fix42::tag::Text>().Value = "Order quantity required";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
+        }
+
+        // tmp
+        switch (_input.Message.get<fix42::tag::Side>().Value) {
+            case fix42::Side::BuyMinus:
+            case fix42::Side::SellPlus:
+                break;
+            default:
+                notSupportedSide(_input);
+                return;
         }
 
         obs::OrderInfo info{};
@@ -59,6 +84,7 @@ namespace pu::market
         info.order.quantity = _input.Message.get<fix42::tag::OrderQty>().Value.value();
 
         Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side);
+
         if (!m_ob.has(info.order.orderId)) {
             fix42::msg::ExecutionReport report;
 
@@ -89,5 +115,18 @@ namespace pu::market
             Logger->log<logger::Level::Info>("Rejected: Order ID already used: ", info.order);
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
         }
+    }
+
+    void NewOrder::notSupportedSide(const InputType &_input)
+    {
+        fix42::msg::BusinessReject reject{};
+
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+        reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+        reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
+        reject.get<fix42::tag::Text>().Value = "Not supported side";
+        Logger->log<logger::Level::Warning>("Side not supported");
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
     }
 }

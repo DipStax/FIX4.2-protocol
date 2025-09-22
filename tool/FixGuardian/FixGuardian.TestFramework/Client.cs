@@ -69,6 +69,9 @@ namespace FixGuardian.TestFramework
         {
             string body = FixHelper.ToString(message);
             string messageStr = FixHelper.AddCheckSum(GetHeader((uint)body.Length, message.MsgType).ToString() + body);
+
+            Console.WriteLine($"Sending: '{messageStr.Replace('\u0001', '^')}'");
+
             byte[] data = Encoding.UTF8.GetBytes(messageStr);
 
             TcpStream.Write(data, 0, data.Length);
@@ -80,8 +83,11 @@ namespace FixGuardian.TestFramework
         {
             byte[] buffer = new byte[4096];
             int bytesRead = TcpStream.Read(buffer, 0, buffer.Length);
+            string msgReceive = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-            var (header, message) = Assert.Received<T>(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+            Console.WriteLine($"Receiving: '{msgReceive.Replace('\u0001', '^')}'");
+
+            var (header, message) = Assert.Received<T>(msgReceive);
             Assert.Equal(header, new Header()
             {
                 BeginString = "FIX.4.2",

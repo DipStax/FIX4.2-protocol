@@ -86,6 +86,54 @@ namespace FixGuardian.Suite
             });
         }
 
+        [TestCase("No price")]
+        public void OptionalPrice()
+        {
+            string guid = Guid.NewGuid().ToString();
+
+            Client.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "SellPlus",
+                Side = TradeSide.SellPlus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+            });
+            BusinessMessageReject reject = Client.Receive<BusinessMessageReject>();
+            Assert.Equal(reject, new BusinessMessageReject()
+            {
+                RefSeqNum = 2,
+                RefMsgType = 'D',
+                BusinessRejectReason = RejectReasonBusiness.UnknownSecurity,
+                Text = "Unknown symbol"
+            });
+        }
+
+        [TestCase("No Order Quantity")]
+        public void OptionalOrderQuantity()
+        {
+            string guid = Guid.NewGuid().ToString();
+
+            Client.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Unknown",
+                Side = TradeSide.SellPlus,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+            BusinessMessageReject reject = Client.Receive<BusinessMessageReject>();
+            Assert.Equal(reject, new BusinessMessageReject()
+            {
+                RefSeqNum = 2,
+                RefMsgType = 'D',
+                BusinessRejectReason = RejectReasonBusiness.UnknownSecurity,
+                Text = "Unknown symbol"
+            });
+        }
+
         [TestCase("Same ClOrdId")]
         public void SameCallerOrderId()
         {
@@ -163,30 +211,84 @@ namespace FixGuardian.Suite
         //     SessionReject reject = Client.Receive<SessionReject>();
         // }
 
-        // [TestInput(TradeSide.Buy)]
-        // [TestInput(TradeSide.Cross)]
-        // [TestInput(TradeSide.CrossShort)]
-        // [TestInput(TradeSide.Sell)]
-        // [TestInput(TradeSide.SellShort)]
-        // [TestInput(TradeSide.SellShortExempt)]
-        // [TestInput(TradeSide.Undisclosed)]
-        // [TestCase("(Temporary) Not supported Side")]
-        // public void NotSupportedSide(TradeSide side)
-        // {
-        //     string guid = Guid.NewGuid().ToString();
+        [TestInput(OrderType.ForexLimit)]
+        [TestInput(OrderType.ForexMarket)]
+        [TestInput(OrderType.ForexPrevQuoted)]
+        [TestInput(OrderType.ForexSwap)]
+        // [TestInput(OrderType.Funari)]
+        [TestInput(OrderType.LimitOnClose)]
+        [TestInput(OrderType.LimitOrBetter)]
+        [TestInput(OrderType.LimitWithOrWithout)]
+        [TestInput(OrderType.Market)]
+        [TestInput(OrderType.MarketOnClose)]
+        [TestInput(OrderType.OnBasis)]
+        [TestInput(OrderType.OnClose)]
+        [TestInput(OrderType.Pegged)]
+        [TestInput(OrderType.PrevIndicated)]
+        [TestInput(OrderType.PrevQuoted)]
+        [TestInput(OrderType.Stop)]
+        [TestInput(OrderType.StopLimit)]
+        [TestInput(OrderType.WithOrWithout)]
+        [TestCase("(Temporary) Not supported Order Type")]
+        public void NotSupportedOrderType(OrderType orderType)
+        {
+            string guid = Guid.NewGuid().ToString();
 
-        //     Client.Send(new NewOrderSingle()
-        //     {
-        //         ClOrdId = guid,
-        //         HandlInst = HandleInstance.Manual,
-        //         Symbol = "SellPlus",
-        //         Side = side,
-        //         OrderQty = 1000,
-        //         OrdType = OrderType.Limit,
-        //         Price = 100
-        //     });
+            Client.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "SellPlus",
+                Side = TradeSide.SellPlus,
+                OrderQty = 1000,
+                OrdType = orderType,
+                Price = 100
+            });
 
-        //     SessionReject reject = Client.Receive<SessionReject>();
-        // }
+            BusinessMessageReject reject = Client.Receive<BusinessMessageReject>();
+            Assert.Equal(reject, new BusinessMessageReject()
+            {
+                RefSeqNum = 2,
+                RefMsgType = 'D',
+                BusinessRejectRefId = guid,
+                BusinessRejectReason = RejectReasonBusiness.Other,
+                Text = "Not supported order type"
+            });
+        }
+
+
+        [TestInput(TradeSide.Buy)]
+        [TestInput(TradeSide.Cross)]
+        [TestInput(TradeSide.CrossShort)]
+        [TestInput(TradeSide.Sell)]
+        [TestInput(TradeSide.SellShort)]
+        [TestInput(TradeSide.SellShortExempt)]
+        [TestInput(TradeSide.Undisclosed)]
+        [TestCase("(Temporary) Not supported Side")]
+        public void NotSupportedSide(TradeSide side)
+        {
+            string guid = Guid.NewGuid().ToString();
+
+            Client.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "SellPlus",
+                Side = side,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            BusinessMessageReject reject = Client.Receive<BusinessMessageReject>();
+            Assert.Equal(reject, new BusinessMessageReject()
+            {
+                RefSeqNum = 2,
+                RefMsgType = 'D',
+                BusinessRejectRefId = guid,
+                BusinessRejectReason = RejectReasonBusiness.Other,
+                Text = "Not supported side"
+            });
+        }
     }
 }

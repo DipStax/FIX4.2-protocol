@@ -1,0 +1,16 @@
+{
+    "user": {
+        "heartbeat": {
+            "max-to": 100
+        }
+    },
+    "network": {
+        "tcp-port": 8080
+    },
+    "fix-config": {
+        "market-list": [
+            "SellPlus"
+        ],
+        "provider-name": "MyMarket"
+    }
+}

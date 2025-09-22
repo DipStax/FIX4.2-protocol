@@ -13,22 +13,23 @@ namespace FixGuardian.Messages.Enums
         LimitOrBetter,
         LimitWithOrWithout,
         OnBasis,
-        OnClose,
         [EnumMember(Value = "A")]
-        LimitOnClose,
+        OnClose,
         [EnumMember(Value = "B")]
-        ForexMarket,
+        LimitOnClose,
         [EnumMember(Value = "C")]
-        PrevQuoted,
+        ForexMarket,
         [EnumMember(Value = "D")]
-        PrevIndicated,
+        PrevQuoted,
         [EnumMember(Value = "E")]
-        ForexLimit,
+        PrevIndicated,
         [EnumMember(Value = "F")]
-        ForexSwap,
+        ForexLimit,
         [EnumMember(Value = "G")]
-        ForexPrevQuoted,
+        ForexSwap,
         [EnumMember(Value = "H")]
+        ForexPrevQuoted,
+        [EnumMember(Value = "I")]
         Funari,
         [EnumMember(Value = "P")]
         Pegged
