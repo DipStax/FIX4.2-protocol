@@ -9,7 +9,8 @@
     },
     "fix-config": {
         "market-list": [
-            "SellPlus"
+            "SellPlus",
+            "TradeOn"
         ],
         "provider-name": "MyMarket"
     }

@@ -6,7 +6,7 @@
 namespace pu::market
 {
     OBEvent::OBEvent(const std::string &_symbol, StringOutputQueue &_tcp_output)
-        : AInputProcess<obs::Event>("Market/" + _symbol + "/OB-Event"),
+        : AInputProcess<InputType>("Market/" + _symbol + "/OB-Event"),
         m_symbol(_symbol), m_tcp_output(_tcp_output)
     {
     }

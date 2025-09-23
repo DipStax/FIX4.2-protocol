@@ -74,7 +74,7 @@ namespace pu::market
                 return;
         }
 
-        obs::OrderInfo info{};
+        OrderBook::OrderInfo info{};
 
         info.side = _input.Message.get<fix42::tag::Side>().Value;
         info.price = _input.Message.get<fix42::tag::Price>().Value.value();

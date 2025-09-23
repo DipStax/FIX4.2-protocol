@@ -105,8 +105,9 @@ namespace FixGuardian.Suite
             {
                 RefSeqNum = 2,
                 RefMsgType = 'D',
-                BusinessRejectReason = RejectReasonBusiness.UnknownSecurity,
-                Text = "Unknown symbol"
+                BusinessRejectRefId = guid,
+                BusinessRejectReason = RejectReasonBusiness.CondReqFieldMissing,
+                Text = "Price required when OrderType is Limit"
             });
         }
 
@@ -215,7 +216,7 @@ namespace FixGuardian.Suite
         [TestInput(OrderType.ForexMarket)]
         [TestInput(OrderType.ForexPrevQuoted)]
         [TestInput(OrderType.ForexSwap)]
-        // [TestInput(OrderType.Funari)]
+        [TestInput(OrderType.Funari)]
         [TestInput(OrderType.LimitOnClose)]
         [TestInput(OrderType.LimitOrBetter)]
         [TestInput(OrderType.LimitWithOrWithout)]
@@ -291,4 +292,141 @@ namespace FixGuardian.Suite
             });
         }
     }
+
+    [RequireSuite("NewOrderSingle - Single user")]
+    [TestSuite("NewOrderSingle - Double user")]
+    public class NewOrderSingleDoubleUser
+    {
+        public FixClient Client1;
+        public FixClient Client2;
+
+        [TestSetup]
+        public void Setup()
+        {
+            Client1 = new FixClient("Sender1");
+            Client1.Logon();
+
+            Client2 = new FixClient("Sender2");
+            Client2.Logon();
+        }
+
+        [TestTearDown]
+        public void TearDown()
+        {
+            Client1.Logout();
+            Client2.Logout();
+        }
+
+        [TestCase("Full buy - Same Price")]
+        public void func()
+        {
+            Console.WriteLine("Send position");
+
+            string guid1 = Guid.NewGuid().ToString();
+
+            Client1.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "TradeOn",
+                Side = TradeSide.SellPlus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            ExecutionReport execReport1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1, new ExecutionReport()
+            {
+                OrderID = guid1,
+                ExecId = execReport1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.New,
+                OrdStatus = OrderStatus.New,
+                Symbol = "TradeOn",
+                Side = TradeSide.SellPlus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100,
+                LeavesQty = 1000,
+                CumQty = 0,
+                AvgPx = 0
+            });
+
+            Console.WriteLine("Send buy all");
+            // Send buy all
+
+            string guid2 = Guid.NewGuid().ToString();
+
+            Client2.Send(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "TradeOn",
+                Side = TradeSide.BuyMinus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.New,
+                OrdStatus = OrderStatus.New,
+                Symbol = "TradeOn",
+                Side = TradeSide.BuyMinus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100,
+                LeavesQty = 1000,
+                CumQty = 0,
+                AvgPx = 0
+            });
+
+            // Report of the buy/sell
+            Console.WriteLine("Report sell");
+
+            ExecutionReport execRepOnBuy = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execRepOnBuy, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execRepOnBuy.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "TradeOn",
+                Side = TradeSide.BuyMinus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100,
+                LeavesQty = 0,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+            Console.WriteLine("Report buy");
+
+            ExecutionReport execRepOnSell = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execRepOnSell, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execRepOnSell.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "TradeOn",
+                Side = TradeSide.SellPlus,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100,
+                LeavesQty = 0,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+        }
+    }
+
 }

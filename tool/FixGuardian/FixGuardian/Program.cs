@@ -29,7 +29,15 @@ namespace FixGuardian
                 .Where(type => type.GetCustomAttribute<TestSuite>() != null)
                 .Select(type => new TestGroup(type));
 
-            TestTree testTree = new TestTree(testgroups);
+            TestTree testTree = new TestTree(testgroups, new TestConfiguration()
+            {
+                RunRequired = false,
+                SuiteToRun = new List<string>()
+                {
+                    "NewOrderSingle - Single user",
+                    "NewOrderSingle - Double user"
+                }
+            });
 
             testTree.Run();
         }

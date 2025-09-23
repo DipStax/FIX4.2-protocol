@@ -4,12 +4,12 @@
 
 #include "Shared/Log/Manager.hpp"
 
-OrderBook::OrderBook(const std::string &_name, ts::Queue<obs::Event> &_event)
+OrderBook::OrderBook(const std::string &_name, ts::Queue<Event> &_event)
     : m_name(_name), m_event_output(_event), Logger(logger::Manager::newLogger("Market/" + m_name + "/OrderBook"))
 {
 }
 
-bool OrderBook::add(const obs::OrderInfo &_order)
+bool OrderBook::add(const OrderInfo &_order)
 {
     Quantity qty = 0;
 

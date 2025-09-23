@@ -7,11 +7,10 @@
 
 
 template<class Comparator, IsBook BookType>
-Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_idmap, const obs::OrderInfo &_order)
+Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order)
 {
     Comparator cmp{};
-    std::shared_lock lock_book(_book.Mutex);
-    obs::Event event{
+    Event main_event{
         _order.side,
         _order.order.orderId,
         _order.order.userId,
@@ -23,72 +22,68 @@ Quantity OrderBook::fillOnBook(BookBundle<BookType> &_book, OrderIdMapBundle &_i
         fix42::ExecutionStatus::NewOrder
     };
 
-
-    for (auto &[_price, _list] : _book.Book) {
+    for (auto &[_price, _list] : _book) {
         if (!cmp(_price, _order.price)) {
             Logger->log<logger::Level::Verbose>("Price invalidate comparator: ", _price, " <> ", _order.price);
             break;
         }
 
-        std::shared_lock lock_idlist(_list.Mutex);
-
-        for (size_t idx = 0; idx < _list.List.size(); idx++) {
-            auto iterator = std::next(_list.List.begin(), idx);
+        for (size_t idx = 0; idx < _list.size(); idx++) {
+            auto iterator = std::next(_list.begin(), idx);
             Order &order = *iterator;
 
             if (order.userId == _order.order.userId) {
                 Logger->log<logger::Level::Verbose>("Skipping order because same user: ", order);
                 continue;
             }
-            if (order.quantity <= event.remainQty) {
-                const uint32_t diff = event.orgQty - event.remainQty;
+            if (order.quantity <= main_event.remainQty) {
+                const uint32_t diff = main_event.orgQty - main_event.remainQty;
 
-                if (order.quantity == event.remainQty) {
-                    event.avgPrice = (event.avgPrice * diff + _price * event.remainQty) / (diff + order.quantity);
-                    event.remainQty = 0;
+                if (order.quantity == main_event.remainQty) {
+                    main_event.avgPrice = (main_event.avgPrice * diff + _price * main_event.remainQty) / (diff + order.quantity);
+                    main_event.remainQty = 0;
                     Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
                     Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
                 } else {
-                    event.avgPrice = (event.avgPrice * diff + _price * order.quantity) / (diff + order.quantity);
-                    event.remainQty -= order.quantity;
-                    Logger->log<logger::Level::Info>("Partially filled order: ", _order.order, ", new quantity: ", event.remainQty);
+                    main_event.avgPrice = (main_event.avgPrice * diff + _price * order.quantity) / (diff + order.quantity);
+                    main_event.remainQty -= order.quantity;
+                    Logger->log<logger::Level::Info>("Partially filled order: ", _order.order, ", new quantity: ", main_event.remainQty);
                     Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
                 }
-                _list.List.erase(iterator);
+                _list.erase(iterator);
                 idx--;
                 removeFromIdMap(_idmap, order.orderId);
             } else {
                 Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
                 Logger->log<logger::Level::Debug>("From other side, partially filled order: ", order);
-                order.quantity -= event.remainQty;
-                event.remainQty = 0;
+                order.quantity -= main_event.remainQty;
+                main_event.remainQty = 0;
             }
-            if (event.remainQty == 0) {
-                event.execStatus = fix42::ExecutionStatus::Filled;
+            if (main_event.remainQty == 0) {
+                main_event.execStatus = fix42::ExecutionStatus::Filled;
                 Logger->log<logger::Level::Debug>("Set event as execution type as: Filled");
-                m_event_output.push(std::move(event));
+                m_event_output.push(std::move(main_event));
                 return 0;
             }
         }
     }
-    if (event.remainQty != _order.order.quantity) {
-        event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
+    if (main_event.remainQty != _order.order.quantity) {
+        main_event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
         Logger->log<logger::Level::Debug>("Set event as execution type as: PartiallyFilled");
-        m_event_output.push(std::move(event));
+        m_event_output.push(std::move(main_event));
     }
-    return event.remainQty;
+    return main_event.remainQty;
 }
 
 template<IsBook BookType>
-void OrderBook::addToBook(BookBundle<BookType> &_book, OrderIdMapBundle &_idmap, Price _price, const Order &_order)
+void OrderBook::addToBook(BookType &_book, OrderIdMapBundle &_idmap, Price _price, const Order &_order)
 {
-    std::unique_lock lock_book(_book.Mutex);
-    obs::OrderListBundle &orderlist = _book.Book[_price];
-    std::unique_lock lock_oderlist(orderlist.Mutex);
+    OrderList &orderlist = _book[_price];
 
-    orderlist.List.push_back(_order);
+    orderlist.push_back(_order);
+
     std::unique_lock lock_idmap(_idmap.Mutex);
 
     Logger->log<logger::Level::Info>("New order place at price: ", _price, ", with order: ", _order);
-    _idmap.IdList[_order.orderId] = { orderlist.List.end(), _price };
+    _idmap.IdList[_order.orderId] = { orderlist.end(), _price };
 }

@@ -12,7 +12,7 @@
 
 namespace pu::market
 {
-    class OBEvent : public AInputProcess<obs::Event>
+    class OBEvent : public AInputProcess<OrderBook::Event>
     {
         public:
             OBEvent(const std::string &_symbol, StringOutputQueue &_tcp_output);
