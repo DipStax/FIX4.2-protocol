@@ -98,6 +98,31 @@ void to_FIX(std::string &_out, const fix42::OrderStatus _value)
     _out.push_back(static_cast<char>(_value));
 }
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderRejectReason &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::OrderRejectReason>(_value[0]);
+    switch (_out) {
+        case fix42::OrderRejectReason::BrokerOption:
+        case fix42::OrderRejectReason::UnknowSymbol:
+        case fix42::OrderRejectReason::ExchangeClose:
+        case fix42::OrderRejectReason::OrderExceedLimit:
+        case fix42::OrderRejectReason::TooLate:
+        case fix42::OrderRejectReason::UnknownOrder:
+        case fix42::OrderRejectReason::Duplicate:
+        case fix42::OrderRejectReason::DuplicateVerbally:
+        case fix42::OrderRejectReason::StaleOrder:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 8" };
+    }
+}
+void to_FIX(std::string &_out, const fix42::OrderRejectReason _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Side &_out)
 {
     if (_value.size() > 1)

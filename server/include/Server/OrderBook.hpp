@@ -21,7 +21,6 @@ class OrderBook
     public:
         struct OrderInfo
         {
-            fix42::Side side;
             std::string execid;
             Price price;
             Order order;
@@ -35,15 +34,26 @@ class OrderBook
 
         struct Event
         {
-            fix42::Side side;
-            OrderId orderId;
-            UserId userId;
+            // fix42::Side side;
+            // OrderId orderId;
+            // UserId userId;
             Price price;
-            Price avgPrice;
-            Quantity remainQty;
-            Quantity orgQty;
-            fix42::OrderStatus ordStatus;
+            // Price avgPrice;
+            // Quantity remainQty;
+            // Quantity orgQty;
+            // fix42::OrderStatus ordStatus;
             fix42::ExecutionStatus execStatus;
+            Price lastPrice;
+            Quantity lastQty;
+            Order order;
+        };
+
+        enum TickDirection
+        {
+            PlusTick,
+            ZeroPlusTick,
+            MinusTick,
+            ZeroMinusTick
         };
 
         using AskBook = std::map<Price, OrderList, std::greater<Price>>;
@@ -53,9 +63,10 @@ class OrderBook
         OrderBook(const std::string &_name, ts::Queue<Event> &_event);
         virtual ~OrderBook() = default;
 
+        [[nodiscard]] bool allowTick(fix42::Side _side);
+        [[nodiscard]] bool has(const OrderId &_orderId);
         bool add(const OrderInfo &_order);
 
-        [[nodiscard]] bool has(const OrderId &_orderId);
 
         [[nodiscard]] const std::string &getSymbol() const;
 
@@ -82,7 +93,14 @@ class OrderBook
         bool removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderid);
 
     private:
+        void computeTick(Price _new);
+        void computeTick();
+
         const std::string m_name;
+
+        Price m_lastprice = 0.f;
+        Price m_lastprice_diff = 0.f;
+        TickDirection m_tick = TickDirection::ZeroPlusTick;
 
         ts::Queue<Event> &m_event_output;
 

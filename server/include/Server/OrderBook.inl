@@ -11,15 +11,11 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
 {
     Comparator cmp{};
     Event main_event{
-        _order.side,
-        _order.order.orderId,
-        _order.order.userId,
         _order.price,
+        fix42::ExecutionStatus::NewOrder,
         0.f,
-        _order.order.quantity,
-        _order.order.quantity,
-        fix42::OrderStatus::NewOrder,
-        fix42::ExecutionStatus::NewOrder
+        0.f,
+        _order.order
     };
 
     for (auto &[_price, _list] : _book) {
@@ -28,51 +24,72 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
             break;
         }
 
+        if (!allowTick(_order.order.side)) {
+            Logger->log<logger::Level::Info>("Order blocked by tick restriction: ", _order.order);
+            return _order.order.remainQty;
+        }
+
         for (size_t idx = 0; idx < _list.size(); idx++) {
             auto iterator = std::next(_list.begin(), idx);
             Order &order = *iterator;
+            Event event{
+                _price,
+                fix42::ExecutionStatus::PartiallyFilled,
+                _price,
+                0.f,
+                order
+            };
+            const Quantity main_diff = main_event.order.originalQty - main_event.order.remainQty;
+            const Quantity diff = event.order.originalQty - event.order.remainQty;
 
             if (order.userId == _order.order.userId) {
                 Logger->log<logger::Level::Verbose>("Skipping order because same user: ", order);
                 continue;
             }
-            if (order.quantity <= main_event.remainQty) {
-                const uint32_t diff = main_event.orgQty - main_event.remainQty;
+            main_event.lastPrice = _price;
+            if (order.remainQty <= main_event.order.remainQty) {
+                main_event.order.avgPrice = (main_event.order.avgPrice * main_diff + _price * order.remainQty) / main_event.order.originalQty;
+                main_event.order.remainQty -= order.remainQty;
+                main_event.lastQty = order.remainQty;
 
-                if (order.quantity == main_event.remainQty) {
-                    main_event.avgPrice = (main_event.avgPrice * diff + _price * main_event.remainQty) / (diff + order.quantity);
-                    main_event.remainQty = 0;
-                    Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
-                    Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
-                } else {
-                    main_event.avgPrice = (main_event.avgPrice * diff + _price * order.quantity) / (diff + order.quantity);
-                    main_event.remainQty -= order.quantity;
-                    Logger->log<logger::Level::Info>("Partially filled order: ", _order.order, ", new quantity: ", main_event.remainQty);
-                    Logger->log<logger::Level::Debug>("From other side, fully filled order: ", order);
-                }
+                event.order.avgPrice = (order.avgPrice * diff + _price * order.remainQty) / order.originalQty;
+                event.order.remainQty = 0;
+                event.order.status = fix42::ExecutionStatus::Filled;
+                event.lastPrice = _price;
+                event.lastQty = order.remainQty;
+
                 _list.erase(iterator);
                 idx--;
                 removeFromIdMap(_idmap, order.orderId);
             } else {
                 Logger->log<logger::Level::Info>("Fully filled order: ", _order.order);
                 Logger->log<logger::Level::Debug>("From other side, partially filled order: ", order);
-                order.quantity -= main_event.remainQty;
-                main_event.remainQty = 0;
+                // main_event.avgPrice = (main_event.avgPrice * main_diff + _price * main_event.remainQty) / main_event.orgQty;
+
+                // order.remainQty -= main_event.remainQty;
+                // event.remainQty = order.remainQty;
+
+                // main_event.remainQty = 0;
             }
-            if (main_event.remainQty == 0) {
+
+            m_event_output.push(std::move(event));
+
+            computeTick(_price);
+
+            if (main_event.order.remainQty == 0) {
                 main_event.execStatus = fix42::ExecutionStatus::Filled;
                 Logger->log<logger::Level::Debug>("Set event as execution type as: Filled");
                 m_event_output.push(std::move(main_event));
-                return 0;
+                return 0.f;
             }
         }
     }
-    if (main_event.remainQty != _order.order.quantity) {
-        main_event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
+    if (main_event.order.remainQty != _order.order.originalQty) {
+        main_event.order.status = fix42::ExecutionStatus::PartiallyFilled;
         Logger->log<logger::Level::Debug>("Set event as execution type as: PartiallyFilled");
         m_event_output.push(std::move(main_event));
     }
-    return main_event.remainQty;
+    return main_event.order.remainQty;
 }
 
 template<IsBook BookType>

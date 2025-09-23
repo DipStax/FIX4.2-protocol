@@ -51,14 +51,18 @@ namespace fix42
             fix::Tag<tag::ExecTransType, TransactionType>,
             fix::Tag<tag::ExecType, ExecutionStatus>,
             fix::Tag<tag::OrdStatus, OrderStatus>,
+            fix::Tag<tag::OrdRejReason, std::optional<OrderRejectReason>>, // todo to_FIX & from_FIX
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
             fix::Tag<tag::OrderQty, std::optional<Quantity>>,
             fix::Tag<tag::OrdType, std::optional<OrderType>>,
             fix::Tag<tag::Price, std::optional<Price>>,
             fix::Tag<tag::LeavesQty, Quantity>,
+            fix::Tag<tag::LastShares, std::optional<Quantity>>,
+            fix::Tag<tag::LastPx, std::optional<Quantity>>,
             fix::Tag<tag::CumQty, Quantity>,
-            fix::Tag<tag::AvgPx, Price>
+            fix::Tag<tag::AvgPx, Price>,
+            fix::Tag<tag::Text, std::optional<std::string>>
         >;
 
         using BusinessReject = fix::Message<'j',
