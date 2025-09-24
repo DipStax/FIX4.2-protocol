@@ -40,10 +40,30 @@ namespace FixGuardian.TestFramework
             try
             {
                 if (Setup != null)
-                    Setup.Invoke(testSuiteInstance, null);
+                {
+                    try
+                    {
+                        Setup.Invoke(testSuiteInstance, null);
+                    }
+                    catch (TargetInvocationException tie)
+                        when (tie.InnerException is AssertionException)
+                    {
+                        throw new AssertionException("In setup function", tie.InnerException);
+                    }
+                }
                 method.Invoke(testSuiteInstance, param);
                 if (TearDown != null)
-                    TearDown.Invoke(testSuiteInstance, null);
+                {
+                    try
+                    {
+                        TearDown.Invoke(testSuiteInstance, null);
+                    }
+                    catch (TargetInvocationException tie)
+                        when (tie.InnerException is AssertionException)
+                    {
+                        throw new AssertionException("In teardown function", tie.InnerException);
+                    }
+                }
             }
             catch (TargetInvocationException tie)
                 when (tie.InnerException is AssertionException)
