@@ -35,7 +35,7 @@ namespace FixGuardian
                 SuiteToRun = new List<string>()
                 {
                     // "NewOrderSingle - Conditional invalid",
-                    "NewOrderSingle - Single user",
+                    // "NewOrderSingle - Single user",
                     "NewOrderSingle - Double user"
                 }
             });

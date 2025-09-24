@@ -34,14 +34,6 @@ class OrderBook
 
         struct Event
         {
-            // fix42::Side side;
-            // OrderId orderId;
-            // UserId userId;
-            Price price;
-            // Price avgPrice;
-            // Quantity remainQty;
-            // Quantity orgQty;
-            // fix42::OrderStatus ordStatus;
             fix42::ExecutionStatus execStatus;
             Price lastPrice;
             Quantity lastQty;
@@ -63,18 +55,25 @@ class OrderBook
         OrderBook(const std::string &_name, ts::Queue<Event> &_event);
         virtual ~OrderBook() = default;
 
+        [[nodiscard]] const std::string &getSymbol() const;
+
         [[nodiscard]] bool allowTick(fix42::Side _side);
         [[nodiscard]] bool has(const OrderId &_orderId);
+
         bool add(const OrderInfo &_order);
-
-
-        [[nodiscard]] const std::string &getSymbol() const;
 
     protected:
         struct OrderIdMapBundle
         {
             std::shared_mutex Mutex{};
             OrderIdMap IdList{};
+        };
+
+        enum FillStatus
+        {
+            Filled,
+            PartialyFilled,
+            Skipped
         };
 
         /// @brief 
@@ -86,6 +85,7 @@ class OrderBook
         /// @return The remaining quantity of the order.
         template<class Comparator, IsBook BookType>
         Quantity fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order);
+        FillStatus fillOrder(Event &_main_event, Price _price, Order &_order);
 
         template<IsBook BookType>
         void addToBook(BookType &_book, OrderIdMapBundle &_idmap, Price _price, const Order &_order);

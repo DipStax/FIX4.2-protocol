@@ -43,7 +43,7 @@ bool OrderBook::add(const OrderInfo &_order)
 {
     Quantity qty = 0;
 
-    if (_order.order.side == fix42::Side::BuyMinus) {
+    if (_order.order.side == fix42::Side::BuyMinus || _order.order.side == fix42::Side::Buy) {
         qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
         if (qty != 0) {
             // todo change average price
@@ -53,7 +53,7 @@ bool OrderBook::add(const OrderInfo &_order)
                 new_order.status = fix42::OrderStatus::PartiallyFilled;
             addToBook(m_ask_book, m_ask_id, _order.price, new_order);
         }
-    } else if (_order.order.side == fix42::Side::SellPlus) {
+    } else if (_order.order.side == fix42::Side::SellPlus || _order.order.side == fix42::Side::Sell) {
         qty = fillOnBook<std::greater_equal<Price>>(m_ask_book, m_ask_id, _order);
         if (qty != 0) {
             Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
@@ -69,8 +69,6 @@ bool OrderBook::add(const OrderInfo &_order)
     return true;
 }
 
-
-
 const std::string &OrderBook::getSymbol() const
 {
     return m_name;
@@ -85,6 +83,48 @@ bool OrderBook::removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderi
         return false;
     _idmap.IdList.erase(it);
     return true;
+}
+
+OrderBook::FillStatus OrderBook::fillOrder(Event &_main_event, Price _price, Order &_order)
+{
+    if (_order.userId == _main_event.order.userId)
+        return FillStatus::Skipped;
+
+    FillStatus fill_status = FillStatus::Skipped;
+    Event event{
+        fix42::ExecutionStatus::PartiallyFilled,
+        _price,
+        0.f,
+        _order
+    };
+    const Quantity main_diff = _main_event.order.originalQty - _main_event.order.remainQty;
+    const Quantity diff = event.order.originalQty - event.order.remainQty;
+
+    _main_event.lastPrice = _price;
+    if (_order.remainQty <= _main_event.order.remainQty) {
+        _main_event.order.avgPrice = (_main_event.order.avgPrice * main_diff + _price * _order.remainQty) / _main_event.order.originalQty;
+        _main_event.order.remainQty -= _order.remainQty;
+        _main_event.lastQty = _order.remainQty;
+
+        event.order.avgPrice = (_order.avgPrice * diff + _price * _order.remainQty) / _order.originalQty;
+        event.order.remainQty = 0;
+        event.execStatus = fix42::ExecutionStatus::Filled;
+        event.lastPrice = _price;
+        event.lastQty = _order.remainQty;
+        fill_status = FillStatus::Filled;
+    } else {
+        // Logger->log<logger::Level::Info>("Fully filled order: ", _order);
+        // Logger->log<logger::Level::Debug>("From other side, partially filled order: ", _order);
+        // _main_event.avgPrice = (_main_event.avgPrice * main_diff + _price * _main_event.remainQty) / _main_event.orgQty;
+
+        // order.remainQty -= _main_event.remainQty;
+        // event.remainQty = order.remainQty;
+
+        // _main_event.remainQty = 0;
+        fill_status = FillStatus::PartialyFilled;
+    }
+    m_event_output.push(std::move(event));
+    return fill_status;
 }
 
 void OrderBook::computeTick(Price _new)

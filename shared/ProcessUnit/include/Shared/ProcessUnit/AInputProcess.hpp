@@ -1,5 +1,7 @@
 #pragma once
 
+#include <condition_variable>
+
 #include "Shared/ProcessUnit/AProcessUnit.hpp"
 
 namespace pu
@@ -20,6 +22,9 @@ namespace pu
 
         private:
             AProcessUnit<T>::QueueInputType m_input{};
+
+            std::mutex m_mutex;
+            std::condition_variable m_cv;
     };
 }
 

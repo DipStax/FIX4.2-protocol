@@ -72,6 +72,9 @@ namespace pu
         if (error == 0) {
             Logger->log<logger::Level::Error>("no data receive from the client: ");
             return true;
+        } else if (error < 0) {
+            Logger->log<logger::Level::Error>("Error occured during reading of client: ", strerror(errno));
+            return true;
         }
 
         if (_client->isLoggedin())

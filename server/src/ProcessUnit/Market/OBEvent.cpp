@@ -36,7 +36,6 @@ namespace pu::market
         report.get<fix42::tag::Side>().Value = _input.order.side;
         report.get<fix42::tag::OrderQty>().Value = _input.order.originalQty;
         report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
-        report.get<fix42::tag::Price>().Value = _input.price;
         report.get<fix42::tag::LeavesQty>().Value = _input.order.remainQty;
         report.get<fix42::tag::LastShares>().Value = _input.lastQty;
         report.get<fix42::tag::LastPx>().Value = _input.lastPrice;
