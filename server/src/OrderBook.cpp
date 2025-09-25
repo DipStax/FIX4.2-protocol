@@ -97,37 +97,40 @@ OrderBook::FillStatus OrderBook::fillOrder(Event &_main_event, Price _price, Ord
         0.f,
         _order
     };
-    const Quantity diff_qty = _main_event.order.originalQty - _main_event.order.remainQty;
+
     const Quantity fill_qty = std::min(_order.remainQty, _main_event.order.remainQty);
-    const Quantity fill_total_qty = diff_qty + fill_qty;
+    {
+        const Quantity cum_qty = _main_event.order.originalQty - _main_event.order.remainQty;
+        const Quantity cum_total = cum_qty + fill_qty;
 
-    _main_event.lastPrice = _price;
-    _main_event.lastQty = fill_qty;
-    _main_event.order.avgPrice = (diff_qty * _main_event.order.avgPrice + fill_qty * _price) / fill_total_qty;
+        _main_event.lastPrice = _price;
+        _main_event.lastQty = fill_qty;
+        _main_event.order.avgPrice = (cum_qty * _main_event.order.avgPrice + fill_qty * _price) / cum_total;
+        _main_event.order.remainQty -= fill_qty;
+    }
+    {
+        const Quantity cum_qty = _order.originalQty - _order.remainQty;
+        const Quantity cum_total = cum_qty + fill_qty;
 
-    event.lastPrice = _price;
-    if (_order.remainQty <= _main_event.order.remainQty) {
-        _main_event.order.remainQty -= _order.remainQty;
+        event.lastPrice = _price;
+        event.lastQty = fill_qty;
+        event.order.avgPrice = (cum_qty * _order.avgPrice + fill_qty * _price) / cum_total;
+        event.order.remainQty -= fill_qty;
+    }
 
-        event.order.avgPrice = ((event.order.originalQty - _order.remainQty) * _order.avgPrice + _order.remainQty * _price ) / event.order.originalQty;
-        event.order.remainQty = 0;
+    _order.remainQty -= fill_qty;
+    _order.avgPrice = event.order.avgPrice;
+
+    if (event.order.remainQty == 0) {
+        _order.status = fix42::OrderStatus::Filled;
         event.execStatus = fix42::ExecutionStatus::Filled;
-        event.lastQty = _order.remainQty;
-
-        Logger->log<logger::Level::Verbose>(_main_event.order.orderId, " > with average price: ", _main_event.order.avgPrice);
-
         fill_status = FillStatus::Filled;
     } else {
-        // Logger->log<logger::Level::Info>("Fully filled order: ", _order);
-        // Logger->log<logger::Level::Debug>("From other side, partially filled order: ", _order);
-        // _main_event.avgPrice = (_main_event.avgPrice * main_diff + _price * _main_event.remainQty) / _main_event.orgQty;
-
-        // order.remainQty -= _main_event.remainQty;
-        // event.remainQty = order.remainQty;
-
-        // _main_event.remainQty = 0;
+        _order.status = fix42::OrderStatus::PartiallyFilled;
+        event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
         fill_status = FillStatus::PartialyFilled;
     }
+
     m_event_output.push(std::move(event));
     return fill_status;
 }
@@ -151,4 +154,5 @@ void OrderBook::computeTick()
         else
             m_tick = TickDirection::ZeroMinusTick;
     }
+    Logger->log<logger::Level::Info>("New tick side: ", m_tick);
 }

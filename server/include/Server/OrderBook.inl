@@ -19,7 +19,7 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
 
     for (auto &[_price, _list] : _book) {
         if (!cmp(_price, _order.price)) {
-            Logger->log<logger::Level::Verbose>("Price invalidate comparator: ", _price, " <> ", _order.price);
+            Logger->log<logger::Level::Debug>("Price invalidate comparator: ", _price, " <> ", _order.price);
             break;
         }
 

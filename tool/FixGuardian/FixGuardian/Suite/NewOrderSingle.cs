@@ -952,17 +952,216 @@ namespace FixGuardian.Suite
             });
         }
 
-        // [TestCase("")]
-        // public void DoubleSamePriceBuyThenSellAll()
-        // {
-        // }
+        /// <summary>
+        /// Client 1: Buy  1000 - 200
+        /// Client 1: Buy  1000 - 200
+        /// Client 2: Sell 2000 - 100
+        /// </summary>
+        [TestCase("Buy then Sell - Same - All")]
+        public void DoubleSamePriceBuyThenSellAll()
+        {
+            string guid1_1 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
 
-        // [TestCase("")]
-        // public void DoubleNotSamePriceSellThenBuyPartial()
-        // {
-        // }
+            string guid1_2 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
 
-        // [TestCase("")]
+            string guid2 = Guid.NewGuid().ToString();
+            Client2.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 2000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_1, new ExecutionReport()
+            {
+                OrderID = guid1_1,
+                ExecId = execReport1_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 100,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+
+            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_2, new ExecutionReport()
+            {
+                OrderID = guid1_2,
+                ExecId = execReport1_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 100,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+
+            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 2000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 100,
+                CumQty = 2000,
+                AvgPx = 100
+            });
+        }
+
+        /// <summary>
+        /// Client 1: Sell 1000 - 100
+        /// Client 1: Sell 1000 - 150
+        /// Client 2: Buy  1500 - 200
+        /// </summary>
+        [TestCase("Sell then Buy - Not same - Partial")]
+        public void DoubleNotSamePriceSellThenBuyPartial()
+        {
+            string guid1_1 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            string guid1_2 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 150
+            });
+
+            string guid2 = Guid.NewGuid().ToString();
+            Client2.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
+
+            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_1, new ExecutionReport()
+            {
+                OrderID = guid1_1,
+                ExecId = execReport1_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 100,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+
+            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_2, new ExecutionReport()
+            {
+                OrderID = guid1_2,
+                ExecId = execReport1_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.PartiallyFilled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 500,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 500,
+                AvgPx = 150
+            });
+
+            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 1500,
+                AvgPx = (1000 * 100 + 500 * 150) / (float)1500
+            });
+        }
+
+        /// <summary>
+        /// Client 1: Buy  1000 - 200
+        /// Client 1: Buy  1000 - 150
+        /// Client 2: Sell 1500 - 100
+        /// </summary>
+        // [TestCase("Buy then Sell - Not same - Partial")]
         // public void DoubleNotSamePriceBuyThenSellPartial()
         // {
         // }
