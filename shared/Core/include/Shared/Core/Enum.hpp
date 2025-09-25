@@ -46,6 +46,19 @@ namespace fix42
 
     using ExecutionStatus = OrderStatus;
 
+    enum OrderRejectReason
+    {
+        BrokerOption = '0',
+        UnknowSymbol,
+        ExchangeClose,
+        OrderExceedLimit,
+        TooLate,
+        UnknownOrder,
+        Duplicate,
+        DuplicateVerbally,
+        StaleOrder
+    };
+
     enum Side
     {
         Buy = '1',
@@ -98,8 +111,8 @@ namespace fix42
         LimitOrBetter,
         LimitWithOrWithout,
         OnBasis,
-        OnClose,
-        LimitOnClose = 'A',
+        OnClose = 'A',
+        LimitOnClose,
         ForexMarket,
         PrevQuoted,
         PrevIndicated,

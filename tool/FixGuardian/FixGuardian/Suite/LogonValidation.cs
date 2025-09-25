@@ -15,14 +15,14 @@ namespace FixGuardian.Suite
         public TcpClient TcpSocket;
         public NetworkStream TcpStream;
 
-        [TestSetup()]
+        [TestSetup]
         public void Setup()
         {
             TcpSocket = new TcpClient("127.0.0.1", 8080);
             TcpStream = TcpSocket.GetStream();
         }
 
-        [TestTearDown()]
+        [TestTearDown]
         public void TearDown()
         {
             TcpStream.Close();

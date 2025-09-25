@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FixGuardian.Message\FixGuardian.Messages.csproj" />
+    <ProjectReference Include="..\FixGuardian.Messages\FixGuardian.Messages.csproj" />
   </ItemGroup>
 
   <ItemGroup>

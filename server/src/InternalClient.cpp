@@ -85,6 +85,8 @@ uint32_t InternalClient::getSeqNumber() const
 
 bool InternalClient::send(const std::byte *_data, size_t _len)
 {
+    std::lock_guard lock(m_socket_mutex);
+
     return m_socket->send(_data, _len) != -1;
 }
 

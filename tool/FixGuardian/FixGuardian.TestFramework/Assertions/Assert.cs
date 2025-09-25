@@ -110,6 +110,12 @@ namespace FixGuardian.TestFramework.Assertions
             }
         }
 
+        static public void NotNull(object? obj)
+        {
+            if (obj == null)
+                throw new AssertionException("Value is null", null, obj);
+        }
+
         static public void Equal(object? actual, object? expected)
         {
             if (actual is null && expected is null)

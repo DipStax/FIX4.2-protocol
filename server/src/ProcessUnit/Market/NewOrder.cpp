@@ -22,9 +22,22 @@ namespace pu::market
                 newOrderLimit(_input);
                 break;
             default:
-                // todo orderTypeNotSupported(_input);
+                // tmp
+                notSupportedOrderType(_input);
                 break;
         }
+    }
+
+    void NewOrder::notSupportedOrderType(const InputType &_input)
+    {
+        fix42::msg::BusinessReject reject{};
+
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+        reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+        reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
+        reject.get<fix42::tag::Text>().Value = "Not supported order type";
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
     }
 
     void NewOrder::newOrderLimit(const InputType &_input)
@@ -34,8 +47,9 @@ namespace pu::market
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
             reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
             reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
-            reject.get<fix42::tag::Text>().Value = "Price required when OrderType=Limit";
+            reject.get<fix42::tag::Text>().Value = "Price required when OrderType is Limit";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
         } else if (!_input.Message.get<fix42::tag::OrderQty>().Value.has_value()) {
@@ -43,23 +57,60 @@ namespace pu::market
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
             reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
             reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
             reject.get<fix42::tag::Text>().Value = "Order quantity required";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
         }
 
-        obs::OrderInfo info{};
+        // tmp
+        switch (_input.Message.get<fix42::tag::Side>().Value) {
+            case fix42::Side::Buy:
+            case fix42::Side::BuyMinus:
+            case fix42::Side::Sell:
+            case fix42::Side::SellPlus:
+                break;
+            default:
+                notSupportedSide(_input);
+                return;
+        }
 
-        info.side = _input.Message.get<fix42::tag::Side>().Value;
+        OrderBook::OrderInfo info{};
+
         info.price = _input.Message.get<fix42::tag::Price>().Value.value();
         info.execid = utils::Uuid::Generate();
         info.order.userId = _input.Client->getUserId();
         info.order.orderId = _input.Message.get<fix42::tag::ClOrdID>().Value;
-        info.order.quantity = _input.Message.get<fix42::tag::OrderQty>().Value.value();
+        info.order.originalQty = _input.Message.get<fix42::tag::OrderQty>().Value.value();
+        info.order.remainQty = info.order.originalQty;
+        info.order.avgPrice = 0.f;
+        info.order.side = _input.Message.get<fix42::tag::Side>().Value;
+        info.order.status = fix42::OrderStatus::NewOrder;
 
-        Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.side);
-        if (!m_ob.has(info.order.orderId)) {
+        Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.order.side);
+
+        if (!m_ob.allowTick(info.order.side)) {
+            fix42::msg::ExecutionReport report;
+
+            report.get<fix42::tag::OrderID>().Value = info.order.orderId;
+            report.get<fix42::tag::ExecId>().Value = info.execid;
+            report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::New;
+            report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Rejected;
+            report.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::Rejected;
+            report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+            report.get<fix42::tag::Side>().Value = info.order.side;
+            report.get<fix42::tag::OrderQty>().Value = info.order.originalQty;
+            report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+            report.get<fix42::tag::Price>().Value = info.price;
+            report.get<fix42::tag::LeavesQty>().Value = 0.f;
+            report.get<fix42::tag::LastShares>().Value = 0.f;
+            report.get<fix42::tag::LastPx>().Value = 0.f;
+            report.get<fix42::tag::CumQty>().Value = 0.f;
+            report.get<fix42::tag::AvgPx>().Value = 0.f;
+            report.get<fix42::tag::Text>().Value = "Invalid tick direction for selected side";
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
+        } else if (!m_ob.has(info.order.orderId)) {
             fix42::msg::ExecutionReport report;
 
             report.get<fix42::tag::OrderID>().Value = info.order.orderId;
@@ -68,26 +119,53 @@ namespace pu::market
             report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::NewOrder;
             report.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::NewOrder;
             report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
-            report.get<fix42::tag::Side>().Value = info.side;
+            report.get<fix42::tag::Side>().Value = info.order.side;
             report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
-            report.get<fix42::tag::OrderQty>().Value = info.order.quantity;
+            report.get<fix42::tag::OrderQty>().Value = info.order.originalQty;
             report.get<fix42::tag::Price>().Value = info.price;
-            report.get<fix42::tag::LeavesQty>().Value = info.order.quantity;
+            report.get<fix42::tag::LeavesQty>().Value = info.order.remainQty;
+            report.get<fix42::tag::LastShares>().Value = 0.f;
+            report.get<fix42::tag::LastPx>().Value = 0.f;
             report.get<fix42::tag::CumQty>().Value = 0.f;
             report.get<fix42::tag::AvgPx>().Value = 0.f;
             Logger->log<logger::Level::Info>("Aknowledge Limit order: ", info.order.orderId, ", with exec Id: ", info.execid);
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
             m_ob.add(info);
         } else {
-            fix42::msg::BusinessReject reject{};
+            fix42::msg::ExecutionReport report;
 
-            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
-            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
-            reject.get<fix42::tag::BusinessRejectRefId>().Value = info.order.orderId;
-            reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
-            reject.get<fix42::tag::Text>().Value = "Order Id already used";
+            report.get<fix42::tag::OrderID>().Value = info.order.orderId;
+            report.get<fix42::tag::ExecId>().Value = info.execid;
+            report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::New;
+            report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Rejected;
+            report.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::Rejected;
+            report.get<fix42::tag::OrdRejReason>().Value = fix42::OrderRejectReason::Duplicate;
+            report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+            report.get<fix42::tag::Side>().Value = info.order.side;
+            report.get<fix42::tag::OrderQty>().Value = info.order.originalQty;
+            report.get<fix42::tag::OrdType>().Value = fix42::OrderType::Limit;
+            report.get<fix42::tag::Price>().Value = info.price;
+            report.get<fix42::tag::LeavesQty>().Value = 0.f;
+            report.get<fix42::tag::LastShares>().Value = 0.f;
+            report.get<fix42::tag::LastPx>().Value = 0.f;
+            report.get<fix42::tag::CumQty>().Value = 0.f;
+            report.get<fix42::tag::AvgPx>().Value = 0.f;
+            report.get<fix42::tag::Text>().Value = "Order Id already used";
             Logger->log<logger::Level::Info>("Rejected: Order ID already used: ", info.order);
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
         }
+    }
+
+    void NewOrder::notSupportedSide(const InputType &_input)
+    {
+        fix42::msg::BusinessReject reject{};
+
+        reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+        reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+        reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+        reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::Other;
+        reject.get<fix42::tag::Text>().Value = "Not supported side";
+        Logger->log<logger::Level::Warning>("Side not supported");
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
     }
 }

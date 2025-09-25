@@ -13,7 +13,7 @@ namespace FixGuardian.Suite
         [TestCase("Valide Logout")]
         public void ValidLogout()
         {
-            Client client = new Client("Sender");
+            FixClient client = new FixClient("Sender");
 
             client.Logon();
 

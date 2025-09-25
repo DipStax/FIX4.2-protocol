@@ -19,9 +19,10 @@ namespace pu::market
             void onInput(InputType _input) final;
 
         private:
-            void treatNewOrderSingle(InputType &_input);
+            void notSupportedOrderType(const InputType &_input);
 
             void newOrderLimit(const InputType &_input);
+            void notSupportedSide(const InputType &_input);
 
             StringOutputQueue &m_tcp_output;
 

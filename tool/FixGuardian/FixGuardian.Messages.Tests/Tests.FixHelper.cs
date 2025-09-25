@@ -1,4 +1,6 @@
-﻿using FixGuardian.Messages.Exceptions;
+﻿using FixGuardian.Messages;
+using FixGuardian.Messages.Exceptions;
+using FixGuardian.Messages.Tests;
 
 namespace FixGuardian.Message.Tests
 {
