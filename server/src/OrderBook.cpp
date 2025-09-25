@@ -9,6 +9,11 @@ OrderBook::OrderBook(const std::string &_name, ts::Queue<Event> &_event)
 {
 }
 
+const std::string &OrderBook::getSymbol() const
+{
+    return m_name;
+}
+
 bool OrderBook::allowTick(fix42::Side _side)
 {
     computeTick();
@@ -101,9 +106,37 @@ bool OrderBook::add(const OrderInfo &_order)
     return true;
 }
 
-const std::string &OrderBook::getSymbol() const
+bool OrderBook::cancel(const OrderId &_orderId, fix42::Side _side)
 {
-    return m_name;
+    
+}
+
+void OrderBook::lockReadOrder(fix42::Side _side)
+{
+    switch (_side) {
+        case fix42::Side::Sell:
+        case fix42::Side::SellPlus:
+            m_bid_id.Mutex.lock_shared();
+            break;
+        case fix42::Side::Buy:
+        case fix42::Side::BuyMinus:
+            m_ask_id.Mutex.lock_shared();
+            break;
+    }
+}
+
+void OrderBook::unlockReadOrder(fix42::Side _side)
+{
+    switch (_side) {
+        case fix42::Side::Sell:
+        case fix42::Side::SellPlus:
+            m_bid_id.Mutex.unlock_shared();
+            break;
+        case fix42::Side::Buy:
+        case fix42::Side::BuyMinus:
+            m_ask_id.Mutex.unlock_shared();
+            break;
+    }
 }
 
 bool OrderBook::removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderid)

@@ -13,7 +13,7 @@ namespace pu
     class MarketContainer : public AProcessUnitBase
     {
         public:
-            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &>;
+            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &, MessageQueue<fix42::msg::OrderCancelRequest> &>;
 
             MarketContainer(const std::string &_symbol, StringOutputQueue &_tcp_output);
             virtual ~MarketContainer() = default;

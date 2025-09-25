@@ -51,6 +51,7 @@ namespace pu
             case fix42::msg::BusinessReject::Type:
             case fix42::msg::Logon::Type:
             case fix42::msg::NewOrderSingle::Type:
+            case fix42::msg::OrderCancelRequest::Type:
                 return std::nullopt;
             default:
                 reject.get<fix42::tag::SessionRejectReason>().Value = fix42::RejectReasonSession::InvalidMsgType;

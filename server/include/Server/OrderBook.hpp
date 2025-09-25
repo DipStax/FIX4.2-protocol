@@ -64,6 +64,10 @@ class OrderBook
         Order getOrder(const OrderId &_orderId);
 
         bool add(const OrderInfo &_order);
+        bool cancel(const OrderId &_orderId, fix42::Side _side);
+
+        void lockReadOrder(fix42::Side _side);
+        void unlockReadOrder(fix42::Side _side);
 
     protected:
         struct OrderIdMapBundle

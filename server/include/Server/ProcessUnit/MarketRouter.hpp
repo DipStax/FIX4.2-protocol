@@ -10,7 +10,7 @@ namespace pu
     class MarketRouter : public AInputProcess<Context<data::UnparsedMessage>>
     {
         public:
-            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &>;
+            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &, MessageQueue<fix42::msg::OrderCancelRequest> &>;
 
             MarketRouter(StringOutputQueue &_error);
             virtual ~MarketRouter() = default;
@@ -22,6 +22,7 @@ namespace pu
 
         private:
             void processNewOrderSingle(const InputType &_input);
+            void processOrderCancelRequest(const InputType &_input);
 
             template<class T>
             void redirectToMarket(const T &_msg, const InputType &_input);

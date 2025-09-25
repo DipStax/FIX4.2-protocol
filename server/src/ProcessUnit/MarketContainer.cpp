@@ -18,7 +18,7 @@ namespace pu
 
     MarketContainer::MarketTupleQueue MarketContainer::getInput()
     {
-        return std::forward_as_tuple(m_market_neworder.getInput());
+        return std::forward_as_tuple(m_market_neworder.getInput(), m_market_cancel.getInput());
     }
 
     void MarketContainer::runtime(std::stop_token _st)
@@ -26,12 +26,15 @@ namespace pu
         Logger->log<logger::Level::Info>("Launching process unit runtime");
 
         m_market_neworder.start();
+        m_market_cancel.start();
         m_event.start();
         while (!_st.stop_requested()) {
             m_market_neworder.status();
+            m_market_cancel.status();
             m_event.status();
         }
         m_market_neworder.stop();
+        m_market_cancel.stop();
         m_event.stop();
     }
 }

@@ -1,0 +1,53 @@
+using FixGuardian.Messages.Definition;
+using FixGuardian.Messages.Enums;
+using FixGuardian.TestFramework;
+using FixGuardian.TestFramework.Assertions;
+using FixGuardian.TestFramework.Attributes;
+
+namespace FixGuardian.Suite
+{
+    [TestSuite("Cancel validation")]
+    public class CancelValidation
+    {
+        FixClient Client;
+
+        [TestSetup]
+        public void Setup()
+        {
+            Client = new FixClient("Sender");
+            Client.Logon();
+        }
+
+        [TestTearDown]
+        public void TearDown()
+        {
+            Client.Logout();
+        }
+
+        [TestCase("Unknown Order Id")]
+        public void UnknownOrderId()
+        {
+            string guid = Guid.NewGuid().ToString();
+            Client.Send(new OrderCancelRequest()
+            {
+                OrigClOrdID = guid,
+                ClOrdId = Guid.NewGuid().ToString(),
+                Symbol = "Cancel-1",
+                OrderQty = 100,
+                Side = TradeSide.Buy,
+                TransactTime = DateTime.Now
+            });
+
+            OrderCancelReject reject = Client.Receive<OrderCancelReject>();
+            Assert.Equal(reject, new OrderCancelReject()
+            {
+                OrderId = "NONE",
+                OrigClOrdId = guid,
+                OrdStatus = OrderStatus.Rejected,
+                CxlRejResponseTo = CancelRejectResponseTo.CancelRequest,
+                CxlRejReason = CancelRejectReason.UnknownOrder,
+                Text = "Unknow order Id on this side"
+            });
+        }
+    }
+}

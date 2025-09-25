@@ -99,6 +99,7 @@ namespace fix42
 
         using OrderCancelRequest = fix::Message<'F',
             fix::Tag<tag::OrigClOrdID, std::string>,
+            fix::Tag<tag::OrderID, std::optional<std::string>>,
             fix::Tag<tag::ClOrdID, std::string>,
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
