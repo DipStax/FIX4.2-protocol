@@ -59,6 +59,9 @@ class OrderBook
 
         [[nodiscard]] bool allowTick(fix42::Side _side);
         [[nodiscard]] bool has(const OrderId &_orderId);
+        [[nodiscard]] bool has(const OrderId &_orderId, fix42::Side _side);
+
+        Order getOrder(const OrderId &_orderId);
 
         bool add(const OrderInfo &_order);
 

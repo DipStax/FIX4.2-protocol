@@ -78,7 +78,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Order
         case fix42::OrderStatus::DoneForDay:
         case fix42::OrderStatus::Canceled:
         case fix42::OrderStatus::Replaced:
-        case fix42::OrderStatus::PedningCancel:
+        case fix42::OrderStatus::PendingCancel:
         case fix42::OrderStatus::Stopped:
         case fix42::OrderStatus::Rejected:
         case fix42::OrderStatus::Suspended:
@@ -251,6 +251,47 @@ void to_FIX(std::string &_out, const fix42::OrderType _value)
 {
     _out.push_back(static_cast<char>(_value));
 }
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectResponseTo &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::CancelRejectResponseTo>(_value[0]);
+    switch (_out) {
+        case fix42::CancelRejectResponseTo::CancelRequest:
+        case fix42::CancelRejectResponseTo::ReplaceRequest:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: value EQ 1 OR 2" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::CancelRejectResponseTo &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectReason &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::CancelRejectReason>(_value[0]);
+    switch (_out) {
+        case fix42::CancelRejectReason::TooLateCancel:
+        case fix42::CancelRejectReason::UnknownOrderCancel:
+        case fix42::CancelRejectReason::BrokerOptionCancel:
+        case fix42::CancelRejectReason::OrderPendingCancelorReplace:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 4" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::CancelRejectReason &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out)
 {

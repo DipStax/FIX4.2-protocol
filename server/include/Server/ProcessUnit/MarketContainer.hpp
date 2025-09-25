@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Server/ProcessUnit/Market/Cancel.hpp"
 #include "Server/ProcessUnit/Market/NewOrder.hpp"
 #include "Server/ProcessUnit/Market/OBEvent.hpp"
 
@@ -32,5 +33,6 @@ namespace pu
             OrderBook m_ob;
 
             ProcessUnit<pu::market::NewOrder> m_market_neworder;
+            ProcessUnit<pu::market::Cancel> m_market_cancel;
     };
 }

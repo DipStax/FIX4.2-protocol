@@ -4,8 +4,6 @@
 #include "Server/OrderBook.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
-#include "Shared/Log/ILogger.hpp"
-#include "Shared/Thread/Pool.hpp"
 
 namespace pu::market
 {

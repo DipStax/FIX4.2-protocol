@@ -39,6 +39,38 @@ bool OrderBook::has(const OrderId &_orderId)
     return false;
 }
 
+bool OrderBook::has(const OrderId &_orderId, fix42::Side _side)
+{
+    if (_side == fix42::Side::Buy || _side == fix42::Side::BuyMinus)
+    {
+        std::shared_lock lock(m_ask_id.Mutex);
+
+        if (m_ask_id.IdList.contains(_orderId))
+            return true;
+    } else if (_side == fix42::Side::Sell || _side == fix42::Side::SellPlus) {
+        std::shared_lock lock(m_bid_id.Mutex);
+
+        if (m_bid_id.IdList.contains(_orderId))
+            return true;
+    }
+    return false;
+}
+
+Order OrderBook::getOrder(const OrderId &_orderId)
+{
+    {
+        std::shared_lock lock(m_bid_id.Mutex);
+
+        if (m_bid_id.IdList.contains(_orderId))
+            return *(m_bid_id.IdList.at(_orderId).Order);
+    }
+    std::shared_lock lock(m_ask_id.Mutex);
+
+    // todo can throw an exception if not found
+    return *(m_ask_id.IdList.at(_orderId).Order);
+}
+
+
 bool OrderBook::add(const OrderInfo &_order)
 {
     Quantity qty = 0;
