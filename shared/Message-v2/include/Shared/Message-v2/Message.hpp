@@ -51,7 +51,7 @@ namespace fix42
             fix::Tag<tag::ExecTransType, TransactionType>,
             fix::Tag<tag::ExecType, ExecutionStatus>,
             fix::Tag<tag::OrdStatus, OrderStatus>,
-            fix::Tag<tag::OrdRejReason, std::optional<OrderRejectReason>>, // todo to_FIX & from_FIX
+            fix::Tag<tag::OrdRejReason, std::optional<OrderRejectReason>>,
             fix::Tag<tag::Symbol, std::string>,
             fix::Tag<tag::Side, Side>,
             fix::Tag<tag::OrderQty, std::optional<Quantity>>,
