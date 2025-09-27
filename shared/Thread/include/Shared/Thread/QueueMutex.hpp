@@ -2,6 +2,8 @@
 
 #include <concepts>
 
+#include "Shared/Thread/Queue.hpp"
+
 template<class T>
 concept IsEnum = std::is_enum_v<T>;
 
@@ -20,9 +22,7 @@ class QueueMutex
         void allow(const T &id);
 
     private:
-        std::mutex m_mutex{};
-        std::condition_variable m_cv{};
-        std::queue<T> m_queue{};
+        ts::Queue<T> m_queue{};
         bool m_lock = false;
 };
 

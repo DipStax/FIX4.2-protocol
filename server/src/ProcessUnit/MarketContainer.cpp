@@ -6,7 +6,7 @@ namespace pu
         : AProcessUnitBase("Server/Market/" + _symbol + "/Container"),
         m_event(_symbol, _tcp_output),
         m_ob(_symbol, m_event.getInput()),
-        m_market_neworder(m_ob, _tcp_output),
+        m_market_neworder(m_mutex, m_ob, _tcp_output),
         m_market_cancel(m_mutex, m_ob, _tcp_output)
     {
     }

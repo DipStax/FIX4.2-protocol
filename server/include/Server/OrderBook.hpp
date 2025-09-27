@@ -48,8 +48,8 @@ class OrderBook
             ZeroMinusTick
         };
 
-        using AskBook = std::map<Price, OrderList, std::greater<Price>>;
-        using BidBook = std::map<Price, OrderList, std::less<Price>>;
+        using AskBook = std::map<Price, OrderList, std::less<Price>>;
+        using BidBook = std::map<Price, OrderList, std::greater<Price>>;
         using OrderIdMap = std::unordered_map<OrderId, OrderIdInfo>;
 
         OrderBook(const std::string &_name, ts::Queue<Event> &_event);

@@ -36,7 +36,7 @@ namespace FixGuardian
                 {
                     // "NewOrderSingle - Conditional invalid",
                     // "NewOrderSingle - Single user",
-                    // "NewOrderSingle - Double user"
+                    // "NewOrderSingle - Double user",
                     "Cancel validation"
                 }
             });

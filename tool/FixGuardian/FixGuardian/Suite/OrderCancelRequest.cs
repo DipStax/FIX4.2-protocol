@@ -50,5 +50,46 @@ namespace FixGuardian.Suite
                 Text = "Unknow order Id on this side"
             });
         }
+
+        [TestCase("Wrong Order Quantity")]
+        public void WrongOrderQuantity()
+        {
+            string guid = Guid.NewGuid().ToString();
+            Client.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Cancel-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 1000
+            });
+
+            Thread.Sleep(1000);
+            string guidCancel = Guid.NewGuid().ToString();
+            Client.Send(new OrderCancelRequest()
+            {
+                OrigClOrdID = guid,
+                ClOrdId = guidCancel,
+                Symbol = "Cancel-1",
+                OrderQty = 100,
+                Side = TradeSide.Sell,
+                TransactTime = DateTime.Now
+            });
+
+            Console.WriteLine("Receiving");
+            OrderCancelReject reject = Client.Receive<OrderCancelReject>();
+            Assert.Equal(reject, new OrderCancelReject()
+            {
+                OrderId = guid,
+                OrigClOrdId = guidCancel,
+                OrdStatus = OrderStatus.Rejected,
+                CxlRejResponseTo = CancelRejectResponseTo.CancelRequest,
+                CxlRejReason = CancelRejectReason.TooLate,
+                Text = "Order has invalid quantity"
+            });
+            Console.WriteLine("End of test");
+        }
     }
 }

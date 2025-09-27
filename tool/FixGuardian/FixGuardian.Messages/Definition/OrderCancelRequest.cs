@@ -10,6 +10,10 @@ namespace FixGuardian.Messages.Definition
         [Tag(41)]
         public string? OrigClOrdID { get; set; } = null;
 
+        [OptionalTag]
+        [Tag(37)]
+        public string? OrderID { get; set; } = null;
+
         [Tag(11)]
         public string? ClOrdId { get; set; } = null;
 

@@ -9,9 +9,9 @@
 
 namespace pu::market
 {
-    NewOrder::NewOrder(OrderBook &_ob, StringOutputQueue &_output)
+    NewOrder::NewOrder(QueueMutex<ProcessId> &_mutex, OrderBook &_ob, StringOutputQueue &_output)
         : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/New-order"),
-        m_tcp_output(_output), m_ob(_ob)
+        m_mutex(_mutex), m_ob(_ob), m_tcp_output(_output)
     {
     }
 
@@ -90,7 +90,14 @@ namespace pu::market
 
         Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.order.side);
 
+        Logger->log<logger::Level::Debug>("Entering in lock state queue mutex");
+        m_mutex.lock(ProcessId::NewOrderSingle);
+        Logger->log<logger::Level::Debug>("Lock acquired from queue mutex");
+
         if (!m_ob.allowTick(info.order.side)) {
+            Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
+            m_mutex.unlock();
+
             fix42::msg::ExecutionReport report;
 
             report.get<fix42::tag::OrderID>().Value = info.order.orderId;
@@ -131,7 +138,13 @@ namespace pu::market
             Logger->log<logger::Level::Info>("Aknowledge Limit order: ", info.order.orderId, ", with exec Id: ", info.execid);
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
             m_ob.add(info);
+
+            Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
+            m_mutex.unlock();
         } else {
+            Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
+            m_mutex.unlock();
+
             fix42::msg::ExecutionReport report;
 
             report.get<fix42::tag::OrderID>().Value = info.order.orderId;

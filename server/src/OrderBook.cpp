@@ -50,14 +50,15 @@ bool OrderBook::has(const OrderId &_orderId, fix42::Side _side)
     {
         std::shared_lock lock(m_ask_id.Mutex);
 
-        if (m_ask_id.IdList.contains(_orderId))
+        if (m_bid_id.IdList.contains(_orderId))
             return true;
     } else if (_side == fix42::Side::Sell || _side == fix42::Side::SellPlus) {
         std::shared_lock lock(m_bid_id.Mutex);
 
-        if (m_bid_id.IdList.contains(_orderId))
+        if (m_ask_id.IdList.contains(_orderId))
             return true;
     }
+    Logger->log<logger::Level::Error>("Not supported side: ", static_cast<char>(_side));
     return false;
 }
 
@@ -71,7 +72,6 @@ Order OrderBook::getOrder(const OrderId &_orderId)
     }
     std::shared_lock lock(m_ask_id.Mutex);
 
-    // todo can throw an exception if not found
     return *(m_ask_id.IdList.at(_orderId).Order);
 }
 
@@ -81,23 +81,23 @@ bool OrderBook::add(const OrderInfo &_order)
     Quantity qty = 0;
 
     if (_order.order.side == fix42::Side::BuyMinus || _order.order.side == fix42::Side::Buy) {
-        qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
+        qty = fillOnBook<std::greater_equal<Price>>(m_ask_book, m_ask_id, _order);
         if (qty != 0) {
             // todo change average price
             Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
 
             if (qty != _order.order.originalQty)
                 new_order.status = fix42::OrderStatus::PartiallyFilled;
-            addToBook(m_ask_book, m_ask_id, _order.price, new_order);
+            addToBook(m_bid_book, m_bid_id, _order.price, new_order);
         }
     } else if (_order.order.side == fix42::Side::SellPlus || _order.order.side == fix42::Side::Sell) {
-        qty = fillOnBook<std::greater_equal<Price>>(m_ask_book, m_ask_id, _order);
+        qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
         if (qty != 0) {
             Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
 
             if (qty != _order.order.originalQty)
                 new_order.status = fix42::OrderStatus::PartiallyFilled;
-            addToBook(m_bid_book, m_bid_id, _order.price, new_order);
+            addToBook(m_ask_book, m_ask_id, _order.price, new_order);
         }
     } else {
         Logger->log<logger::Level::Error>("Order side not supported: ", static_cast<int>(_order.order.side));
@@ -108,7 +108,7 @@ bool OrderBook::add(const OrderInfo &_order)
 
 bool OrderBook::cancel(const OrderId &_orderId, fix42::Side _side)
 {
-    
+    return false;
 }
 
 void OrderBook::lockReadOrder(fix42::Side _side)
@@ -116,10 +116,12 @@ void OrderBook::lockReadOrder(fix42::Side _side)
     switch (_side) {
         case fix42::Side::Sell:
         case fix42::Side::SellPlus:
+            Logger->log<logger::Level::Verbose>("Locking bid id map");
             m_bid_id.Mutex.lock_shared();
             break;
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
+            Logger->log<logger::Level::Verbose>("Locking ask id map");
             m_ask_id.Mutex.lock_shared();
             break;
         default:
@@ -133,10 +135,12 @@ void OrderBook::unlockReadOrder(fix42::Side _side)
     switch (_side) {
         case fix42::Side::Sell:
         case fix42::Side::SellPlus:
+            Logger->log<logger::Level::Verbose>("Unlocking bid id map");
             m_bid_id.Mutex.unlock_shared();
             break;
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
+            Logger->log<logger::Level::Verbose>("Unlocking ask id map");
             m_ask_id.Mutex.unlock_shared();
             break;
         default:

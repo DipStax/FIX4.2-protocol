@@ -36,6 +36,7 @@ namespace pu::market
             return;
         }
 
+        Logger->log<logger::Level::Verbose>("Mutex front value: ", m_mutex.front());
         if (m_mutex.front() != ProcessId::OrderCancelRequest)
             aknowledgeCancel(_input, order.value());
 
@@ -100,10 +101,12 @@ namespace pu::market
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
             return std::nullopt;
         }
+        Logger->log<logger::Level::Verbose>("Valid order ID, getting the order from order book");
         Order order = m_ob.getOrder(_input.Message.get<fix42::tag::OrigClOrdID>().Value);
         m_ob.unlockReadOrder(side);
 
         if (order.side != side) {
+            Logger->log<logger::Level::Info>("Side doesn't exactly match");
             // reject wrong side
             return std::nullopt;
         }
@@ -135,11 +138,12 @@ namespace pu::market
         const Quantity qty = _input.Message.get<fix42::tag::OrderQty>().Value.value();
 
         if (!m_ob.has(origin_id, _input.Message.get<fix42::tag::Side>().Value)) {
+            Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
             m_mutex.unlock();
 
             fix42::msg::OrderCancelReject reject{};
 
-            Logger->log<logger::Level::Debug>("After access mutex, Cancel rejected: order not found");
+            Logger->log<logger::Level::Info>("Cancel rejected: order not found");
             reject.get<fix42::tag::OrderID>().Value = origin_id;
             reject.get<fix42::tag::OrigClOrdID>().Value = cancel_id;
             reject.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::Rejected;
@@ -153,9 +157,10 @@ namespace pu::market
         Order order = m_ob.getOrder(origin_id);
 
         if (order.remainQty != qty) {
+            Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
             m_mutex.unlock();
 
-            Logger->log<logger::Level::Debug>("After access mutex, Cancel rejected: quantity not matching: ", order.remainQty, " != ", qty);
+            Logger->log<logger::Level::Info>("Cancel rejected: quantity not matching: ", order.remainQty, " != ", qty);
             fix42::msg::OrderCancelReject reject{};
 
             reject.get<fix42::tag::OrderID>().Value = origin_id;
@@ -163,7 +168,7 @@ namespace pu::market
             reject.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::Rejected;
             reject.get<fix42::tag::CxlRejResponseTo>().Value = fix42::CancelRejectResponseTo::CancelRequest;
             reject.get<fix42::tag::CxlRejReason>().Value = fix42::CancelRejectReason::TooLateCancel;
-            reject.get<fix42::tag::Text>().Value = "ORder has invalid quantity";
+            reject.get<fix42::tag::Text>().Value = "Order has invalid quantity";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
             return std::nullopt;
         }
