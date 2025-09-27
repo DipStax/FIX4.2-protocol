@@ -22,7 +22,7 @@ void QueueMutex<T>::unlock()
 }
 
 template<IsEnum T>
-T QueueMutex<T>::front() const
+T QueueMutex<T>::front()
 {
     std::lock_guard<std::mutex> lk(m_mutex);
 

@@ -47,6 +47,7 @@ namespace fix42
 
         using ExecutionReport = fix::Message<'8',
             fix::Tag<tag::OrderID, std::string>,
+            fix::Tag<tag::ClOrdID, std::optional<std::string>>,
             fix::Tag<tag::ExecId, std::string>,
             fix::Tag<tag::ExecTransType, TransactionType>,
             fix::Tag<tag::ExecType, ExecutionStatus>,

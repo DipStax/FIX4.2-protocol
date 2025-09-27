@@ -36,7 +36,7 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        redirectToMarket(error.value(), _input);
+        redirectToMarket(error.value(), _input, ProcessId::NewOrderSingle);
     }
 
     void MarketRouter::processOrderCancelRequest(const InputType &_input)
@@ -48,6 +48,6 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        redirectToMarket(error.value(), _input);
+        redirectToMarket(error.value(), _input, ProcessId::OrderCancelRequest);
     }
 }

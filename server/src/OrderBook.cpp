@@ -122,6 +122,9 @@ void OrderBook::lockReadOrder(fix42::Side _side)
         case fix42::Side::BuyMinus:
             m_ask_id.Mutex.lock_shared();
             break;
+        default:
+            Logger->log<logger::Level::Error>("Unable to lock side: ", static_cast<char>(_side));
+            break;
     }
 }
 
@@ -135,6 +138,9 @@ void OrderBook::unlockReadOrder(fix42::Side _side)
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
             m_ask_id.Mutex.unlock_shared();
+            break;
+        default:
+            Logger->log<logger::Level::Error>("Unable to unlock side: ", static_cast<char>(_side));
             break;
     }
 }

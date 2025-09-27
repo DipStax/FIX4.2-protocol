@@ -1,6 +1,6 @@
 #pragma once
 
-#include <concept>
+#include <concepts>
 
 template<class T>
 concept IsEnum = std::is_enum_v<T>;
@@ -15,7 +15,7 @@ class QueueMutex
         void lock(const T &_id);
         void unlock();
 
-        [[nodiscard]] T front() const;
+        [[nodiscard]] T front();
 
         void allow(const T &id);
 
@@ -23,7 +23,7 @@ class QueueMutex
         std::mutex m_mutex{};
         std::condition_variable m_cv{};
         std::queue<T> m_queue{};
-        bool m_locked = false;
+        bool m_lock = false;
 };
 
 #include "Shared/Thread/QueueMutex.inl"

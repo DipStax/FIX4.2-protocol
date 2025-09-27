@@ -23,6 +23,8 @@ Each message type is described with its required fields, tags, and any server-sp
 - `3` [Reject](./Reject.md)
 - `5` [Logout](./Logout.md)
 - `8` [Execution Report](./ExecutionReport.md)
+- `9` [ORder Cancel Reject](./ORderCancelReject.md)
 - `j` [Business Message Reject](./BusinessMessageReject.md)
 - `A` [Logon](./Logon.md)
 - `D` [New Order Single](./NewOrderSingle.md)
+- `F` [Order Cancel Request](./OrderCancelRequest.md)

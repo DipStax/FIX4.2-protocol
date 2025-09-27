@@ -28,10 +28,11 @@ namespace FixGuardian.Suite
         public void UnknownOrderId()
         {
             string guid = Guid.NewGuid().ToString();
+            string guidCancel = Guid.NewGuid().ToString();
             Client.Send(new OrderCancelRequest()
             {
                 OrigClOrdID = guid,
-                ClOrdId = Guid.NewGuid().ToString(),
+                ClOrdId = guidCancel,
                 Symbol = "Cancel-1",
                 OrderQty = 100,
                 Side = TradeSide.Buy,
@@ -42,7 +43,7 @@ namespace FixGuardian.Suite
             Assert.Equal(reject, new OrderCancelReject()
             {
                 OrderId = "NONE",
-                OrigClOrdId = guid,
+                OrigClOrdId = guidCancel,
                 OrdStatus = OrderStatus.Rejected,
                 CxlRejResponseTo = CancelRejectResponseTo.CancelRequest,
                 CxlRejReason = CancelRejectReason.UnknownOrder,

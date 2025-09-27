@@ -5,6 +5,7 @@
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/Thread/QueueMutex.hpp"
+#include "Server/ProcessUnit/data/ProcessId.hpp"
 
 namespace pu::market
 {
@@ -18,11 +19,11 @@ namespace pu::market
             void onInput(InputType _input) final;
 
         private:
-            void aknowledgeCancel(const Order _order, InputType _input);
-            void rejectOrderAlreadyProcess(const OrderId &_origin, const OrderId &_cancel);
-            void rejectOrderInvalidQty(const OrderId &_origin, const OrderId &_cancel);
+            std::optional<Order> verifyOrderState(const InputType &_input);
+            void aknowledgeCancel(InputType _input, const Order &_order);
+            std::optional<Order> verifyOrderStateWithLock(const InputType &_input);
 
-            QueueMutex<ProcessId> m_mutex;
+            QueueMutex<ProcessId> &m_mutex;
 
             StringOutputQueue &m_tcp_output;
 
