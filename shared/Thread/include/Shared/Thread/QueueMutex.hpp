@@ -1,13 +1,8 @@
 #pragma once
 
-#include <concepts>
-
-#include "Shared/Thread/Queue.hpp"
+#include <deque>
 
 template<class T>
-concept IsEnum = std::is_enum_v<T>;
-
-template<IsEnum T>
 class QueueMutex
 {
     public:
@@ -17,12 +12,17 @@ class QueueMutex
         void lock(const T &_id);
         void unlock();
 
-        [[nodiscard]] T front();
+        [[nodiscard]] bool empty() const;
+        [[nodiscard]] const T &front() const;
 
         void allow(const T &id);
 
+        bool finish(const T &_id);
+
     private:
-        ts::Queue<T> m_queue{};
+        mutable std::shared_mutex m_mutex;
+
+        std::deque<T> m_queue{};
         bool m_lock = false;
 };
 

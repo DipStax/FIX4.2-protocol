@@ -1,6 +1,7 @@
 #include "Server/ProcessUnit/MarketRouter.hpp"
 
 #include "Shared/Message-v2/Parser.hpp"
+#include "Shared/Utils/Utils.hpp"
 
 namespace pu
 {
@@ -36,7 +37,7 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        redirectToMarket(error.value(), _input, ProcessId::NewOrderSingle);
+        redirectToMarket(error.value(), _input, utils::Uuid::Generate());
     }
 
     void MarketRouter::processOrderCancelRequest(const InputType &_input)
@@ -48,6 +49,6 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        redirectToMarket(error.value(), _input, ProcessId::OrderCancelRequest);
+        redirectToMarket(error.value(), _input, utils::Uuid::Generate());
     }
 }

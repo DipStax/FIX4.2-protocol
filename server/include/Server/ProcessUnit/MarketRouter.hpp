@@ -13,7 +13,7 @@ namespace pu
     {
         public:
             using MarketTupleQueue = std::tuple<
-                QueueMutex<ProcessId> &,
+                QueueMutex<ExecId> &,
                 MessageQueue<fix42::msg::NewOrderSingle> &,
                 MessageQueue<fix42::msg::OrderCancelRequest> &
             >;
@@ -31,7 +31,7 @@ namespace pu
             void processOrderCancelRequest(const InputType &_input);
 
             template<class T>
-            void redirectToMarket(const T &_msg, const InputType &_input, ProcessId _procId);
+            void redirectToMarket(const T &_msg, const InputType &_input, const ExecId &_execId);
 
             StringOutputQueue &m_error;
 

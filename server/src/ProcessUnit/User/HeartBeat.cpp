@@ -122,7 +122,7 @@ namespace pu::user
 
     void HeartBeatHandler::handle(std::stop_token _st)
     {
-        Logger->log<logger::Level::Warning>("Entering processing thread");
+        Logger->log<logger::Level::Info>("Entering processing thread");
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 

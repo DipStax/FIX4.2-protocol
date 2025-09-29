@@ -12,7 +12,7 @@ namespace pu::market
     class NewOrder : public AInputProcess<Context<data::ParsedMessage<fix42::msg::NewOrderSingle>>>
     {
         public:
-            NewOrder(QueueMutex<ProcessId> &_mutex, OrderBook &_ob, StringOutputQueue &_output);
+            NewOrder(QueueMutex<ExecId> &_mutex, OrderBook &_ob, StringOutputQueue &_output);
             virtual ~NewOrder() = default;
 
         protected:
@@ -24,7 +24,7 @@ namespace pu::market
             void newOrderLimit(const InputType &_input);
             void notSupportedSide(const InputType &_input);
 
-            QueueMutex<ProcessId> &m_mutex;
+            QueueMutex<ExecId> &m_mutex;
 
             OrderBook &m_ob;
 

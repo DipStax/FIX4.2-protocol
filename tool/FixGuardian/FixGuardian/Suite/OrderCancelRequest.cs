@@ -66,7 +66,6 @@ namespace FixGuardian.Suite
                 Price = 1000
             });
 
-            Thread.Sleep(1000);
             string guidCancel = Guid.NewGuid().ToString();
             Client.Send(new OrderCancelRequest()
             {
@@ -78,7 +77,6 @@ namespace FixGuardian.Suite
                 TransactTime = DateTime.Now
             });
 
-            Console.WriteLine("Receiving");
             OrderCancelReject reject = Client.Receive<OrderCancelReject>();
             Assert.Equal(reject, new OrderCancelReject()
             {
@@ -89,7 +87,6 @@ namespace FixGuardian.Suite
                 CxlRejReason = CancelRejectReason.TooLate,
                 Text = "Order has invalid quantity"
             });
-            Console.WriteLine("End of test");
         }
     }
 }

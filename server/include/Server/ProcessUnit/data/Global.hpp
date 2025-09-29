@@ -41,11 +41,12 @@ namespace data
         ParsedMessage() = default;
         ParsedMessage(ParsedMessage &&_data) noexcept = default;
         ParsedMessage(const ParsedMessage &_data) = default;
-        ParsedMessage(const fix42::Header &&_header, const T &&_message) noexcept;
+        ParsedMessage(const ExecId &&_execId, const fix42::Header &&_header, const T &&_message) noexcept;
         virtual ~ParsedMessage() = default;
 
         ParsedMessage &operator=(ParsedMessage &&_data) noexcept = default;
 
+        ExecId ExecutionId;
         fix42::Header Header;   ///< Message header
         T Message{};            ///< Parsed message
     };

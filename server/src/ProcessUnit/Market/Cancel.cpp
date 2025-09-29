@@ -5,24 +5,28 @@
 
 namespace pu::market
 {
-    Cancel::Cancel(QueueMutex<ProcessId> &_mutex, OrderBook &_ob, StringOutputQueue &_output)
+    Cancel::Cancel(QueueMutex<ExecId> &_mutex, OrderBook &_ob, StringOutputQueue &_output)
         : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/Cancel"),
         m_mutex(_mutex), m_tcp_output(_output), m_ob(_ob)
     {
     }
 
+    void Cancel::setup()
+    {
+        m_thread = std::jthread(&Cancel::orderProcessing, this);
+    }
+
     void Cancel::onInput(InputType _input)
     {
-        const OrderId &cancel_id = _input.Message.get<fix42::tag::ClOrdID>().Value;
-        const OrderId &origin_id = _input.Message.get<fix42::tag::OrigClOrdID>().Value;
 
         if (!_input.Message.get<fix42::tag::OrderQty>().Value.has_value()) {
+            m_mutex.finish(_input.ExecutionId);
             fix42::msg::BusinessReject reject{};
 
             Logger->log<logger::Level::Info>("Order cancel rejected because no quantity was provided");
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
             reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
-            reject.get<fix42::tag::BusinessRejectRefId>().Value = cancel_id;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
             reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
             reject.get<fix42::tag::Text>().Value = "Quantity is required";
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
@@ -32,52 +36,91 @@ namespace pu::market
         std::optional<Order> order = verifyOrderState(_input);
 
         if (!order.has_value()) {
+            m_mutex.finish(_input.ExecutionId);
             Logger->log<logger::Level::Verbose>("Verification of the order state failed");
             return;
         }
 
-        Logger->log<logger::Level::Verbose>("Mutex front value: ", m_mutex.front());
-        if (m_mutex.front() != ProcessId::OrderCancelRequest)
-            aknowledgeCancel(_input, order.value());
-
-        Logger->log<logger::Level::Debug>("Entering in lock state queue mutex");
-        m_mutex.lock(ProcessId::OrderCancelRequest);
-        Logger->log<logger::Level::Debug>("Lock acquired from queue mutex");
-
-        order = verifyOrderStateWithLock(_input);
-
-        if (!order.has_value())
-            return;
-        if (m_ob.cancel(cancel_id, _input.Message.get<fix42::tag::Side>().Value)) {
-            m_mutex.unlock();
-
+        Logger->log<logger::Level::Verbose>("Mutex Queue front value: ", m_mutex.front());
+        if (!m_internal_queue.empty() || m_mutex.front() != _input.ExecutionId) {
             fix42::msg::ExecutionReport report;
 
-            Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " has been successfull");
-            report.get<fix42::tag::OrderID>().Value = origin_id;
-            report.get<fix42::tag::ClOrdID>().Value = cancel_id;
-            report.get<fix42::tag::ExecId>().Value = utils::Uuid::Generate();
+            Logger->log<logger::Level::Info>("Aknowledging the cancel request");
+            report.get<fix42::tag::OrderID>().Value = _input.Message.get<fix42::tag::OrigClOrdID>().Value;
+            report.get<fix42::tag::ClOrdID>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+            report.get<fix42::tag::ExecId>().Value = _input.ExecutionId;
             report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::Cancel;
-            report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Canceled;
+            report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::PendingCancel;
             report.get<fix42::tag::OrdStatus>().Value = order.value().status;
             report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
             report.get<fix42::tag::LeavesQty>().Value = order.value().remainQty;
             report.get<fix42::tag::CumQty>().Value = order.value().originalQty - order.value().remainQty;
             report.get<fix42::tag::AvgPx>().Value = order.value().avgPrice;
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
-        } else {
-            m_mutex.unlock();
+        }
 
-            fix42::msg::OrderCancelReject reject{};
+        m_internal_queue.push(std::move(_input));
+    }
 
-            Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " has been successfull");
-            reject.get<fix42::tag::OrderID>().Value = origin_id;
-            reject.get<fix42::tag::OrigClOrdID>().Value = cancel_id;
-            reject.get<fix42::tag::OrdStatus>().Value = order.value().status;
-            reject.get<fix42::tag::CxlRejResponseTo>().Value = fix42::CancelRejectResponseTo::CancelRequest;
-            reject.get<fix42::tag::CxlRejReason>().Value = fix42::CancelRejectReason::UnknownOrderCancel;
-            reject.get<fix42::tag::Text>().Value = "No matching order to cancel";
-            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
+    void Cancel::onStop()
+    {
+        if (m_thread.joinable()) {
+            Logger->log<logger::Level::Info>("Requesting stop on the worker thread");
+            m_thread.request_stop();
+            m_thread.join();
+            Logger->log<logger::Level::Debug>("Worker thread joined");
+        }
+    }
+
+    void Cancel::orderProcessing(std::stop_token _st)
+    {
+        Logger->log<logger::Level::Info>("Entering worker thread");
+        while (!_st.stop_requested()) {
+            while (!m_internal_queue.empty()) {
+                InputType input = m_internal_queue.pop_front();
+                const OrderId &cancel_id = input.Message.get<fix42::tag::ClOrdID>().Value;
+                const OrderId &origin_id = input.Message.get<fix42::tag::OrigClOrdID>().Value;
+
+                Logger->log<logger::Level::Debug>("Entering in lock state queue mutex");
+                m_mutex.lock(input.ExecutionId);
+                Logger->log<logger::Level::Debug>("Lock acquired from queue mutex");
+
+                std::optional<Order> order = verifyOrderStateWithLock(input);
+
+                if (!order.has_value())
+                    return;
+                if (m_ob.cancel(cancel_id, input.Message.get<fix42::tag::Side>().Value)) {
+                    m_mutex.unlock();
+
+                    fix42::msg::ExecutionReport report;
+
+                    Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " has been successfull");
+                    report.get<fix42::tag::OrderID>().Value = origin_id;
+                    report.get<fix42::tag::ClOrdID>().Value = cancel_id;
+                    report.get<fix42::tag::ExecId>().Value = input.ExecutionId;
+                    report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::Cancel;
+                    report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Canceled;
+                    report.get<fix42::tag::OrdStatus>().Value = order.value().status;
+                    report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+                    report.get<fix42::tag::LeavesQty>().Value = order.value().remainQty;
+                    report.get<fix42::tag::CumQty>().Value = order.value().originalQty - order.value().remainQty;
+                    report.get<fix42::tag::AvgPx>().Value = order.value().avgPrice;
+                    m_tcp_output.append(input.Client, input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
+                } else {
+                    m_mutex.unlock();
+
+                    fix42::msg::OrderCancelReject reject{};
+
+                    Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " failed");
+                    reject.get<fix42::tag::OrderID>().Value = origin_id;
+                    reject.get<fix42::tag::OrigClOrdID>().Value = cancel_id;
+                    reject.get<fix42::tag::OrdStatus>().Value = order.value().status;
+                    reject.get<fix42::tag::CxlRejResponseTo>().Value = fix42::CancelRejectResponseTo::CancelRequest;
+                    reject.get<fix42::tag::CxlRejReason>().Value = fix42::CancelRejectReason::UnknownOrderCancel;
+                    reject.get<fix42::tag::Text>().Value = "No matching order to cancel";
+                    m_tcp_output.append(input.Client, input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
+                }
+            }
         }
     }
 
@@ -111,24 +154,6 @@ namespace pu::market
             return std::nullopt;
         }
         return order;
-    }
-
-    void Cancel::aknowledgeCancel(InputType _input, const Order &_order)
-    {
-        fix42::msg::ExecutionReport report;
-
-        Logger->log<logger::Level::Info>("Aknowledging the cancel request");
-        report.get<fix42::tag::OrderID>().Value = _input.Message.get<fix42::tag::OrigClOrdID>().Value;
-        report.get<fix42::tag::ClOrdID>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
-        report.get<fix42::tag::ExecId>().Value = utils::Uuid::Generate();
-        report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::Cancel;
-        report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::PendingCancel;
-        report.get<fix42::tag::OrdStatus>().Value = _order.status;
-        report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
-        report.get<fix42::tag::LeavesQty>().Value = _order.remainQty;
-        report.get<fix42::tag::CumQty>().Value = _order.originalQty - _order.remainQty;
-        report.get<fix42::tag::AvgPx>().Value = _order.avgPrice;
-        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
     }
 
     std::optional<Order> Cancel::verifyOrderStateWithLock(const InputType &_input)

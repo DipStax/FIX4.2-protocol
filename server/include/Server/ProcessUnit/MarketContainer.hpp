@@ -14,7 +14,7 @@ namespace pu
     {
         public:
             using MarketTupleQueue = std::tuple<
-                QueueMutex<ProcessId> &,
+                QueueMutex<ExecId> &,
                 MessageQueue<fix42::msg::NewOrderSingle> &,
                 MessageQueue<fix42::msg::OrderCancelRequest> &
             >;
@@ -36,7 +36,7 @@ namespace pu
 
             OrderBook m_ob;
 
-            QueueMutex<ProcessId> m_mutex;
+            QueueMutex<ExecId> m_mutex;
 
             ProcessUnit<pu::market::NewOrder> m_market_neworder;
             ProcessUnit<pu::market::Cancel> m_market_cancel;

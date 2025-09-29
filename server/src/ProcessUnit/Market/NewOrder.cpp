@@ -9,7 +9,7 @@
 
 namespace pu::market
 {
-    NewOrder::NewOrder(QueueMutex<ProcessId> &_mutex, OrderBook &_ob, StringOutputQueue &_output)
+    NewOrder::NewOrder(QueueMutex<ExecId> &_mutex, OrderBook &_ob, StringOutputQueue &_output)
         : AInputProcess<InputType>("Server/Market/" + _ob.getSymbol() + "/New-order"),
         m_mutex(_mutex), m_ob(_ob), m_tcp_output(_output)
     {
@@ -43,6 +43,8 @@ namespace pu::market
     void NewOrder::newOrderLimit(const InputType &_input)
     {
         if (!_input.Message.get<fix42::tag::Price>().Value.has_value()) {
+            m_mutex.finish(_input.ExecutionId);
+
             fix42::msg::BusinessReject reject{};
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
@@ -53,6 +55,8 @@ namespace pu::market
             m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
         } else if (!_input.Message.get<fix42::tag::OrderQty>().Value.has_value()) {
+            m_mutex.finish(_input.ExecutionId);
+
             fix42::msg::BusinessReject reject{};
 
             reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
@@ -79,7 +83,7 @@ namespace pu::market
         OrderBook::OrderInfo info{};
 
         info.price = _input.Message.get<fix42::tag::Price>().Value.value();
-        info.execid = utils::Uuid::Generate();
+        info.execid = _input.ExecutionId;
         info.order.userId = _input.Client->getUserId();
         info.order.orderId = _input.Message.get<fix42::tag::ClOrdID>().Value;
         info.order.originalQty = _input.Message.get<fix42::tag::OrderQty>().Value.value();
@@ -91,7 +95,7 @@ namespace pu::market
         Logger->log<logger::Level::Info>("New order: ", info.order, " at price: ", info.price, " on side: ", info.order.side);
 
         Logger->log<logger::Level::Debug>("Entering in lock state queue mutex");
-        m_mutex.lock(ProcessId::NewOrderSingle);
+        m_mutex.lock(_input.ExecutionId);
         Logger->log<logger::Level::Debug>("Lock acquired from queue mutex");
 
         if (!m_ob.allowTick(info.order.side)) {
@@ -141,6 +145,10 @@ namespace pu::market
 
             Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
             m_mutex.unlock();
+            if (m_mutex.empty())
+                Logger->log<logger::Level::Verbose>("Queue mutex status update: empty");
+            else
+                Logger->log<logger::Level::Verbose>("Queue mutex status update: ", m_mutex.front());
         } else {
             Logger->log<logger::Level::Debug>("Leaving lock state of access mutex");
             m_mutex.unlock();
@@ -171,6 +179,7 @@ namespace pu::market
 
     void NewOrder::notSupportedSide(const InputType &_input)
     {
+        m_mutex.finish(_input.ExecutionId);
         fix42::msg::BusinessReject reject{};
 
         reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
