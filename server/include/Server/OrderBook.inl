@@ -72,5 +72,12 @@ void OrderBook::addToBook(BookType &_book, OrderIdMapBundle &_idmap, Price _pric
     std::unique_lock lock_idmap(_idmap.Mutex);
 
     Logger->log<logger::Level::Info>("New order place at price: ", _price, ", with order: ", _order);
-    _idmap.IdList[_order.orderId] = { orderlist.end(), _price };
+    _idmap.IdList[_order.orderId] = { --(orderlist.end()), _price };
+}
+
+template<IsBook BookType>
+void OrderBook::cancelOrder(BookType &_book, const OrderIdInfo &_info)
+{
+    Logger->log<logger::Level::Info>("Removing order: ", *(_info.Order), "at price: ", _info.price);
+    _book.at(_info.price).erase(_info.Order);
 }

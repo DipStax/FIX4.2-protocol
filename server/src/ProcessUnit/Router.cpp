@@ -33,7 +33,7 @@ namespace pu
                     m_logout_handler.push(std::move(_input));
                     break;
                 case fix42::msg::NewOrderSingle::Type:
-                // case fix::OrderCancelRequest::cMsgType:
+                case fix42::msg::OrderCancelRequest::Type:
                 // case fix::OrderCancelReplaceRequest::cMsgType:
                     m_market_router.push(std::move(_input));
                     break;
@@ -42,7 +42,8 @@ namespace pu
                 case fix42::msg::SessionReject::Type:
                     treatReject(_input);
                     break;
-                default: treatUnknown(_input);
+                default:
+                    treatUnknown(_input);
                     break;
             }
         } else {

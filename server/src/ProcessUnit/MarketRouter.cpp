@@ -1,6 +1,7 @@
 #include "Server/ProcessUnit/MarketRouter.hpp"
 
 #include "Shared/Message-v2/Parser.hpp"
+#include "Shared/Utils/Utils.hpp"
 
 namespace pu
 {
@@ -21,6 +22,9 @@ namespace pu
             case fix42::msg::NewOrderSingle::Type:
                 processNewOrderSingle(_input);
                 break;
+            case fix42::msg::OrderCancelRequest::Type:
+                processOrderCancelRequest(_input);
+                break;
         }
     }
 
@@ -33,7 +37,18 @@ namespace pu
             m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
             return;
         }
-        redirectToMarket(error.value(), _input);
+        redirectToMarket(error.value(), _input, utils::Uuid::Generate());
     }
 
+    void MarketRouter::processOrderCancelRequest(const InputType &_input)
+    {
+        xstd::Expected<fix42::msg::OrderCancelRequest, fix42::msg::SessionReject> error = fix42::parseMessage<fix42::msg::OrderCancelRequest>(_input.Message, _input.Header);
+
+        if (error.has_error()) {
+            Logger->log<logger::Level::Info>("Parsing of OrderCancelRequest message failed: ", error.error().get<fix42::tag::Text>().Value.value());
+            m_error.append(_input.Client, _input.ReceiveTime, fix42::msg::SessionReject::Type, std::move(error.error().to_string()));
+            return;
+        }
+        redirectToMarket(error.value(), _input, utils::Uuid::Generate());
+    }
 }

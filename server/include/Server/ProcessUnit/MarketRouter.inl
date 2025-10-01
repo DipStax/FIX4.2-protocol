@@ -3,13 +3,15 @@
 namespace pu
 {
     template<class T>
-    void MarketRouter::redirectToMarket(const T &_msg, const InputType &_input)
+    void MarketRouter::redirectToMarket(const T &_msg, const InputType &_input, const ExecId &_execId)
     {
         const std::string &symbol = _msg.template get<fix42::tag::Symbol>().Value;
 
         if (m_markets.contains(symbol)) {
+            Logger->log<logger::Level::Verbose>("Pushing process id to queue mutex: ", _execId);
+            std::get<QueueMutex<ExecId> &>(m_markets.at(symbol)).allow(_execId);
             Logger->log<logger::Level::Info>("Redirecting to market: ", symbol);
-            std::get<MessageQueue<T> &>(m_markets.at(symbol)).append(_input.Client, _input.ReceiveTime, std::move(_input.Header), std::move(_msg));
+            std::get<MessageQueue<T> &>(m_markets.at(symbol)).append(_input.Client, _input.ReceiveTime, std::move(_execId), std::move(_input.Header), std::move(_msg));
         } else {
             fix42::msg::BusinessReject reject{};
 

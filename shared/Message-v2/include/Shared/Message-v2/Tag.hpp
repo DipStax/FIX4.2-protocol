@@ -32,6 +32,7 @@ namespace fix42::tag
     constexpr const fix::TagName Text = 58;                     ///< Tag [58](https://www.onixs.biz/fix-dictionary/4.2/tagNum_58.html).
     constexpr const fix::TagName TransactTime = 60;             ///< Tag [60](https://www.onixs.biz/fix-dictionary/4.2/tagNum_60.html).
     constexpr const fix::TagName EncryptMethod = 98;            ///< Tag [98](https://www.onixs.biz/fix-dictionary/4.2/tagNum_98.html).
+    constexpr const fix::TagName CxlRejReason = 102;            ///< Tag [102](https://www.onixs.biz/fix-dictionary/4.2/tagNum_102.html).
     constexpr const fix::TagName OrdRejReason = 103;            ///< Tag [103](https://www.onixs.biz/fix-dictionary/4.2/tagNum_103.html).
     constexpr const fix::TagName HeartBtInt = 108;              ///< Tag [108](https://www.onixs.biz/fix-dictionary/4.2/tagNum_108.html).
     constexpr const fix::TagName MinQty = 110;                  ///< Tag [110](https://www.onixs.biz/fix-dictionary/4.2/tagNum_110.html).
@@ -53,5 +54,6 @@ namespace fix42::tag
     constexpr const fix::TagName RefMsgType = 372;              ///< Tag [372](https://www.onixs.biz/fix-dictionary/4.2/tagNum_372.html).
     constexpr const fix::TagName SessionRejectReason = 373;     ///< Tag [373](https://www.onixs.biz/fix-dictionary/4.2/tagNum_373.html).
     constexpr const fix::TagName BusinessRejectRefId = 379;     ///< Tag [379](https://www.onixs.biz/fix-dictionary/4.2/tagNum_379.html).
-    constexpr const fix::TagName BusinessRejectReason = 380;     ///< Tag [380](https://www.onixs.biz/fix-dictionary/4.2/tagNum_380.html).
+    constexpr const fix::TagName BusinessRejectReason = 380;    ///< Tag [380](https://www.onixs.biz/fix-dictionary/4.2/tagNum_380.html).
+    constexpr const fix::TagName CxlRejResponseTo = 434;        ///< Tag [434](https://www.onixs.biz/fix-dictionary/4.2/tagNum_434.html).
 }

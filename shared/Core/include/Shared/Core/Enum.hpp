@@ -33,7 +33,7 @@ namespace fix42
         DoneForDay,
         Canceled,
         Replaced,
-        PedningCancel,
+        PendingCancel,
         Stopped,
         Rejected,
         Suspended,
@@ -121,5 +121,19 @@ namespace fix42
         ForexPrevQuoted,
         Funari,
         Pegged = 'P'
+    };
+
+    enum CancelRejectResponseTo
+    {
+        CancelRequest = '1',
+        ReplaceRequest
+    };
+
+    enum CancelRejectReason
+    {
+        TooLateCancel = '0',
+        UnknownOrderCancel,
+        BrokerOptionCancel,
+        OrderPendingCancelorReplace
     };
 }

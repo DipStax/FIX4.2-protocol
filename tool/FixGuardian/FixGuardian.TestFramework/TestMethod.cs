@@ -73,6 +73,12 @@ namespace FixGuardian.TestFramework
                 Console.WriteLine("\t==> Test failed");
                 testSucced = false;
             }
+            catch (AssertionException ex)
+            {
+                DisplayAssertionError(ex);
+                Console.WriteLine("\t==> Test failed");
+                testSucced = false;
+            }
             catch (Exception exception)
             {
                 testSucced = false;

@@ -6,6 +6,7 @@
 
 using UserId = std::string;
 using OrderId = std::string;
+using ExecId = std::string;
 using Quantity = float;
 using Price = float;
 using Side = uint8_t;

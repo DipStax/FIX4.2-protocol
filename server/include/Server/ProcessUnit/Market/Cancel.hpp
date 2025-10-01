@@ -1,8 +1,10 @@
 #pragma once
 
+#include <thread>
+
 #include "Server/ProcessUnit/data/Global.hpp"
-#include "Server/ProcessUnit/data/ProcessId.hpp"
 #include "Server/OrderBook.hpp"
+#include "Server/ProcessUnit/data/ProcessId.hpp"
 
 #include "Shared/ProcessUnit/AInputProcess.hpp"
 #include "Shared/ProcessUnit/IProcessUnitStopable.hpp"
@@ -10,11 +12,11 @@
 
 namespace pu::market
 {
-    class NewOrder : public AInputProcess<Context<data::ParsedMessage<fix42::msg::NewOrderSingle>>>, IProcessUnitStopable
+    class Cancel : public AInputProcess<Context<data::ParsedMessage<fix42::msg::OrderCancelRequest>>>, IProcessUnitStopable
     {
         public:
-            NewOrder(QueueMutex<ExecId> &_mutex, OrderBook &_ob, StringOutputQueue &_output);
-            virtual ~NewOrder() = default;
+            Cancel(QueueMutex<ExecId> &_mutex, OrderBook &_ob, StringOutputQueue &_output);
+            virtual ~Cancel() = default;
 
         protected:
             void setup() final;
@@ -26,18 +28,17 @@ namespace pu::market
             void orderProcessing(std::stop_token _st);
 
         private:
-            void notSupportedOrderType(const InputType &_input);
-            void notSupportedSide(const InputType &_input);
+            std::optional<Order> verifyOrderState(const InputType &_input);
+            std::optional<Order> verifyOrderStateWithLock(const InputType &_input);
 
             QueueMutex<ExecId> &m_mutex;
 
-            OrderBook &m_ob;
-
-            std::jthread m_thread;
-            ts::Queue<InputType> m_internal_queue;
-
             StringOutputQueue &m_tcp_output;
 
-            const std::string m_symbol;
+            ts::Queue<InputType> m_internal_queue;
+
+            OrderBook &m_ob;
+
+            std::jthread m_thread{};
     };
 }

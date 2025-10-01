@@ -47,6 +47,7 @@ namespace fix42
 
         using ExecutionReport = fix::Message<'8',
             fix::Tag<tag::OrderID, std::string>,
+            fix::Tag<tag::ClOrdID, std::optional<std::string>>,
             fix::Tag<tag::ExecId, std::string>,
             fix::Tag<tag::ExecTransType, TransactionType>,
             fix::Tag<tag::ExecType, ExecutionStatus>,
@@ -62,6 +63,15 @@ namespace fix42
             fix::Tag<tag::LastPx, std::optional<Quantity>>,
             fix::Tag<tag::CumQty, Quantity>,
             fix::Tag<tag::AvgPx, Price>,
+            fix::Tag<tag::Text, std::optional<std::string>>
+        >;
+
+        using OrderCancelReject = fix::Message<'9',
+            fix::Tag<tag::OrderID, std::string>,
+            fix::Tag<tag::OrigClOrdID, std::string>,
+            fix::Tag<tag::OrdStatus, OrderStatus>,
+            fix::Tag<tag::CxlRejResponseTo, CancelRejectResponseTo>,
+            fix::Tag<tag::CxlRejReason, std::optional<CancelRejectReason>>,
             fix::Tag<tag::Text, std::optional<std::string>>
         >;
 
@@ -86,6 +96,16 @@ namespace fix42
             fix::Tag<tag::OrderQty, std::optional<Quantity>>,
             fix::Tag<tag::OrdType, OrderType>,
             fix::Tag<tag::Price, std::optional<Price>>
+        >;
+
+        using OrderCancelRequest = fix::Message<'F',
+            fix::Tag<tag::OrigClOrdID, std::string>,
+            fix::Tag<tag::OrderID, std::optional<std::string>>,
+            fix::Tag<tag::ClOrdID, std::string>,
+            fix::Tag<tag::Symbol, std::string>,
+            fix::Tag<tag::Side, Side>,
+            fix::Tag<tag::TransactTime, std::chrono::time_point<std::chrono::system_clock>>,
+            fix::Tag<tag::OrderQty, std::optional<Quantity>>
         >;
     }
 }
