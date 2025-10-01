@@ -88,40 +88,28 @@ namespace pu::market
                 std::optional<Order> order = verifyOrderStateWithLock(input);
 
                 if (!order.has_value())
-                    return;
-                if (m_ob.cancel(cancel_id, input.Message.get<fix42::tag::Side>().Value)) {
-                    m_mutex.unlock();
+                    continue;
+                m_ob.cancel(origin_id, input.Message.get<fix42::tag::Side>().Value);
+                m_mutex.unlock();
 
-                    fix42::msg::ExecutionReport report;
+                fix42::msg::ExecutionReport report;
 
-                    Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " has been successfull");
-                    report.get<fix42::tag::OrderID>().Value = origin_id;
-                    report.get<fix42::tag::ClOrdID>().Value = cancel_id;
-                    report.get<fix42::tag::ExecId>().Value = input.ExecutionId;
-                    report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::Cancel;
-                    report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Canceled;
-                    report.get<fix42::tag::OrdStatus>().Value = order.value().status;
-                    report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
-                    report.get<fix42::tag::LeavesQty>().Value = order.value().remainQty;
-                    report.get<fix42::tag::CumQty>().Value = order.value().originalQty - order.value().remainQty;
-                    report.get<fix42::tag::AvgPx>().Value = order.value().avgPrice;
-                    m_tcp_output.append(input.Client, input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
-                } else {
-                    m_mutex.unlock();
-
-                    fix42::msg::OrderCancelReject reject{};
-
-                    Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " failed");
-                    reject.get<fix42::tag::OrderID>().Value = origin_id;
-                    reject.get<fix42::tag::OrigClOrdID>().Value = cancel_id;
-                    reject.get<fix42::tag::OrdStatus>().Value = order.value().status;
-                    reject.get<fix42::tag::CxlRejResponseTo>().Value = fix42::CancelRejectResponseTo::CancelRequest;
-                    reject.get<fix42::tag::CxlRejReason>().Value = fix42::CancelRejectReason::UnknownOrderCancel;
-                    reject.get<fix42::tag::Text>().Value = "No matching order to cancel";
-                    m_tcp_output.append(input.Client, input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
-                }
+                Logger->log<logger::Level::Info>("Cancel on order: ", cancel_id, " has been successfull");
+                report.get<fix42::tag::OrderID>().Value = origin_id;
+                report.get<fix42::tag::ClOrdID>().Value = cancel_id;
+                report.get<fix42::tag::ExecId>().Value = input.ExecutionId;
+                report.get<fix42::tag::ExecTransType>().Value = fix42::TransactionType::Cancel;
+                report.get<fix42::tag::ExecType>().Value = fix42::ExecutionStatus::Canceled;
+                report.get<fix42::tag::OrdStatus>().Value = order.value().status;
+                report.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+                report.get<fix42::tag::Side>().Value = input.Message.get<fix42::tag::Side>().Value;
+                report.get<fix42::tag::LeavesQty>().Value = 0;
+                report.get<fix42::tag::CumQty>().Value = order.value().originalQty - order.value().remainQty;
+                report.get<fix42::tag::AvgPx>().Value = order.value().avgPrice;
+                m_tcp_output.append(input.Client, input.ReceiveTime, fix42::msg::ExecutionReport::Type, std::move(report.to_string()));
             }
         }
+        Logger->log<logger::Level::Warning>("Exiting worker thread");
     }
 
     std::optional<Order> Cancel::verifyOrderState(const InputType &_input)
@@ -149,8 +137,16 @@ namespace pu::market
         m_ob.unlockReadOrder(side);
 
         if (order.side != side) {
+            fix42::msg::OrderCancelReject reject{};
+
             Logger->log<logger::Level::Info>("Side doesn't exactly match");
-            // reject wrong side
+            reject.get<fix42::tag::OrderID>().Value = _input.Message.get<fix42::tag::OrigClOrdID>().Value;
+            reject.get<fix42::tag::OrigClOrdID>().Value = _input.Message.get<fix42::tag::ClOrdID>().Value;
+            reject.get<fix42::tag::OrdStatus>().Value = fix42::OrderStatus::Rejected;
+            reject.get<fix42::tag::CxlRejResponseTo>().Value = fix42::CancelRejectResponseTo::CancelRequest;
+            reject.get<fix42::tag::CxlRejReason>().Value = fix42::CancelRejectReason::UnknownOrderCancel;
+            reject.get<fix42::tag::Text>().Value = "Side doesn't exactly match";
+            m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::OrderCancelReject::Type, std::move(reject.to_string()));
             return std::nullopt;
         }
         return order;

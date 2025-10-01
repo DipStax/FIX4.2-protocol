@@ -10,6 +10,10 @@ namespace FixGuardian.Messages.Definition
         [Tag(37)]
         public string? OrderID { get; set; } = null;
 
+        [OptionalTag]
+        [Tag(11)]
+        public string? ClOrdID { get; set; } = null;
+
         [Tag(17)]
         public string? ExecId { get; set; } = null;
 

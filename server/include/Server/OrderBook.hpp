@@ -63,8 +63,8 @@ class OrderBook
 
         Order getOrder(const OrderId &_orderId);
 
-        bool add(const OrderInfo &_order);
-        bool cancel(const OrderId &_orderId, fix42::Side _side);
+        void add(const OrderInfo &_order);
+        void cancel(const OrderId &_orderId, fix42::Side _side);
 
         void lockReadOrder(fix42::Side _side);
         void unlockReadOrder(fix42::Side _side);
@@ -83,12 +83,8 @@ class OrderBook
             Skipped
         };
 
-        /// @brief 
-        /// @tparam Comparator 
-        /// @tparam BookType 
-        /// @param _book 
-        /// @param _idmap 
-        /// @param _order 
+        const OrderIdInfo &getOrderIdInfo(const OrderId &_orderId, fix42::Side _side);
+
         /// @return The remaining quantity of the order.
         template<class Comparator, IsBook BookType>
         Quantity fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order);
@@ -96,6 +92,9 @@ class OrderBook
 
         template<IsBook BookType>
         void addToBook(BookType &_book, OrderIdMapBundle &_idmap, Price _price, const Order &_order);
+
+        template<IsBook BookType>
+        void cancelOrder(BookType &_book, const OrderIdInfo &_info);
 
         bool removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderid);
 
