@@ -8,26 +8,32 @@ namespace FixGuardian.TestFramework
     {
         private List<TestNode> FirstLevelTest { get; } = new List<TestNode>();
 
-        public TestTree(IEnumerable<TestGroup> testGroups)
+        public TestTree(IEnumerable<TestGroup> testGroups, TestConfiguration config)
         {
             foreach (TestGroup testGroup in testGroups)
                 FirstLevelTest.Add(new TestNode(testGroup));
 
             foreach (TestNode node in FirstLevelTest)
             {
-                IEnumerable<RequireSuite> requires = node.Group.TestSuiteType.GetCustomAttributes<RequireSuite>();
-
-                foreach (RequireSuite requireSuite in requires)
+                if (config.RunRequired)
                 {
-                    TestNode? selectedNode = FirstLevelTest.Where(testNode => testNode.Group.TestSuiteName == requireSuite.SuiteName).FirstOrDefault();
+                    IEnumerable<RequireSuite> requires = node.Group.TestSuiteType.GetCustomAttributes<RequireSuite>();
 
-                    if (selectedNode != null)
-                        node.AddRequireSuite(selectedNode);
-                    else
-                        throw new Exception($"Unable to find required test suite: '{requireSuite.SuiteName}' for test suite: '{node.Group.TestSuiteName}'");
+                    foreach (RequireSuite requireSuite in requires)
+                    {
+                        TestNode? selectedNode = FirstLevelTest.Where(testNode => testNode.Group.TestSuiteName == requireSuite.SuiteName).FirstOrDefault();
+
+                        if (selectedNode != null)
+                            node.AddRequireSuite(selectedNode);
+                        else
+                            throw new Exception($"Unable to find required test suite: '{requireSuite.SuiteName}' for test suite: '{node.Group.TestSuiteName}'");
+                    }
                 }
             }
-            FirstLevelTest = FirstLevelTest.Where(node => node.ReferenceCount == 0).ToList();
+            if (config.SuiteToRun.Count == 0)
+                FirstLevelTest = FirstLevelTest.Where(node => node.ReferenceCount == 0).ToList();
+            else
+                FirstLevelTest = FirstLevelTest.Where(node => config.SuiteToRun.Contains(node.Group.TestSuiteName)).ToList();
         }
 
         public void Run()

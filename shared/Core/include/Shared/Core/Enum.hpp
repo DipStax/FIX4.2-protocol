@@ -33,7 +33,7 @@ namespace fix42
         DoneForDay,
         Canceled,
         Replaced,
-        PedningCancel,
+        PendingCancel,
         Stopped,
         Rejected,
         Suspended,
@@ -45,6 +45,19 @@ namespace fix42
     };
 
     using ExecutionStatus = OrderStatus;
+
+    enum OrderRejectReason
+    {
+        BrokerOption = '0',
+        UnknowSymbol,
+        ExchangeClose,
+        OrderExceedLimit,
+        TooLate,
+        UnknownOrder,
+        Duplicate,
+        DuplicateVerbally,
+        StaleOrder
+    };
 
     enum Side
     {
@@ -98,8 +111,8 @@ namespace fix42
         LimitOrBetter,
         LimitWithOrWithout,
         OnBasis,
-        OnClose,
-        LimitOnClose = 'A',
+        OnClose = 'A',
+        LimitOnClose,
         ForexMarket,
         PrevQuoted,
         PrevIndicated,
@@ -108,5 +121,19 @@ namespace fix42
         ForexPrevQuoted,
         Funari,
         Pegged = 'P'
+    };
+
+    enum CancelRejectResponseTo
+    {
+        CancelRequest = '1',
+        ReplaceRequest
+    };
+
+    enum CancelRejectReason
+    {
+        TooLateCancel = '0',
+        UnknownOrderCancel,
+        BrokerOptionCancel,
+        OrderPendingCancelorReplace
     };
 }

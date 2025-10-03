@@ -1,0 +1,22 @@
+{
+    "user": {
+        "heartbeat": {
+            "max-to": 100
+        }
+    },
+    "network": {
+        "tcp-port": 8080
+    },
+    "fix-config": {
+        "market-list": [
+            "Buy-1",
+            "BuyMinus-1",
+            "Sell-1",
+            "SellPlus-1",
+            "Trade-1",
+            "Cancel-1",
+            "Test-Invalid-Trade"
+        ],
+        "provider-name": "MyMarket"
+    }
+}

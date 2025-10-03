@@ -27,7 +27,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Rejec
             case fix42::RejectReasonSession::InvalidMsgType:
                 return std::nullopt;
             default:
-                return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 10" };
+                return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 10" };
         }
     } else if (ec == std::errc::invalid_argument) {
         return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint8_t" };
@@ -57,7 +57,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Trans
         case fix42::TransactionType::Status:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 <= value <= 3" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 3" };
     }
 }
 
@@ -78,7 +78,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Order
         case fix42::OrderStatus::DoneForDay:
         case fix42::OrderStatus::Canceled:
         case fix42::OrderStatus::Replaced:
-        case fix42::OrderStatus::PedningCancel:
+        case fix42::OrderStatus::PendingCancel:
         case fix42::OrderStatus::Stopped:
         case fix42::OrderStatus::Rejected:
         case fix42::OrderStatus::Suspended:
@@ -89,11 +89,36 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Order
         case fix42::OrderStatus::PendingReplace:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 <= value <= 9 || A <= value <= E" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 9 || A GE value GE E" };
     }
 }
 
 void to_FIX(std::string &_out, const fix42::OrderStatus _value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderRejectReason &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::OrderRejectReason>(_value[0]);
+    switch (_out) {
+        case fix42::OrderRejectReason::BrokerOption:
+        case fix42::OrderRejectReason::UnknowSymbol:
+        case fix42::OrderRejectReason::ExchangeClose:
+        case fix42::OrderRejectReason::OrderExceedLimit:
+        case fix42::OrderRejectReason::TooLate:
+        case fix42::OrderRejectReason::UnknownOrder:
+        case fix42::OrderRejectReason::Duplicate:
+        case fix42::OrderRejectReason::DuplicateVerbally:
+        case fix42::OrderRejectReason::StaleOrder:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 8" };
+    }
+}
+void to_FIX(std::string &_out, const fix42::OrderRejectReason _value)
 {
     _out.push_back(static_cast<char>(_value));
 }
@@ -115,7 +140,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Side 
         case fix42::Side::CrossShort:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 9" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 9" };
     };
 }
 
@@ -138,7 +163,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Rejec
         case fix42::RejectReasonBusiness::CondReqFieldMissing:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 <= value <= 5" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 5" };
     }
 }
 
@@ -162,7 +187,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Encry
         case fix42::EncryptionMethod::PEMDESMD5:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 <= value <= 6" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 6" };
     }
 }
 
@@ -182,7 +207,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Handl
         case fix42::HandleInstance::Manual:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 3" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 3" };
     }
 }
 
@@ -218,7 +243,7 @@ std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Order
         case fix42::OrderType::Pegged:
             return std::nullopt;
         default:
-            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 <= value <= 9 || A <= value <= H || value == P" };
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 9 || A GE value GE I || value EQ P" };
     }
 }
 
@@ -226,6 +251,47 @@ void to_FIX(std::string &_out, const fix42::OrderType _value)
 {
     _out.push_back(static_cast<char>(_value));
 }
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectResponseTo &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::CancelRejectResponseTo>(_value[0]);
+    switch (_out) {
+        case fix42::CancelRejectResponseTo::CancelRequest:
+        case fix42::CancelRejectResponseTo::ReplaceRequest:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: value EQ 1 OR 2" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::CancelRejectResponseTo &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectReason &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::CancelRejectReason>(_value[0]);
+    switch (_out) {
+        case fix42::CancelRejectReason::TooLateCancel:
+        case fix42::CancelRejectReason::UnknownOrderCancel:
+        case fix42::CancelRejectReason::BrokerOptionCancel:
+        case fix42::CancelRejectReason::OrderPendingCancelorReplace:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 1 GE value GE 4" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::CancelRejectReason &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out)
 {

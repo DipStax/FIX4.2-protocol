@@ -15,6 +15,9 @@ void to_FIX(std::string &_out, const fix42::TransactionType _value);
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderStatus &_out);
 void to_FIX(std::string &_out, const fix42::OrderStatus _value);
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderRejectReason &_out);
+void to_FIX(std::string &_out, const fix42::OrderRejectReason _value);
+
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::Side &_out);
 void to_FIX(std::string &_out, const fix42::Side _value);
 
@@ -29,6 +32,12 @@ void to_FIX(std::string &_out, const fix42::HandleInstance _value);
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::OrderType &_out);
 void to_FIX(std::string &_out, const fix42::OrderType _value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectResponseTo &_out);
+void to_FIX(std::string &_out, const fix42::CancelRejectResponseTo &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectReason &_out);
+void to_FIX(std::string &_out, const fix42::CancelRejectReason &_value);
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out);
 void to_FIX(std::string &_out, const std::string &_value);

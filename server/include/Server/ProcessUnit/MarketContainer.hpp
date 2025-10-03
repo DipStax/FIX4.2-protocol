@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Server/ProcessUnit/Market/Cancel.hpp"
 #include "Server/ProcessUnit/Market/NewOrder.hpp"
 #include "Server/ProcessUnit/Market/OBEvent.hpp"
 
@@ -12,7 +13,11 @@ namespace pu
     class MarketContainer : public AProcessUnitBase
     {
         public:
-            using MarketTupleQueue = std::tuple<MessageQueue<fix42::msg::NewOrderSingle> &>;
+            using MarketTupleQueue = std::tuple<
+                QueueMutex<ExecId> &,
+                MessageQueue<fix42::msg::NewOrderSingle> &,
+                MessageQueue<fix42::msg::OrderCancelRequest> &
+            >;
 
             MarketContainer(const std::string &_symbol, StringOutputQueue &_tcp_output);
             virtual ~MarketContainer() = default;
@@ -31,6 +36,9 @@ namespace pu
 
             OrderBook m_ob;
 
+            QueueMutex<ExecId> m_mutex;
+
             ProcessUnit<pu::market::NewOrder> m_market_neworder;
+            ProcessUnit<pu::market::Cancel> m_market_cancel;
     };
 }
