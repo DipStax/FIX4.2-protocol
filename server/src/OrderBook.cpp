@@ -78,24 +78,24 @@ Order OrderBook::getOrder(const OrderId &_orderId)
 
 void OrderBook::add(const OrderInfo &_order)
 {
-    Quantity qty = 0;
+    std::pair<Quantity, Price> pair{};
 
     if (_order.order.side == fix42::Side::BuyMinus || _order.order.side == fix42::Side::Buy) {
-        qty = fillOnBook<std::less_equal<Price>>(m_ask_book, m_ask_id, _order);
-        if (qty != 0) {
+        pair = fillOnBook<std::less_equal<Price>>(m_ask_book, m_ask_id, _order);
+        if (pair.first != 0) {
             // todo change average price
-            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
+            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, pair.first, pair.second, _order.order.side, fix42::OrderStatus::NewOrder };
 
-            if (qty != _order.order.originalQty)
+            if (pair.first != _order.order.originalQty)
                 new_order.status = fix42::OrderStatus::PartiallyFilled;
             addToBook(m_bid_book, m_bid_id, _order.price, new_order);
         }
     } else if (_order.order.side == fix42::Side::SellPlus || _order.order.side == fix42::Side::Sell) {
-        qty = fillOnBook<std::greater_equal<Price>>(m_bid_book, m_bid_id, _order);
-        if (qty != 0) {
-            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
+        pair = fillOnBook<std::greater_equal<Price>>(m_bid_book, m_bid_id, _order);
+        if (pair.first != 0) {
+            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, pair.first, pair.second, _order.order.side, fix42::OrderStatus::NewOrder };
 
-            if (qty != _order.order.originalQty)
+            if (pair.first != _order.order.originalQty)
                 new_order.status = fix42::OrderStatus::PartiallyFilled;
             addToBook(m_ask_book, m_ask_id, _order.price, new_order);
         }
@@ -217,6 +217,7 @@ OrderBook::FillStatus OrderBook::fillOrder(Event &_main_event, Price _price, Ord
         _main_event.lastQty = fill_qty;
         _main_event.order.avgPrice = (cum_qty * _main_event.order.avgPrice + fill_qty * _price) / cum_total;
         _main_event.order.remainQty -= fill_qty;
+        Logger->log<logger::Level::Debug>("Main New average price: ", _main_event.order.avgPrice, " = (", cum_qty, " * ", _main_event.order.avgPrice, " + ", fill_qty, " * ", _price, ") / ", cum_total);
     }
     {
         const Quantity cum_qty = _order.originalQty - _order.remainQty;
@@ -225,6 +226,7 @@ OrderBook::FillStatus OrderBook::fillOrder(Event &_main_event, Price _price, Ord
         event.lastPrice = _price;
         event.lastQty = fill_qty;
         event.order.avgPrice = (cum_qty * _order.avgPrice + fill_qty * _price) / cum_total;
+        Logger->log<logger::Level::Debug>("Order event New average price: ", event.order.avgPrice, " = (", cum_qty, " * ", _order.avgPrice, " + ", fill_qty, " * ", _price, ") / ", cum_total);
         event.order.remainQty -= fill_qty;
     }
 

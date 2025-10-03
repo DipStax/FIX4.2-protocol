@@ -87,7 +87,7 @@ class OrderBook
 
         /// @return The remaining quantity of the order.
         template<class Comparator, IsBook BookType>
-        Quantity fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order);
+        std::pair<Quantity, Price> fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order);
         FillStatus fillOrder(Event &_main_event, Price _price, Order &_order);
 
         template<IsBook BookType>

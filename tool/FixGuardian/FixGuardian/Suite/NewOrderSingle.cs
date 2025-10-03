@@ -353,7 +353,7 @@ namespace FixGuardian.Suite
         }
     }
 
-    [RequireSuite("Cancel validation")]
+    [RequireSuite("NewOrderSingle - Single user")]
     [TestSuite("NewOrderSingle - Double user")]
     public class NewOrderSingleDoubleUser
     {
@@ -657,168 +657,6 @@ namespace FixGuardian.Suite
                 LastPx = 200,
                 CumQty = 1000,
                 AvgPx = 200
-            });
-        }
-
-        /// <summary>
-        /// Client 1: Sell 1000 - 100
-        /// Client 2: Buy  500 - 150
-        /// </summary>
-        [TestCase("Sell then Buy - Partial")]
-        public void SellThenBuyPartial()
-        {
-            string guid1 = Guid.NewGuid().ToString();
-            Client1.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid1,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                Price = 100
-            });
-
-            string guid2 = Guid.NewGuid().ToString();
-            Client2.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid2,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 500,
-                OrdType = OrderType.Limit,
-                Price = 150
-            });
-
-            ExecutionReport orderReport1 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(orderReport1, new ExecutionReport()
-            {
-                OrderID = guid1,
-                ExecId = orderReport1.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.PartiallyFilled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                LeavesQty = 500,
-                LastShares = 500,
-                LastPx = 100,
-                CumQty = 500,
-                AvgPx = 100
-            });
-
-            ExecutionReport orderReport2 = Client2.Receive<ExecutionReport>();
-            Assert.Equal(orderReport2, new ExecutionReport()
-            {
-                OrderID = guid2,
-                ExecId = orderReport2.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.Filled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 500,
-                OrdType = OrderType.Limit,
-                LeavesQty = 0,
-                LastShares = 500,
-                LastPx = 100,
-                CumQty = 500,
-                AvgPx = 100
-            });
-
-            string cancelGuid = Guid.NewGuid().ToString();
-            Client1.Cancel(new OrderCancelRequest()
-            {
-                OrigClOrdID = guid1,
-                ClOrdId = cancelGuid,
-                Symbol = "Trade-1",
-                OrderQty = 500,
-                Side = TradeSide.Sell,
-                TransactTime = DateTime.Now,
-            });
-        }
-
-        /// <summary>
-        /// Client 1: Buy  1000 - 200
-        /// Client 2: Sell 500 - 150
-        /// </summary>
-        [TestCase("Buy then Sell - Partial")]
-        public void BuyThenSellPartial()
-        {
-            string guid1 = Guid.NewGuid().ToString();
-            Client1.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid1,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                Price = 200
-            });
-
-            string guid2 = Guid.NewGuid().ToString();
-            Client2.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid2,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 500,
-                OrdType = OrderType.Limit,
-                Price = 150
-            });
-
-            ExecutionReport orderReport1 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(orderReport1, new ExecutionReport()
-            {
-                OrderID = guid1,
-                ExecId = orderReport1.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.PartiallyFilled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                LeavesQty = 500,
-                LastShares = 500,
-                LastPx = 200,
-                CumQty = 500,
-                AvgPx = 200
-            });
-
-            ExecutionReport orderReport2 = Client2.Receive<ExecutionReport>();
-            Assert.Equal(orderReport2, new ExecutionReport()
-            {
-                OrderID = guid2,
-                ExecId = orderReport2.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.Filled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 500,
-                OrdType = OrderType.Limit,
-                LeavesQty = 0,
-                LastShares = 500,
-                LastPx = 200,
-                CumQty = 500,
-                AvgPx = 200
-            });
-
-            string cancelGuid = Guid.NewGuid().ToString();
-            Client1.Cancel(new OrderCancelRequest()
-            {
-                OrigClOrdID = guid1,
-                ClOrdId = cancelGuid,
-                Symbol = "Trade-1",
-                OrderQty = 500,
-                Side = TradeSide.Buy,
-                TransactTime = DateTime.Now,
             });
         }
 
@@ -1230,36 +1068,53 @@ namespace FixGuardian.Suite
             });
         }
 
+    }
+
+    [RequireSuite("NewOrderSingle - Double user")]
+    [RequireSuite("Cancel validation")]
+    [TestSuite("NewOrderSingle - Double user - Partial")]
+    public class NewOrderSingleDoubleUserPartial
+    {
+        public FixClient Client1;
+        public FixClient Client2;
+
+        [TestSetup]
+        public void Setup()
+        {
+            Client1 = new FixClient("Market1");
+            Client1.Logon();
+
+            Client2 = new FixClient("Market2");
+            Client2.Logon();
+        }
+
+        [TestTearDown]
+        public void TearDown()
+        {
+            Client1.AssertNoMoreMessage();
+            Client2.AssertNoMoreMessage();
+
+            Client1.Logout();
+            Client2.Logout();
+        }
+
         /// <summary>
         /// Client 1: Sell 1000 - 100
-        /// Client 1: Sell 1000 - 150
-        /// Client 2: Buy  1500 - 200
+        /// Client 2: Buy  500 - 150
         /// </summary>
-        [TestCase("Sell then Buy - Not same - Partial")]
-        public void DoubleNotSamePriceSellThenBuyPartial()
+        [TestCase("Sell then Buy")]
+        public void SellThenBuyPartial()
         {
-            string guid1_1 = Guid.NewGuid().ToString();
+            string guid1 = Guid.NewGuid().ToString();
             Client1.NewOrder(new NewOrderSingle()
             {
-                ClOrdId = guid1_1,
+                ClOrdId = guid1,
                 HandlInst = HandleInstance.Manual,
                 Symbol = "Trade-1",
                 Side = TradeSide.Sell,
                 OrderQty = 1000,
                 OrdType = OrderType.Limit,
                 Price = 100
-            });
-
-            string guid1_2 = Guid.NewGuid().ToString();
-            Client1.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid1_2,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                Price = 150
             });
 
             string guid2 = Guid.NewGuid().ToString();
@@ -1269,35 +1124,16 @@ namespace FixGuardian.Suite
                 HandlInst = HandleInstance.Manual,
                 Symbol = "Trade-1",
                 Side = TradeSide.Buy,
-                OrderQty = 1500,
+                OrderQty = 500,
                 OrdType = OrderType.Limit,
-                Price = 200
+                Price = 150
             });
 
-            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(execReport1_1, new ExecutionReport()
+            ExecutionReport orderReport1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(orderReport1, new ExecutionReport()
             {
-                OrderID = guid1_1,
-                ExecId = execReport1_1.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.Filled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Sell,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                LeavesQty = 0,
-                LastShares = 1000,
-                LastPx = 100,
-                CumQty = 1000,
-                AvgPx = 100
-            });
-
-            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(execReport1_2, new ExecutionReport()
-            {
-                OrderID = guid1_2,
-                ExecId = execReport1_2.ExecId,
+                OrderID = guid1,
+                ExecId = orderReport1.ExecId,
                 ExecTransType = TransactionType.New,
                 ExecType = ExecutionType.PartiallyFilled,
                 OrdStatus = OrderStatus.New,
@@ -1307,34 +1143,34 @@ namespace FixGuardian.Suite
                 OrdType = OrderType.Limit,
                 LeavesQty = 500,
                 LastShares = 500,
-                LastPx = 150,
+                LastPx = 100,
                 CumQty = 500,
-                AvgPx = 150
+                AvgPx = 100
             });
 
-            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
-            Assert.Equal(execReport2, new ExecutionReport()
+            ExecutionReport orderReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(orderReport2, new ExecutionReport()
             {
                 OrderID = guid2,
-                ExecId = execReport2.ExecId,
+                ExecId = orderReport2.ExecId,
                 ExecTransType = TransactionType.New,
                 ExecType = ExecutionType.Filled,
                 OrdStatus = OrderStatus.New,
                 Symbol = "Trade-1",
                 Side = TradeSide.Buy,
-                OrderQty = 1500,
+                OrderQty = 500,
                 OrdType = OrderType.Limit,
                 LeavesQty = 0,
                 LastShares = 500,
-                LastPx = 150,
-                CumQty = 1500,
-                AvgPx = (1000 * 100 + 500 * 150) / (float)1500
+                LastPx = 100,
+                CumQty = 500,
+                AvgPx = 100
             });
 
             string cancelGuid = Guid.NewGuid().ToString();
             Client1.Cancel(new OrderCancelRequest()
             {
-                OrigClOrdID = guid1_2,
+                OrigClOrdID = guid1,
                 ClOrdId = cancelGuid,
                 Symbol = "Trade-1",
                 OrderQty = 500,
@@ -1345,34 +1181,21 @@ namespace FixGuardian.Suite
 
         /// <summary>
         /// Client 1: Buy  1000 - 200
-        /// Client 1: Buy  1000 - 150
-        /// Client 2: Sell 1500 - 100
+        /// Client 2: Sell 500 - 150
         /// </summary>
-        [TestCase("Buy then Sell - Not same - Partial")]
-        public void DoubleNotSamePriceBuyThenSellPartial()
+        [TestCase("Buy then Sell")]
+        public void BuyThenSellPartial()
         {
-            string guid1_1 = Guid.NewGuid().ToString();
+            string guid1 = Guid.NewGuid().ToString();
             Client1.NewOrder(new NewOrderSingle()
             {
-                ClOrdId = guid1_1,
+                ClOrdId = guid1,
                 HandlInst = HandleInstance.Manual,
                 Symbol = "Trade-1",
                 Side = TradeSide.Buy,
                 OrderQty = 1000,
                 OrdType = OrderType.Limit,
                 Price = 200
-            });
-
-            string guid1_2 = Guid.NewGuid().ToString();
-            Client1.NewOrder(new NewOrderSingle()
-            {
-                ClOrdId = guid1_2,
-                HandlInst = HandleInstance.Manual,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                Price = 150
             });
 
             string guid2 = Guid.NewGuid().ToString();
@@ -1382,35 +1205,16 @@ namespace FixGuardian.Suite
                 HandlInst = HandleInstance.Manual,
                 Symbol = "Trade-1",
                 Side = TradeSide.Sell,
-                OrderQty = 1500,
+                OrderQty = 500,
                 OrdType = OrderType.Limit,
-                Price = 100
+                Price = 150
             });
 
-            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(execReport1_1, new ExecutionReport()
+            ExecutionReport orderReport1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(orderReport1, new ExecutionReport()
             {
-                OrderID = guid1_1,
-                ExecId = execReport1_1.ExecId,
-                ExecTransType = TransactionType.New,
-                ExecType = ExecutionType.Filled,
-                OrdStatus = OrderStatus.New,
-                Symbol = "Trade-1",
-                Side = TradeSide.Buy,
-                OrderQty = 1000,
-                OrdType = OrderType.Limit,
-                LeavesQty = 0,
-                LastShares = 1000,
-                LastPx = 200,
-                CumQty = 1000,
-                AvgPx = 200
-            });
-
-            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
-            Assert.Equal(execReport1_2, new ExecutionReport()
-            {
-                OrderID = guid1_2,
-                ExecId = execReport1_2.ExecId,
+                OrderID = guid1,
+                ExecId = orderReport1.ExecId,
                 ExecTransType = TransactionType.New,
                 ExecType = ExecutionType.PartiallyFilled,
                 OrdStatus = OrderStatus.New,
@@ -1420,34 +1224,34 @@ namespace FixGuardian.Suite
                 OrdType = OrderType.Limit,
                 LeavesQty = 500,
                 LastShares = 500,
-                LastPx = 150,
+                LastPx = 200,
                 CumQty = 500,
-                AvgPx = 150
+                AvgPx = 200
             });
 
-            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
-            Assert.Equal(execReport2, new ExecutionReport()
+            ExecutionReport orderReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(orderReport2, new ExecutionReport()
             {
                 OrderID = guid2,
-                ExecId = execReport2.ExecId,
+                ExecId = orderReport2.ExecId,
                 ExecTransType = TransactionType.New,
                 ExecType = ExecutionType.Filled,
                 OrdStatus = OrderStatus.New,
                 Symbol = "Trade-1",
                 Side = TradeSide.Sell,
-                OrderQty = 1500,
+                OrderQty = 500,
                 OrdType = OrderType.Limit,
                 LeavesQty = 0,
                 LastShares = 500,
-                LastPx = 150,
-                CumQty = 1500,
-                AvgPx = (1000 * 200 + 500 * 150) / (float)1500
+                LastPx = 200,
+                CumQty = 500,
+                AvgPx = 200
             });
 
             string cancelGuid = Guid.NewGuid().ToString();
             Client1.Cancel(new OrderCancelRequest()
             {
-                OrigClOrdID = guid1_2,
+                OrigClOrdID = guid1,
                 ClOrdId = cancelGuid,
                 Symbol = "Trade-1",
                 OrderQty = 500,
@@ -1461,7 +1265,7 @@ namespace FixGuardian.Suite
         /// Client 1: Sell 1000 - 100
         /// Client 2: Buy  1500 - 150
         /// </summary>
-        [TestCase("Sell then Buy - Same - Partial")]
+        [TestCase("Double Sell then Buy - Same Price")]
         public void DoubleSamePriceSellThenBuyPartial()
         {
             string guid1_1 = Guid.NewGuid().ToString();
@@ -1574,7 +1378,7 @@ namespace FixGuardian.Suite
         /// Client 1: Buy  1000 - 150
         /// Client 2: Sell 1500 - 100
         /// </summary>
-        [TestCase("Buy then Sell - Same - Partial")]
+        [TestCase("Double Buy then Sell - Same Price")]
         public void DoubleSamePriceBuyThenSellPartial()
         {
             string guid1_1 = Guid.NewGuid().ToString();
@@ -1679,6 +1483,358 @@ namespace FixGuardian.Suite
                 OrderQty = 500,
                 Side = TradeSide.Buy,
                 TransactTime = DateTime.Now,
+            });
+        }
+
+
+        /// <summary>
+        /// Client 1: Sell 1000 - 100
+        /// Client 1: Sell 1000 - 150
+        /// Client 2: Buy  1500 - 200
+        /// </summary>
+        [TestCase("Double Sell then Buy - Not same Price")]
+        public void DoubleNotSamePriceSellThenBuyPartial()
+        {
+            string guid1_1 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            string guid1_2 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 150
+            });
+
+            string guid2 = Guid.NewGuid().ToString();
+            Client2.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
+
+            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_1, new ExecutionReport()
+            {
+                OrderID = guid1_1,
+                ExecId = execReport1_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 100,
+                CumQty = 1000,
+                AvgPx = 100
+            });
+
+            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_2, new ExecutionReport()
+            {
+                OrderID = guid1_2,
+                ExecId = execReport1_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.PartiallyFilled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 500,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 500,
+                AvgPx = 150
+            });
+
+            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 1500,
+                AvgPx = (1000 * 100 + 500 * 150) / (float)1500
+            });
+
+            string cancelGuid = Guid.NewGuid().ToString();
+            Client1.Cancel(new OrderCancelRequest()
+            {
+                OrigClOrdID = guid1_2,
+                ClOrdId = cancelGuid,
+                Symbol = "Trade-1",
+                OrderQty = 500,
+                Side = TradeSide.Sell,
+                TransactTime = DateTime.Now,
+            });
+        }
+
+        /// <summary>
+        /// Client 1: Buy  1000 - 200
+        /// Client 1: Buy  1000 - 150
+        /// Client 2: Sell 1500 - 100
+        /// </summary>
+        [TestCase("Double Buy then Sell - Not same Price")]
+        public void DoubleNotSamePriceBuyThenSellPartial()
+        {
+            string guid1_1 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
+
+            string guid1_2 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1_2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 150
+            });
+
+            string guid2 = Guid.NewGuid().ToString();
+            Client2.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_1, new ExecutionReport()
+            {
+                OrderID = guid1_1,
+                ExecId = execReport1_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 1000,
+                LastPx = 200,
+                CumQty = 1000,
+                AvgPx = 200
+            });
+
+            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_2, new ExecutionReport()
+            {
+                OrderID = guid1_2,
+                ExecId = execReport1_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.PartiallyFilled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 500,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 500,
+                AvgPx = 150
+            });
+
+            ExecutionReport execReport2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1500,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 1500,
+                AvgPx = (1000 * 200 + 500 * 150) / (float)1500
+            });
+
+            string cancelGuid = Guid.NewGuid().ToString();
+            Client1.Cancel(new OrderCancelRequest()
+            {
+                OrigClOrdID = guid1_2,
+                ClOrdId = cancelGuid,
+                Symbol = "Trade-1",
+                OrderQty = 500,
+                Side = TradeSide.Buy,
+                TransactTime = DateTime.Now,
+            });
+        }
+
+        /// <summary>
+        /// Client 1: Buy  500 - 150
+        /// Client 2: Sell 1000 - 100
+        /// Client 1: Buy  500 - 200
+        /// </summary>
+        [TestCase("Buy - Sell - Buy")]
+        public void BuySellSell()
+        {
+            string guid1 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid1,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 500,
+                OrdType = OrderType.Limit,
+                Price = 150
+            });
+
+            string guid2 = Guid.NewGuid().ToString();
+            Client2.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid2,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                Price = 100
+            });
+
+            ExecutionReport execReport1_1 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_1, new ExecutionReport()
+            {
+                OrderID = guid1,
+                ExecId = execReport1_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 500,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 500,
+                AvgPx = 150
+            });
+
+            Console.WriteLine("exec report 2:");
+
+            ExecutionReport execReport2_1 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2_1, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2_1.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.PartiallyFilled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 500,
+                LastShares = 500,
+                LastPx = 150,
+                CumQty = 500,
+                AvgPx = 150
+            });
+
+            Console.WriteLine("First wave done");
+
+            string guid3 = Guid.NewGuid().ToString();
+            Client1.NewOrder(new NewOrderSingle()
+            {
+                ClOrdId = guid3,
+                HandlInst = HandleInstance.Manual,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 500,
+                OrdType = OrderType.Limit,
+                Price = 200
+            });
+
+            ExecutionReport execReport1_2 = Client1.Receive<ExecutionReport>();
+            Assert.Equal(execReport1_2, new ExecutionReport()
+            {
+                OrderID = guid3,
+                ExecId = execReport1_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.New,
+                Symbol = "Trade-1",
+                Side = TradeSide.Buy,
+                OrderQty = 500,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 100,
+                CumQty = 500,
+                AvgPx = 100
+            });
+
+            ExecutionReport execReport2_2 = Client2.Receive<ExecutionReport>();
+            Assert.Equal(execReport2_2, new ExecutionReport()
+            {
+                OrderID = guid2,
+                ExecId = execReport2_2.ExecId,
+                ExecTransType = TransactionType.New,
+                ExecType = ExecutionType.Filled,
+                OrdStatus = OrderStatus.PartiallyFilled,
+                Symbol = "Trade-1",
+                Side = TradeSide.Sell,
+                OrderQty = 1000,
+                OrdType = OrderType.Limit,
+                LeavesQty = 0,
+                LastShares = 500,
+                LastPx = 100,
+                CumQty = 1000,
+                AvgPx = (500 * 150 + 500 * 100) / (float)1000
             });
         }
     }

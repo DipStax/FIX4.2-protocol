@@ -7,7 +7,7 @@
 
 
 template<class Comparator, IsBook BookType>
-Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order)
+std::pair<Quantity, Price> OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order)
 {
     Comparator cmp{};
     Event main_event{
@@ -25,7 +25,7 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
 
         if (!allowTick(_order.order.side)) {
             Logger->log<logger::Level::Info>("Order blocked by tick restriction: ", _order.order);
-            return _order.order.remainQty;
+            return {main_event.order.remainQty, main_event.order.avgPrice};
         }
         // Price price = (_order.order.side == fix42::Side::Sell || _order.order.side == fix42::Side::SellPlus) ? _order.price : _price;
 
@@ -50,16 +50,16 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
                 main_event.execStatus = fix42::ExecutionStatus::Filled;
                 Logger->log<logger::Level::Debug>("Set event as execution type as: Filled");
                 m_event_output.push(std::move(main_event));
-                return 0.f;
+                return {0.f, 0.f};
             }
         }
     }
     if (main_event.order.remainQty != _order.order.originalQty) {
-        main_event.order.status = fix42::ExecutionStatus::PartiallyFilled;
+        main_event.execStatus = fix42::ExecutionStatus::PartiallyFilled;
         Logger->log<logger::Level::Debug>("Set event as execution type as: PartiallyFilled");
         m_event_output.push(std::move(main_event));
     }
-    return main_event.order.remainQty;
+    return {main_event.order.remainQty, main_event.order.avgPrice};
 }
 
 template<IsBook BookType>
