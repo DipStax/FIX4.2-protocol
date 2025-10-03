@@ -27,13 +27,13 @@ Quantity OrderBook::fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const 
             Logger->log<logger::Level::Info>("Order blocked by tick restriction: ", _order.order);
             return _order.order.remainQty;
         }
-        Price price = (_order.order.side == fix42::Side::Sell || _order.order.side == fix42::Side::SellPlus) ? _order.price : _price;
+        // Price price = (_order.order.side == fix42::Side::Sell || _order.order.side == fix42::Side::SellPlus) ? _order.price : _price;
 
         for (size_t idx = 0; idx < _list.size(); idx++) {
             auto iterator = std::next(_list.begin(), idx);
             Order &order = *iterator;
 
-            switch (fillOrder(main_event, price, order)) {
+            switch (fillOrder(main_event, _price, order)) {
                 case FillStatus::Filled:
                     _list.erase(iterator);
                     idx--;

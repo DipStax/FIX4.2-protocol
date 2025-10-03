@@ -103,6 +103,65 @@ namespace FixGuardian.TestFramework
             return execReport;
         }
 
+        public ExecutionReport Cancel(OrderCancelRequest cancel)
+        {
+            Send(cancel);
+
+            ExecutionReport execReport;
+
+            try
+            {
+                execReport = Receive<ExecutionReport>();
+
+                if (execReport.ExecType == ExecutionType.PedningCancel)
+                {
+                    try
+                    {
+                        Assert.Equal(execReport, new ExecutionReport()
+                        {
+                            OrderID = cancel.OrigClOrdID,
+                            ClOrdID = cancel.ClOrdId,
+                            ExecId = execReport.ExecId,
+                            ExecTransType = TransactionType.Cancel,
+                            ExecType = ExecutionType.PedningCancel,
+                            OrdStatus = execReport.OrdStatus,
+                            Symbol = cancel.Symbol,
+                            Side = cancel.Side,
+                            LeavesQty = execReport.LeavesQty,
+                            LastShares = 0,
+                            CumQty = execReport.CumQty,
+                            AvgPx = execReport.AvgPx
+                        });
+                        execReport = Receive<ExecutionReport>();
+                    }
+                    catch (AssertionException ex)
+                    {
+                        throw new AssertionException("During pending execution report receive from cancel", ex);
+                    }
+                }
+
+                Assert.Equal(execReport, new ExecutionReport()
+                {
+                    OrderID = cancel.OrigClOrdID,
+                    ClOrdID = cancel.ClOrdId,
+                    ExecId = execReport.ExecId,
+                    ExecTransType = TransactionType.Cancel,
+                    ExecType = ExecutionType.Canceled,
+                    OrdStatus = execReport.OrdStatus,
+                    Symbol = cancel.Symbol,
+                    Side = cancel.Side,
+                    LeavesQty = 0,
+                    CumQty = execReport.CumQty,
+                    AvgPx = execReport.AvgPx
+                });
+            }
+            catch (AssertionException ex)
+            {
+                throw new AssertionException("During execution report receive from cancel", ex);
+            }
+            return execReport;
+        }
+
         public void Send<T>(T message)
             where T : AMessage, IMessage, new()
         {
@@ -129,16 +188,23 @@ namespace FixGuardian.TestFramework
                     Console.WriteLine($"Receiving: '{msg.Replace('\u0001', '^')}'");
 
                     var (header, message) = Assert.Received<T>(msg);
-                    Assert.Equal(header, new Header()
+                    try
                     {
-                        BeginString = "FIX.4.2",
-                        BodyLength = header.BodyLength,
-                        MsgType = header.MsgType,
-                        SenderCompId = "MyMarket",
-                        TargetCompId = Name,
-                        MsgSeqNum = SequenceNumber,
-                        SendingTime = header.SendingTime,
-                    });
+                        Assert.Equal(header, new Header()
+                        {
+                            BeginString = "FIX.4.2",
+                            BodyLength = header.BodyLength,
+                            MsgType = header.MsgType,
+                            SenderCompId = "MyMarket",
+                            TargetCompId = Name,
+                            MsgSeqNum = SequenceNumber,
+                            SendingTime = header.SendingTime,
+                        });
+                    }
+                    catch (AssertionException ex)
+                    {
+                        throw new AssertionException($"During the receive of {typeof(T).Name}", ex);
+                    }
                     SequenceNumber++;
                     return message;
                 }

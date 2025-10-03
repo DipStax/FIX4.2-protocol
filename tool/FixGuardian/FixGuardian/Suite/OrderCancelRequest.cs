@@ -7,6 +7,7 @@ using FixGuardian.TestFramework.Attributes;
 
 namespace FixGuardian.Suite
 {
+    [RequireSuite("NewOrderSingle - Single user")]
     [TestSuite("Cancel validation")]
     public class CancelValidation
     {

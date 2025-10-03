@@ -81,7 +81,7 @@ void OrderBook::add(const OrderInfo &_order)
     Quantity qty = 0;
 
     if (_order.order.side == fix42::Side::BuyMinus || _order.order.side == fix42::Side::Buy) {
-        qty = fillOnBook<std::greater_equal<Price>>(m_ask_book, m_ask_id, _order);
+        qty = fillOnBook<std::less_equal<Price>>(m_ask_book, m_ask_id, _order);
         if (qty != 0) {
             // todo change average price
             Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
@@ -91,7 +91,7 @@ void OrderBook::add(const OrderInfo &_order)
             addToBook(m_bid_book, m_bid_id, _order.price, new_order);
         }
     } else if (_order.order.side == fix42::Side::SellPlus || _order.order.side == fix42::Side::Sell) {
-        qty = fillOnBook<std::less_equal<Price>>(m_bid_book, m_bid_id, _order);
+        qty = fillOnBook<std::greater_equal<Price>>(m_bid_book, m_bid_id, _order);
         if (qty != 0) {
             Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, qty, 0.f, _order.order.side, fix42::OrderStatus::NewOrder };
 
