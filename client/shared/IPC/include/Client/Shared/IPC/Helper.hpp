@@ -30,6 +30,7 @@ namespace ipc
         static net::Buffer Status(PUStatus _status);
         static net::Buffer Logon(const msg::Logon &_logon);
         static net::Buffer OrderSingle(const msg::OrderSingle &_order);
-        static net::Buffer ExecutionEvent(const msg::Execution &_exec, MessageType _type);
+        static net::Buffer ExecutionNew(const msg::ExecutionNew &_exec);
+        static net::Buffer ExecutionEvent(const msg::ExecutionEvent &_exec);
     };
 }

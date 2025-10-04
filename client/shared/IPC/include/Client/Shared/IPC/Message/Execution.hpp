@@ -5,20 +5,37 @@
 
 namespace ipc::msg
 {
-    struct Execution
+    struct ExecutionNew
     {
-        std::string symbol;
         OrderId orderId;
         std::string execId;
-        Price avgPrice;
-        Price price;
+        std::string symbol;
         fix42::Side side;
-        Quantity quantity;
-        Quantity remainQty;
+        fix42::OrderType orderType;
+        Price price;
 
-        friend net::Buffer &operator<<(net::Buffer &_buffer, const Execution &_exec);
-        friend net::Buffer &operator>>(net::Buffer &_buffer, Execution &_exec);
+        friend net::Buffer &operator<<(net::Buffer &_buffer, const ExecutionNew &_exec);
+        friend net::Buffer &operator>>(net::Buffer &_buffer, ExecutionNew &_exec);
 
-        friend std::ostream &operator<<(std::ostream &_os, const Execution &_exec);
+        friend std::ostream &operator<<(std::ostream &_os, const ExecutionNew &_exec);
+    };
+
+    struct ExecutionEvent
+    {
+        OrderId orderId;
+        std::string execId;
+        fix42::ExecutionStatus execStatus;
+        std::string symbol;
+        fix42::Side side;
+        Quantity lastShare;
+        Quantity leaveQty;
+        Quantity cumQty;
+        Price avgPrice;
+        Price lastPrice;
+
+        friend net::Buffer &operator<<(net::Buffer &_buffer, const ExecutionEvent &_exec);
+        friend net::Buffer &operator>>(net::Buffer &_buffer, ExecutionEvent &_exec);
+
+        friend std::ostream &operator<<(std::ostream &_os, const ExecutionEvent &_exec);
     };
 }

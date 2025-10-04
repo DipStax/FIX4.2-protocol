@@ -19,8 +19,10 @@ namespace pu
             void onInput(InputType _input) final;
 
         private:
-            void treatNewOrder(const fix42::msg::ExecutionReport &_report);
-            void sendNotificationNew(const fix42::msg::ExecutionReport &_report, ipc::MessageType _msgtype);
+            void treatNewOrder(const InputType &_input, const fix42::msg::ExecutionReport &_report);
+
+            void notifyExecEvent(const InputType &_input, const fix42::msg::ExecutionReport &_report);
+            void notifyExecNew(const InputType &_input, const fix42::msg::ExecutionReport &_report);
 
             StringOutputQueue &m_tcp_output;
     };
