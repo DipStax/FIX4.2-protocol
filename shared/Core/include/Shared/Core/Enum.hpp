@@ -25,7 +25,7 @@ namespace fix42
         Status
     };
 
-    enum OrderStatus
+    enum OrderStatus : uint8_t
     {
         NewOrder = '0',
         PartiallyFilled,
@@ -59,7 +59,7 @@ namespace fix42
         StaleOrder
     };
 
-    enum Side
+    enum Side : uint8_t
     {
         Buy = '1',
         Sell,

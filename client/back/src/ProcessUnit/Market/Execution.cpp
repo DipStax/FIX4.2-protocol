@@ -73,6 +73,16 @@ namespace pu
             reject.get<fix42::tag::Text>().Value = "Awaited a value for Price in aknowledge report";
             m_tcp_output.append(_input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
             return;
+        } else if (!_report.get<fix42::tag::OrderQty>().Value.has_value()) {
+            fix42::msg::BusinessReject reject{};
+
+            reject.get<fix42::tag::RefSeqNum>().Value = _input.Header.get<fix42::tag::MsgSeqNum>().Value;
+            reject.get<fix42::tag::RefMsgType>().Value = _input.Header.getPositional<fix42::tag::MsgType>().Value;
+            reject.get<fix42::tag::BusinessRejectRefId>().Value = _report.get<fix42::tag::OrderID>().Value;
+            reject.get<fix42::tag::BusinessRejectReason>().Value = fix42::RejectReasonBusiness::CondReqFieldMissing;
+            reject.get<fix42::tag::Text>().Value = "Awaited a value for OrderQty in aknowledge report";
+            m_tcp_output.append(_input.ReceiveTime, fix42::msg::BusinessReject::Type, std::move(reject.to_string()));
+            return;
         }
 
         ipc::msg::ExecutionNew exec{
@@ -81,6 +91,7 @@ namespace pu
             .symbol = _report.get<fix42::tag::Symbol>().Value,
             .side = _report.get<fix42::tag::Side>().Value,
             .orderType = _report.get<fix42::tag::OrdType>().Value.value(),
+            .quantity = _report.get<fix42::tag::OrderQty>().Value.value(),
             .price = _report.get<fix42::tag::Price>().Value.value()
         };
 

@@ -13,7 +13,7 @@ namespace ui::widget
     {
         QVBoxLayout *layout = new QVBoxLayout();
         QTreeView *treeview = new QTreeView();
-        m_model.setHorizontalHeaderLabels({ "Order Id", "Exec Id", "Original Qty", "Remain Qty", "Limit Price", "Avg Price", "Side", "Symbol" });
+        m_model.setHorizontalHeaderLabels({ "Order Id", "Limit Price", "Avg Price", "Quantity", "Status", "Symbol", "Remain Qty", "Side", "Exec Id" });
 
         treeview->setModel(&m_model);
         treeview->expandAll();
@@ -25,64 +25,53 @@ namespace ui::widget
         setLayout(layout);
     }
 
-    void OrderHistoric::newOrder(ipc::msg::Execution _order)
+    void OrderHistoric::newOrder(ipc::msg::ExecutionNew _exec)
     {
-        Logger->log<logger::Level::Info>("New order: ", _order);
+        Logger->log<logger::Level::Info>("New order: ", _exec);
         QList<QStandardItem*> row;
-        QStandardItem *quantity = new QStandardItem(QString::fromStdString(std::to_string(_order.quantity)));
-        QStandardItem *remainQty = new QStandardItem(QString::fromStdString(std::to_string(_order.remainQty)));
-        QStandardItem *avgPrice = new QStandardItem(QString::fromStdString(std::to_string(_order.avgPrice)));
+        QStandardItem *quantity = new QStandardItem(QString::fromStdString(std::to_string(_exec.quantity)));
+        QStandardItem *remainQty = new QStandardItem(QString::fromStdString(std::to_string(_exec.quantity)));
+        QStandardItem *avgPrice = new QStandardItem(QString::fromStdString(std::to_string(0)));
 
-        quantity->setData(_order.quantity);
-        remainQty->setData(_order.remainQty);
-        avgPrice->setData(_order.avgPrice);
-        row << new QStandardItem(QString::fromStdString(_order.orderId))
-            << new QStandardItem(QString::fromStdString(_order.execId))
-            << quantity
-            << remainQty
-            << new QStandardItem(QString::fromStdString(std::to_string(_order.price)))
+        quantity->setData(_exec.quantity);
+        remainQty->setData(_exec.quantity);
+        avgPrice->setData(0);
+        row << new QStandardItem(QString::fromStdString(_exec.orderId))
+            << new QStandardItem(QString::fromStdString(std::to_string(_exec.price)))
             << avgPrice
-            << new QStandardItem(_order.side == static_cast<uint8_t>(fix42::Side::SellPlus) ? "SellPlus" : "BuyMinus")
-            << new QStandardItem(QString::fromStdString(_order.symbol));
+            << quantity
+            << new QStandardItem(core::ExecStatusToString(fix42::ExecutionStatus::NewOrder))
+            << new QStandardItem(QString::fromStdString(_exec.symbol))
+            << remainQty
+            << new QStandardItem(core::SideToString(_exec.side))
+            << new QStandardItem(QString::fromStdString(_exec.execId));
         for (QStandardItem* item : row)
             item->setEditable(false);
         m_model.appendRow(row);
-        m_root[_order.orderId] = row;
+        m_root[_exec.orderId] = row;
     }
 
-    void OrderHistoric::eventOrder(ipc::msg::Execution _order)
+    void OrderHistoric::eventOrder(ipc::msg::ExecutionEvent _exec)
     {
-        Logger->log<logger::Level::Info>("New order event: ", _order);
+        Logger->log<logger::Level::Info>("New order event: ", _exec);
         QList<QStandardItem*> row;
 
-        if (!m_root.contains(_order.orderId)) {
-            Logger->log<logger::Level::Warning>("Unable to find the root element for order id: ", _order.orderId);
+        if (!m_root.contains(_exec.orderId)) {
+            Logger->log<logger::Level::Warning>("Unable to find the root element for order id: ", _exec.orderId);
             return;
         }
-        QList<QStandardItem*> &main_row = m_root.at(_order.orderId);
+        QList<QStandardItem*> &main_row = m_root.at(_exec.orderId);
 
         row << new QStandardItem("")
-            << new QStandardItem(QString::fromStdString(_order.execId))
-            << new QStandardItem(QString::fromStdString(std::to_string(_order.quantity)))
-            << new QStandardItem(QString::fromStdString(std::to_string(_order.remainQty)))
-            << new QStandardItem(QString::fromStdString(std::to_string(_order.price)))
-            << new QStandardItem(QString::fromStdString(std::to_string(_order.avgPrice)))
-            << new QStandardItem(_order.side == static_cast<uint8_t>(fix42::Side::SellPlus) ? "SellPlus" : "BuyMinus")
-            << new QStandardItem(QString::fromStdString(_order.symbol));
+            << new QStandardItem("")
+            << new QStandardItem(QString::fromStdString(std::to_string(_exec.avgPrice)))
+            << new QStandardItem("")
+            << new QStandardItem(core::ExecStatusToString(_exec.execStatus))
+            << new QStandardItem("")
+            << new QStandardItem(QString::fromStdString(std::to_string(_exec.leaveQty)))
+            << new QStandardItem(QString::fromStdString(_exec.execId));
         for (QStandardItem* item : row)
             item->setEditable(false);
         main_row[0]->appendRow(row);
-
-        QStandardItem *tl_quantity_row = main_row[2];
-        QStandardItem *tl_remain_row = main_row[3];
-        QStandardItem *tl_avgprice_row = main_row[5];
-        Quantity qty1 = tl_quantity_row->data().toInt() - tl_remain_row->data().toInt();
-        Quantity qty2 = _order.quantity - _order.remainQty;
-        Quantity result = (qty1 * tl_avgprice_row->data().toInt() + qty2 * _order.avgPrice) / tl_quantity_row->data().toInt();
-
-        tl_avgprice_row->setText(QString::fromStdString(std::to_string(result)));
-        tl_avgprice_row->setData(result);
-        tl_remain_row->setText(QString::fromStdString(std::to_string(_order.remainQty)));
-        tl_remain_row->setData(_order.remainQty);
     }
 }

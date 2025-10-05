@@ -80,10 +80,8 @@ namespace pu
         while (!_st.stop_requested()) {
             std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 
-            if (/*User::Instance().isLogin() &&*/ std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count() >= hb_info.Elapsing) {
-                Logger->log<logger::Level::Info>("Sending HeartBeat Message, ", std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count());
+            if (std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count() >= hb_info.Elapsing - 1) {
                 hb_info.Since = now;
-                Logger->log<logger::Level::Info>("Sending HeartBeat Message, ", std::chrono::duration_cast<std::chrono::seconds>(now - hb_info.Since).count());
                 m_tcp_output.append(std::chrono::system_clock::now(), fix42::msg::HeartBeat::Type, std::move(fix42::msg::HeartBeat{}.to_string()));
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

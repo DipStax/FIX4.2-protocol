@@ -29,14 +29,20 @@ class BackManager : public QObject
         void received_TokenValidation(ipc::msg::BackToFrontValidToken _token);
         void received_Status(PUStatus _status);
         void received_Logon(ipc::msg::Logon _exec);
-        void received_ExecutionNew(ipc::msg::Execution _exec);
-        void received_ExecutionEvent(ipc::msg::Execution _exec);
+        void received_ExecutionNew(ipc::msg::ExecutionNew _exec);
+        void received_ExecutionEvent(ipc::msg::ExecutionEvent _exec);
 
     protected:
         BackManager(QObject *_parent = nullptr);
 
     private:
         void ipcReceived(net::Buffer &_buffer);
+
+        void emit_TokenValidation(net::Buffer &_buffer);
+        void emit_Status(net::Buffer &_buffer);
+        void emit_Logon(net::Buffer &_buffer);
+        void emit_ExecutionNew(net::Buffer &_buffer);
+        void emit_ExecutionEvent(net::Buffer &_buffer);
 
         bool m_running = false;
 

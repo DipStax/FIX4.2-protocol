@@ -12,6 +12,7 @@ namespace ipc::msg
         std::string symbol;
         fix42::Side side;
         fix42::OrderType orderType;
+        Quantity quantity;
         Price price;
 
         friend net::Buffer &operator<<(net::Buffer &_buffer, const ExecutionNew &_exec);

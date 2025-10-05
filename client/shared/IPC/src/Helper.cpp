@@ -151,7 +151,7 @@ namespace ipc
     {
         net::Buffer buffer{};
         ipc::Header header{
-            ipc::MessageType::ExecEvent,
+            ipc::MessageType::ExecNew,
             static_cast<uint32_t>(sizeof(uint32_t) * 3 + _exec.symbol.size() + _exec.orderId.size() + _exec.execId.size()
                 + sizeof(fix42::Side) + sizeof(fix42::OrderType) + sizeof(Price))
         };

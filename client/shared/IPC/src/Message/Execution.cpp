@@ -4,8 +4,8 @@ namespace ipc::msg
 {
     net::Buffer &operator<<(net::Buffer &_buffer, const ExecutionNew &_exec)
     {
-        return _buffer << _exec.orderId << _exec.execId << _exec.symbol
-            << static_cast<uint8_t>(_exec.side) << static_cast<uint8_t>(_exec.orderType) << _exec.price;
+        return _buffer << _exec.orderId << _exec.execId << _exec.symbol << static_cast<uint8_t>(_exec.side)
+            << static_cast<uint8_t>(_exec.orderType) << _exec.quantity << _exec.price;
     }
 
     net::Buffer &operator>>(net::Buffer &_buffer, ExecutionNew &_exec)
@@ -13,7 +13,7 @@ namespace ipc::msg
         uint8_t side = 0;
         uint8_t orderType = 0;
 
-        _buffer >> _exec.orderId >> _exec.execId >> _exec.symbol >> side >> orderType >> _exec.price;
+        _buffer >> _exec.orderId >> _exec.execId >> _exec.symbol >> side >> orderType >> _exec.quantity >> _exec.price;
 
         _exec.side = static_cast<fix42::Side>(side);
         _exec.orderType = static_cast<fix42::OrderType>(orderType);

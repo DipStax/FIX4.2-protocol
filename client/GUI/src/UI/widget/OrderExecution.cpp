@@ -31,8 +31,10 @@ namespace ui::widget
         for (const std::string &_symbol : symbols)
             m_cb_symbol->addItem(QString::fromStdString(_symbol));
 
-        m_cb_side->addItem("Ask", static_cast<int>(fix42::Side::SellPlus));
-        m_cb_side->addItem("Bid", static_cast<int>(fix42::Side::BuyMinus));
+        m_cb_side->addItem(core::SideToString(fix42::Side::Sell), static_cast<int>(fix42::Side::Sell));
+        m_cb_side->addItem(core::SideToString(fix42::Side::Buy), static_cast<int>(fix42::Side::Buy));
+        m_cb_side->addItem(core::SideToString(fix42::Side::SellPlus), static_cast<int>(fix42::Side::SellPlus));
+        m_cb_side->addItem(core::SideToString(fix42::Side::BuyMinus), static_cast<int>(fix42::Side::BuyMinus));
 
         left_layout->addWidget(new QLabel("Symbol:"));
         left_layout->addWidget(m_cb_symbol);

@@ -20,8 +20,8 @@ namespace ui::widget
             ~OrderHistoric() = default;
 
         public slots:
-            void newOrder(ipc::msg::Execution _order);
-            void eventOrder(ipc::msg::Execution _order);
+            void newOrder(ipc::msg::ExecutionNew _order);
+            void eventOrder(ipc::msg::ExecutionEvent _order);
 
         private:
             QStandardItemModel m_model;

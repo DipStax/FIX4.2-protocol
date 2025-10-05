@@ -101,36 +101,66 @@ void BackManager::ipcReceived(net::Buffer &_buffer)
 {
     ipc::Header header;
 
-    ipc::msg::Logon logon{};
-    ipc::msg::Execution exec;
-    ipc::msg::BackToFrontValidToken token;
-    uint8_t status;
-
     _buffer >> header;
-    Logger->log<logger::Level::Info>("Received new data from Backend, with message type: ", (int)header.MsgType);
+    Logger->log<logger::Level::Info>("Received new data from Backend, with message type: ", static_cast<int>(header.MsgType));
     switch (header.MsgType) {
-        case ipc::MessageType::BackToFrontValidToken:
-            _buffer >> token;
-            emit received_TokenValidation(token);
+        case ipc::MessageType::BackToFrontValidToken: emit_TokenValidation(_buffer);
             break;
-        case ipc::MessageType::Status:
-            _buffer >> status;
-            emit received_Status(static_cast<PUStatus>(status));
+        case ipc::MessageType::Status: emit_Status(_buffer);
             break;
-        case ipc::MessageType::Logon:
-            _buffer >> logon;
-            emit received_Logon(logon);
+        case ipc::MessageType::Logon: emit_Logon(_buffer);
             break;
-        case ipc::MessageType::ExecNew:
-            _buffer >> exec;
-            emit received_ExecutionNew(exec);
+        case ipc::MessageType::ExecNew: emit_ExecutionNew(_buffer);
             break;
-        case ipc::MessageType::ExecEvent:
-            _buffer >> exec;
-            emit received_ExecutionEvent(exec);
+        case ipc::MessageType::ExecEvent: emit_ExecutionEvent(_buffer);
             break;
         default:
             Logger->log<logger::Level::Error>("Unknown received message type: ", static_cast<int>(header.MsgType));
             break;
     }
+}
+
+void BackManager::emit_TokenValidation(net::Buffer &_buffer)
+{
+    ipc::msg::BackToFrontValidToken token{};
+
+    _buffer >> token;
+    Logger->log<logger::Level::Debug>("Emiting TokenValidation with: ", token);
+    emit received_TokenValidation(token);
+}
+
+void BackManager::emit_Status(net::Buffer &_buffer)
+{
+    uint8_t status;
+
+    _buffer >> status;
+    Logger->log<logger::Level::Debug>("Emiting Status with: ", static_cast<uint16_t>(status));
+    emit received_Status(static_cast<PUStatus>(status));
+}
+
+void BackManager::emit_Logon(net::Buffer &_buffer)
+{
+    ipc::msg::Logon logon{};
+
+    _buffer >> logon;
+    Logger->log<logger::Level::Debug>("Emiting Logon with: ", logon);
+    emit received_Logon(logon);
+}
+
+void BackManager::emit_ExecutionNew(net::Buffer &_buffer)
+{
+    ipc::msg::ExecutionNew exec;
+
+    _buffer >> exec;
+    Logger->log<logger::Level::Debug>("Emiting ExecutionNew with: ", exec);
+    emit received_ExecutionNew(exec);
+}
+
+void BackManager::emit_ExecutionEvent(net::Buffer &_buffer)
+{
+    ipc::msg::ExecutionEvent exec;
+
+    _buffer >> exec;
+    Logger->log<logger::Level::Debug>("Emiting ExecutionEvent with: ", exec);
+    emit received_ExecutionEvent(exec);
 }
