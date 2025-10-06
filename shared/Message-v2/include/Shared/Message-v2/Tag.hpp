@@ -48,8 +48,10 @@ namespace fix42::tag
     constexpr const fix::TagName NoMDEntries = 268;             ///< Tag [268](https://www.onixs.biz/fix-dictionary/4.2/tagNum_268.html).
     constexpr const fix::TagName MDEntryType = 269;             ///< Tag [269](https://www.onixs.biz/fix-dictionary/4.2/tagNum_269.html).
     constexpr const fix::TagName MDEntryPx = 270;               ///< Tag [270](https://www.onixs.biz/fix-dictionary/4.2/tagNum_270.html).
+    constexpr const fix::TagName MDEntrySize = 271;             ///< Tag [271](https://www.onixs.biz/fix-dictionary/4.2/tagNum_271.html).
     constexpr const fix::TagName MDUpdateAction = 279;          ///< Tag [279](https://www.onixs.biz/fix-dictionary/4.2/tagNum_279.html).
-    constexpr const fix::TagName MDentryRefID = 280;            ///< Tag [280](https://www.onixs.biz/fix-dictionary/4.2/tagNum_280.html).
+    constexpr const fix::TagName MDEntryRefID = 280;            ///< Tag [280](https://www.onixs.biz/fix-dictionary/4.2/tagNum_280.html).
+    constexpr const fix::TagName MDReqRejReason = 281;          ///< Tag [281](https://www.onixs.biz/fix-dictionary/4.2/tagNum_281.html).
     constexpr const fix::TagName RefTagId = 371;                ///< Tag [371](https://www.onixs.biz/fix-dictionary/4.2/tagNum_371.html).
     constexpr const fix::TagName RefMsgType = 372;              ///< Tag [372](https://www.onixs.biz/fix-dictionary/4.2/tagNum_372.html).
     constexpr const fix::TagName SessionRejectReason = 373;     ///< Tag [373](https://www.onixs.biz/fix-dictionary/4.2/tagNum_373.html).

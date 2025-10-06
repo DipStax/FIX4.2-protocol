@@ -1,4 +1,4 @@
-# [Business Message Reject]()
+# [Business Message Reject](https://www.onixs.biz/fix-dictionary/4.2/msgType_j_106.html)
 
 | Tag | Field Name | Required | Comments |
 |---|---|---|---|

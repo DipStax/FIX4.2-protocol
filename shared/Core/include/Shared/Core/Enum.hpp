@@ -136,4 +136,46 @@ namespace fix42
         BrokerOptionCancel,
         OrderPendingCancelorReplace
     };
+
+    enum MarketDataEntryType : uint8_t
+    {
+        Bid = '0',
+        Offer,
+        Trade,
+        IndexValue,
+        OpeningPrice,
+        ClosingPrice,
+        SettlementPrice,
+        TradingSessionHighPrice,
+        TradingSessionLowPrice,
+        TradingSessionVWAPPrice
+    };
+
+    enum SubscirptionType : uint8_t
+    {
+        Snapshot = '0',
+        Subscirbe,
+        Unsubscribe
+    };
+
+    enum MarketDataUpdateType : uint8_t
+    {
+        FullRefresh,
+        IncrementalRefresh
+    };
+
+    enum MarketDataUpAction : uint8_t
+    {
+        NewAction,
+        Change,
+        Delete
+    };
+
+    enum TickDir : uint8_t
+    {
+        PlusTick = '0',
+        ZeroPlusTick,
+        MinusTick,
+        ZeroMinusTick
+    };
 }

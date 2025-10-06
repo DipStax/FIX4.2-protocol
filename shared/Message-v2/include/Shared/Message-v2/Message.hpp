@@ -107,5 +107,62 @@ namespace fix42
             fix::Tag<tag::TransactTime, std::chrono::time_point<std::chrono::system_clock>>,
             fix::Tag<tag::OrderQty, std::optional<Quantity>>
         >;
+
+        using MarketDataRequest = fix::Message<'V',
+            fix::TagList<
+                fix::List<
+                    fix::TagNo<tag::NoMDEntryTypes, false>,
+                    fix::Tag<tag::MDEntryType, MarketDataEntryType>
+                >,
+                fix::List<
+                    fix::TagNo<tag::NoRelatedSym, false>
+                    fix::Tag<tag::Symbol, std::string>
+                >
+            >,
+            fix::Tag<tag::MDReqID, std::string>,
+            fix::Tag<tag::SubscriptionRequestType, SubscirptionType>,
+            fix::Tag<tag::MarketDepth, uint32_t>,
+            fix::Tag<tag::MDUpdateType, std::optional<MarketDataUpdateType>>
+        >;
+
+        using MarketDataSnapshotFullRefresh = fix::Message<'W',
+            fix::TagList<
+                fix::List<
+                    fix::TagNo<tag::NoMDEntries, false>,
+                    fix::Tag<tag::MDEntryType, MarketDataEntryType>,
+                    fix::Tag<tag::MDEntryPx, Price>,
+                    fix::Tag<tag::MDEntrySize, std::optional<Quantity>>,
+                    // fix::Tag<tag::MDEntryDate, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                    // fix::Tag<tag::MDEntryTime, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                    fix::Tag<tag::TickDirection, std::optional<TickDir>>
+                >
+                fix::Tag<tag::MDReqID, std::optional<std::string>>,
+                fix::Tag<tag::Symbol, std::string>
+            >;
+
+        using MarketDataIncrementalRefresh = fix::Message<'X',
+            fix::TagList<
+                fix::List<
+                    fix::TagNo<tag::NoMDEntries, false>,
+                    fix::Tag<tag::MDUpdateAction, MarketDataUpAction>,
+                    fix::Tag<tag::MDEntryType, std::optional<MarketDataEntryType>>,
+                    fix::Tag<tag::MDEntryRefID, std::optional<std::string>>,
+                    fix::Tag<tag::Symbol, std::optional<std::string>>,
+                    fix::Tag<tag::MDEntryPx, std::optional<Price>>,
+                    fix::Tag<tag::MDEntrySize, std::optional<Quantity>>,
+                    // fix::Tag<tag::MDEntryDate, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                    // fix::Tag<tag::MDEntryTime, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                    fix::Tag<tag::TickDirection, std::optional<TickDir>>
+                >
+            >,
+            fix::Tag<tag::MDReqID, std::optional<std::string>>,
+        >;
+
+
+        using MarketDataRequestReject = fix::Message<'Y',
+            fix::Tag<tag::MDReqID, std::string>,
+            fix::Tag<tag::MDReqRejReason, std::optional<MarketDataReqRejReason>>,
+            fix::Tag<tag::Text, std::optional<std::string>>
+        >;
     }
 }

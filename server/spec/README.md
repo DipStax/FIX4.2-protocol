@@ -28,3 +28,7 @@ Each message type is described with its required fields, tags, and any server-sp
 - `A` [Logon](./Logon.md)
 - `D` [New Order Single](./NewOrderSingle.md)
 - `F` [Order Cancel Request](./OrderCancelRequest.md)
+- `V` [Market Data Request](./MarketDataRequest.md)
+- `W` [Market Data - Snapshot/Full Refresh](./MarketDataSnapshotFullRefresh.md)
+- `X` [Market Data - Incremental Refresh](./MarketDataIncrementalRefresh.md)
+- `Y` [Market Data Request Reject](./MarketDataRequestReject.md)
