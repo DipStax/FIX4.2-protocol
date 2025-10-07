@@ -292,6 +292,137 @@ void to_FIX(std::string &_out, const fix42::CancelRejectReason &_value)
     _out.push_back(static_cast<char>(_value));
 }
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataEntryType &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::MarketDataEntryType>(_value[0]);
+    switch (_out) {
+        case fix42::MarketDataEntryType::Bid:
+        case fix42::MarketDataEntryType::Offer:
+        case fix42::MarketDataEntryType::Trade:
+        case fix42::MarketDataEntryType::IndexValue:
+        case fix42::MarketDataEntryType::OpeningPrice:
+        case fix42::MarketDataEntryType::ClosingPrice:
+        case fix42::MarketDataEntryType::SettlementPrice:
+        case fix42::MarketDataEntryType::TradingSessionHighPrice:
+        case fix42::MarketDataEntryType::TradingSessionLowPrice:
+        case fix42::MarketDataEntryType::TradingSessionVWAPPrice:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 9" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::MarketDataEntryType &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::SubscirptionType &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::SubscirptionType>(_value[0]);
+    switch (_out) {
+        case fix42::SubscirptionType::Snapshot:
+        case fix42::SubscirptionType::Subscirbe:
+        case fix42::SubscirptionType::Unsubscribe:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 2" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::SubscirptionType &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataUpdateType &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::MarketDataUpdateType>(_value[0]);
+    switch (_out) {
+        case fix42::MarketDataUpdateType::FullRefresh:
+        case fix42::MarketDataUpdateType::IncrementalRefresh:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 1" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::MarketDataUpdateType &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataUpAction &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::MarketDataUpAction>(_value[0]);
+    switch (_out) {
+        case fix42::MarketDataUpAction::NewAction:
+        case fix42::MarketDataUpAction::Change:
+        case fix42::MarketDataUpAction::Delete:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 2" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::MarketDataUpAction &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataReqRejReason &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::MarketDataReqRejReason>(_value[0]);
+    switch (_out) {
+        case fix42::MarketDataReqRejReason::UnknownSymbol:
+        case fix42::MarketDataReqRejReason::DuplicateMDReqId:
+        case fix42::MarketDataReqRejReason::InsufficientBandwidth:
+        case fix42::MarketDataReqRejReason::InsufficientPermissions:
+        case fix42::MarketDataReqRejReason::UnsupportedSubReqType:
+        case fix42::MarketDataReqRejReason::UnsupportedDepth:
+        case fix42::MarketDataReqRejReason::UnsupportedUpdateType:
+        case fix42::MarketDataReqRejReason::UnsupportedAggBook:
+        case fix42::MarketDataReqRejReason::UnsupportedEntryType:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 8" };
+    }
+}
+void to_FIX(std::string &_out, const fix42::MarketDataReqRejReason &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::TickDir &_out)
+{
+    if (_value.size() > 1)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Value to long" };
+    _out = static_cast<fix42::TickDir>(_value[0]);
+    switch (_out) {
+        case fix42::TickDir::PlusTick:
+        case fix42::TickDir::ZeroPlusTick:
+        case fix42::TickDir::MinusTick:
+        case fix42::TickDir::ZeroMinusTick:
+            return std::nullopt;
+        default:
+            return fix::RejectError{ fix::RejectError::ValueOORange, "Expected: 0 GE value GE 3" };
+    }
+}
+
+void to_FIX(std::string &_out, const fix42::TickDir &_value)
+{
+    _out.push_back(static_cast<char>(_value));
+}
 
 std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out)
 {

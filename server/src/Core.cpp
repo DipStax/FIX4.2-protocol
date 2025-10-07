@@ -7,11 +7,13 @@ Core::Core()
     m_logout(m_tcp_output.getInput()),
     m_heartbeat(m_tcp_output.getInput()),
     m_market_router(m_tcp_output.getInput()),
+    m_marketdata_router(m_tcp_output.getInput()),
     m_router(
         m_logon.getInput(),
         m_logout.getInput(),
         m_heartbeat.getInput(),
         m_market_router.getInput(),
+        m_marketdata_router.getInput(),
         m_tcp_output.getInput()
     ),
     m_header_validation(m_router.getInput(), m_tcp_output.getInput()),
@@ -42,6 +44,7 @@ bool Core::start()
             m_logout.status();
             m_heartbeat.status();
             m_market_router.status();
+            m_marketdata_router.status();
             for (auto &[_, _pip] : m_markets)
                 _pip.status();
             m_router.status();
@@ -66,6 +69,7 @@ void Core::stop()
         m_tcp_input.stop();
         m_header_validation.stop();
         m_router.stop();
+        m_marketdata_router.stop();
         m_market_router.stop();
         m_logon.stop();
         m_logout.stop();
@@ -87,6 +91,7 @@ bool Core::internal_start()
     m_heartbeat.start();
 
     m_market_router.start();
+    m_marketdata_router.start();
     for (auto &[_name, _pip] : m_markets)
         _pip.start();
     m_router.start();

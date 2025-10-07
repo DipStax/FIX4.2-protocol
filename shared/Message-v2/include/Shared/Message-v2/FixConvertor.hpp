@@ -39,6 +39,24 @@ void to_FIX(std::string &_out, const fix42::CancelRejectResponseTo &_value);
 std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::CancelRejectReason &_out);
 void to_FIX(std::string &_out, const fix42::CancelRejectReason &_value);
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataEntryType &_out);
+void to_FIX(std::string &_out, const fix42::MarketDataEntryType &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::SubscirptionType &_out);
+void to_FIX(std::string &_out, const fix42::SubscirptionType &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataUpdateType &_out);
+void to_FIX(std::string &_out, const fix42::MarketDataUpdateType &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataUpAction &_out);
+void to_FIX(std::string &_out, const fix42::MarketDataUpAction &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::MarketDataReqRejReason &_out);
+void to_FIX(std::string &_out, const fix42::MarketDataReqRejReason &_value);
+
+std::optional<fix::RejectError> from_FIX(const std::string &_value, fix42::TickDir &_out);
+void to_FIX(std::string &_out, const fix42::TickDir &_value);
+
 std::optional<fix::RejectError> from_FIX(const std::string &_value, std::string &_out);
 void to_FIX(std::string &_out, const std::string &_value);
 

@@ -2,7 +2,7 @@
 
 namespace fix42
 {
-    enum RejectReasonSession
+    enum RejectReasonSession : uint8_t
     {
         InvalidTagNum = 1,
         RequiredTagMissing,
@@ -17,7 +17,7 @@ namespace fix42
         InvalidMsgType
     };
 
-    enum TransactionType
+    enum TransactionType : uint8_t
     {
         New = '0',
         Cancel,
@@ -25,7 +25,7 @@ namespace fix42
         Status
     };
 
-    enum OrderStatus
+    enum OrderStatus : uint8_t
     {
         NewOrder = '0',
         PartiallyFilled,
@@ -46,7 +46,7 @@ namespace fix42
 
     using ExecutionStatus = OrderStatus;
 
-    enum OrderRejectReason
+    enum OrderRejectReason : uint8_t
     {
         BrokerOption = '0',
         UnknowSymbol,
@@ -59,7 +59,7 @@ namespace fix42
         StaleOrder
     };
 
-    enum Side
+    enum Side : uint8_t
     {
         Buy = '1',
         Sell,
@@ -72,7 +72,7 @@ namespace fix42
         CrossShort
     };
 
-    enum RejectReasonBusiness
+    enum RejectReasonBusiness : uint8_t
     {
         Other = '0',
         UnknownId,
@@ -82,7 +82,7 @@ namespace fix42
         CondReqFieldMissing
     };
 
-    enum EncryptionMethod
+    enum EncryptionMethod : uint8_t
     {
         None = '0',
         PKCS,
@@ -93,14 +93,14 @@ namespace fix42
         PEMDESMD5
     };
 
-    enum HandleInstance
+    enum HandleInstance : uint8_t
     {
         AutoPrivate = '1',
         AutoPublic,
         Manual
     };
 
-    enum OrderType
+    enum OrderType : uint8_t
     {
         Market = '1',
         Limit,
@@ -123,13 +123,13 @@ namespace fix42
         Pegged = 'P'
     };
 
-    enum CancelRejectResponseTo
+    enum CancelRejectResponseTo : uint8_t
     {
         CancelRequest = '1',
         ReplaceRequest
     };
 
-    enum CancelRejectReason
+    enum CancelRejectReason : uint8_t
     {
         TooLateCancel = '0',
         UnknownOrderCancel,
@@ -160,15 +160,28 @@ namespace fix42
 
     enum MarketDataUpdateType : uint8_t
     {
-        FullRefresh,
+        FullRefresh = '0',
         IncrementalRefresh
     };
 
     enum MarketDataUpAction : uint8_t
     {
-        NewAction,
+        NewAction = '0',
         Change,
         Delete
+    };
+
+    enum MarketDataReqRejReason : uint8_t
+    {
+        UnknownSymbol = '0',
+        DuplicateMDReqId,
+        InsufficientBandwidth,
+        InsufficientPermissions,
+        UnsupportedSubReqType,
+        UnsupportedDepth,
+        UnsupportedUpdateType,
+        UnsupportedAggBook,
+        UnsupportedEntryType,
     };
 
     enum TickDir : uint8_t

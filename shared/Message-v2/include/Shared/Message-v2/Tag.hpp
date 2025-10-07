@@ -49,6 +49,7 @@ namespace fix42::tag
     constexpr const fix::TagName MDEntryType = 269;             ///< Tag [269](https://www.onixs.biz/fix-dictionary/4.2/tagNum_269.html).
     constexpr const fix::TagName MDEntryPx = 270;               ///< Tag [270](https://www.onixs.biz/fix-dictionary/4.2/tagNum_270.html).
     constexpr const fix::TagName MDEntrySize = 271;             ///< Tag [271](https://www.onixs.biz/fix-dictionary/4.2/tagNum_271.html).
+    constexpr const fix::TagName TickDirection = 274;           ///< Tag [274](https://www.onixs.biz/fix-dictionary/4.2/tagNum_274.html).
     constexpr const fix::TagName MDUpdateAction = 279;          ///< Tag [279](https://www.onixs.biz/fix-dictionary/4.2/tagNum_279.html).
     constexpr const fix::TagName MDEntryRefID = 280;            ///< Tag [280](https://www.onixs.biz/fix-dictionary/4.2/tagNum_280.html).
     constexpr const fix::TagName MDReqRejReason = 281;          ///< Tag [281](https://www.onixs.biz/fix-dictionary/4.2/tagNum_281.html).

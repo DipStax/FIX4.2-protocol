@@ -8,6 +8,7 @@
 #include "Server/ProcessUnit/HeaderValidation.hpp"
 #include "Server/ProcessUnit/Router.hpp"
 #include "Server/ProcessUnit/MarketRouter.hpp"
+#include "Server/ProcessUnit/MarketDataRouter.hpp"
 #include "Server/ProcessUnit/Network/TCPOutput.hpp"
 
 #include "Server/ProcessUnit/MarketContainer.hpp"
@@ -45,6 +46,7 @@ class Core
         ProcessUnit<pu::user::LogoutHandler> m_logout;
         ProcessUnit<pu::user::HeartBeatHandler> m_heartbeat;
         ProcessUnit<pu::MarketRouter> m_market_router;
+        ProcessUnit<pu::MarketDataRouter> m_marketdata_router;
 
         ProcessUnit<pu::Router> m_router;
         ProcessUnit<pu::HeaderValidation> m_header_validation;

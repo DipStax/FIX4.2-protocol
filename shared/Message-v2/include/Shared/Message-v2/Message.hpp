@@ -115,7 +115,7 @@ namespace fix42
                     fix::Tag<tag::MDEntryType, MarketDataEntryType>
                 >,
                 fix::List<
-                    fix::TagNo<tag::NoRelatedSym, false>
+                    fix::TagNo<tag::NoRelatedSym, false>,
                     fix::Tag<tag::Symbol, std::string>
                 >
             >,
@@ -135,10 +135,11 @@ namespace fix42
                     // fix::Tag<tag::MDEntryDate, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
                     // fix::Tag<tag::MDEntryTime, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
                     fix::Tag<tag::TickDirection, std::optional<TickDir>>
-                >
+                >,
                 fix::Tag<tag::MDReqID, std::optional<std::string>>,
                 fix::Tag<tag::Symbol, std::string>
-            >;
+            >
+        >;
 
         using MarketDataIncrementalRefresh = fix::Message<'X',
             fix::TagList<
@@ -155,7 +156,7 @@ namespace fix42
                     fix::Tag<tag::TickDirection, std::optional<TickDir>>
                 >
             >,
-            fix::Tag<tag::MDReqID, std::optional<std::string>>,
+            fix::Tag<tag::MDReqID, std::optional<std::string>>
         >;
 
 
