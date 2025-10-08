@@ -109,6 +109,7 @@ void Core::market_init()
             std::forward_as_tuple(_name, m_tcp_output.getInput())
         );
 
-        m_market_router.registerMarket(_name, m_markets.at(_name).getInput());
+        m_market_router.registerMarket(_name, m_markets.at(_name).getMarketInput());
+        m_marketdata_router.registerMarket(_name, m_markets.at(_name).getMarketDataInput());
     }
 }

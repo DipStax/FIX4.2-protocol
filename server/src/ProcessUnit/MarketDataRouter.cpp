@@ -10,7 +10,7 @@ namespace pu
     {
     }
 
-    void MarketDataRouter::registerMarket(const std::string &_symbol, MarketDataTupleQueue &_queue)
+    void MarketDataRouter::registerMarket(const std::string &_symbol, MarketDataTupleQueue _queue)
     {
         m_market.emplace(_symbol, _queue);
     }

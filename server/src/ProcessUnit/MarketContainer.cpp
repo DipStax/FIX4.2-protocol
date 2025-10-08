@@ -6,6 +6,7 @@ namespace pu
         : AProcessUnitBase("Server/Market/" + _symbol + "/Container"),
         m_event(_symbol, _tcp_output),
         m_ob(_symbol, m_event.getInput()),
+        m_market_data(m_registery, m_ob, _tcp_output),
         m_market_neworder(m_mutex, m_ob, _tcp_output),
         m_market_cancel(m_mutex, m_ob, _tcp_output)
     {
@@ -16,9 +17,14 @@ namespace pu
         return m_ob.getSymbol();
     }
 
-    MarketContainer::MarketTupleQueue MarketContainer::getInput()
+    MarketContainer::MarketTupleQueue MarketContainer::getMarketInput()
     {
         return std::forward_as_tuple(m_mutex, m_market_neworder.getInput(), m_market_cancel.getInput());
+    }
+
+    MarketContainer::MarketDataTupleQueue MarketContainer::getMarketDataInput()
+    {
+        return std::forward_as_tuple(m_registery, m_market_data.getInput());
     }
 
     void MarketContainer::runtime(std::stop_token _st)

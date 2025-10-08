@@ -22,7 +22,7 @@ namespace pu
             MarketDataRouter(StringOutputQueue &_tcp_output);
             virtual ~MarketDataRouter() = default;
 
-            void registerMarket(const std::string &_symbol, MarketDataTupleQueue &_queue);
+            void registerMarket(const std::string &_symbol, MarketDataTupleQueue _queue);
 
         protected:
             void onInput(InputType _input) final;
