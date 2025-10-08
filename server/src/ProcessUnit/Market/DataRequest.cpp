@@ -8,8 +8,29 @@ namespace pu::market
     {
     }
 
+    void DataRequest::setup()
+    {
+        m_thread = std::jthread(&DataRequest::processSubscribtion, this);
+    }
+
     void DataRequest::onInput(InputType _input)
     {
-        // todo
+    }
+
+    void DataRequest::onStop()
+    {
+        if (m_thread.joinable()) {
+            Logger->log<logger::Level::Info>("Requesting stop on the worker thread");
+            m_thread.request_stop();
+            m_thread.join();
+            Logger->log<logger::Level::Debug>("Worker thread joined");
+        }
+    }
+
+    void DataRequest::processSubscribtion(std::stop_token _st)
+    {
+        while (!_st.stop_requested()) {
+            
+        }
     }
 }

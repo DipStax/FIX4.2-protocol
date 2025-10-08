@@ -19,9 +19,9 @@ bool OrderBook::allowTick(fix42::Side _side)
     computeTick();
     switch (_side) {
         case fix42::Side::BuyMinus:
-            return m_tick == TickDirection::PlusTick || m_tick == TickDirection::ZeroPlusTick;
+            return m_tick == fix42::TickDir::PlusTick || m_tick == fix42::TickDir::ZeroPlusTick;
         case fix42::Side::SellPlus:
-            return m_tick == TickDirection::MinusTick || m_tick == TickDirection::ZeroMinusTick;
+            return m_tick == fix42::TickDir::MinusTick || m_tick == fix42::TickDir::ZeroMinusTick;
         default:
             return true;
     }
@@ -29,169 +29,147 @@ bool OrderBook::allowTick(fix42::Side _side)
 
 bool OrderBook::has(const OrderId &_orderId)
 {
-    {
-        std::shared_lock lock(m_ask_id.Mutex);
-
-        if (m_ask_id.IdList.contains(_orderId))
-            return true;
-    }
-    {
-        std::shared_lock lock(m_bid_id.Mutex);
-
-        if (m_bid_id.IdList.contains(_orderId))
-            return true;
-    }
-    return false;
+    return has(m_ask_side.idlist, _orderId) || has(m_bid_side.idlist, _orderId);
 }
 
 bool OrderBook::has(const OrderId &_orderId, fix42::Side _side)
 {
     if (_side == fix42::Side::Buy || _side == fix42::Side::BuyMinus)
-    {
-        std::shared_lock lock(m_bid_id.Mutex);
-
-        if (m_bid_id.IdList.contains(_orderId))
-            return true;
-    } else if (_side == fix42::Side::Sell || _side == fix42::Side::SellPlus) {
-        std::shared_lock lock(m_ask_id.Mutex);
-
-        if (m_ask_id.IdList.contains(_orderId))
-            return true;
-    }
-    Logger->log<logger::Level::Error>("Not supported side: ", static_cast<char>(_side));
+        return has(m_bid_side.idlist, _orderId);
+    else if (_side == fix42::Side::Sell || _side == fix42::Side::SellPlus)
+        return has(m_ask_side.idlist, _orderId);
+    else
+        Logger->log<logger::Level::Error>("Not supported side: ", static_cast<char>(_side));
     return false;
 }
 
-Order OrderBook::getOrder(const OrderId &_orderId)
+std::optional<Order> OrderBook::getOrder(const OrderId &_orderId)
 {
-    {
-        std::shared_lock lock(m_bid_id.Mutex);
+    std::optional<IdList::Info> info = getOrderIdInfo(_orderId, fix42::Side::Buy);
 
-        if (m_bid_id.IdList.contains(_orderId))
-            return *(m_bid_id.IdList.at(_orderId).Order);
-    }
-    std::shared_lock lock(m_ask_id.Mutex);
-
-    return *(m_ask_id.IdList.at(_orderId).Order);
+    if (info.has_value())
+        return *(info.value().Order);
+    info = getOrderIdInfo(_orderId, fix42::Side::Sell);
+    if (info.has_value())
+        return *(info.value().Order);
+    return std::nullopt;
 }
-
 
 void OrderBook::add(const OrderInfo &_order)
 {
     std::pair<Quantity, Price> pair{};
 
     if (_order.order.side == fix42::Side::BuyMinus || _order.order.side == fix42::Side::Buy) {
-        pair = fillOnBook<std::less_equal<Price>>(m_ask_book, m_ask_id, _order);
-        if (pair.first != 0) {
-            // todo change average price
-            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, pair.first, pair.second, _order.order.side, fix42::OrderStatus::NewOrder };
-
-            if (pair.first != _order.order.originalQty)
-                new_order.status = fix42::OrderStatus::PartiallyFilled;
-            addToBook(m_bid_book, m_bid_id, _order.price, new_order);
-        }
+        add(m_ask_side, m_bid_side, _order);
     } else if (_order.order.side == fix42::Side::SellPlus || _order.order.side == fix42::Side::Sell) {
-        pair = fillOnBook<std::greater_equal<Price>>(m_bid_book, m_bid_id, _order);
-        if (pair.first != 0) {
-            Order new_order{ _order.order.userId, _order.order.orderId, _order.order.originalQty, pair.first, pair.second, _order.order.side, fix42::OrderStatus::NewOrder };
-
-            if (pair.first != _order.order.originalQty)
-                new_order.status = fix42::OrderStatus::PartiallyFilled;
-            addToBook(m_ask_book, m_ask_id, _order.price, new_order);
-        }
+        add(m_bid_side, m_ask_side, _order);
     } else {
         Logger->log<logger::Level::Error>("Order side not supported: ", static_cast<int>(_order.order.side));
         throw std::runtime_error("Side not supported, for add");
     }
 }
 
-void OrderBook::cancel(const OrderId &_orderId, fix42::Side _side)
+bool OrderBook::cancel(const OrderId &_orderId, fix42::Side _side)
 {
-    const OrderIdInfo &info = getOrderIdInfo(_orderId, _side);
+    std::optional<IdList::Info> info = getOrderIdInfo(_orderId, _side);
 
+    if (info.has_value())
+        return false;
     switch (_side) {
         case fix42::Side::Sell:
         case fix42::Side::SellPlus:
             Logger->log<logger::Level::Verbose>("Canceling on Sell side");
-            removeFromIdMap(m_ask_id, _orderId);
-            cancelOrder(m_ask_book, info);
-            break;
+            removeFromIdMap(m_ask_side.idlist, _orderId);
+            cancelOrder(m_ask_side, info.value());
+            return true;
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
-            Logger->log<logger::Level::Verbose>("Locking ask id map");
-            removeFromIdMap(m_bid_id, _orderId);
-            cancelOrder(m_bid_book, info);
-            break;
+            Logger->log<logger::Level::Verbose>("Canceling on Buy side");
+            removeFromIdMap(m_bid_side.idlist, _orderId);
+            cancelOrder(m_bid_side, info.value());
+            return true;
         default:
-            Logger->log<logger::Level::Error>("Unable to lock side: ", static_cast<char>(_side));
+            Logger->log<logger::Level::Error>("Unable to cancel on side: ", static_cast<char>(_side));
             throw std::runtime_error("Side not supported, for cancel");
     }
 }
 
-void OrderBook::lockReadOrder(fix42::Side _side)
+void OrderBook::lockReadOrderId(fix42::Side _side)
 {
     switch (_side) {
         case fix42::Side::Sell:
         case fix42::Side::SellPlus:
             Logger->log<logger::Level::Verbose>("Locking bid id map");
-            m_bid_id.Mutex.lock_shared();
+            m_bid_side.idlist.mutex.lock_shared();
             break;
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
             Logger->log<logger::Level::Verbose>("Locking ask id map");
-            m_ask_id.Mutex.lock_shared();
+            m_ask_side.idlist.mutex.lock_shared();
             break;
         default:
             Logger->log<logger::Level::Error>("Unable to lock side: ", static_cast<char>(_side));
-            throw std::runtime_error("Side not supported, for lockReadOrder");
+            throw std::runtime_error("Side not supported, for lockReadOrderId");
     }
 }
 
-void OrderBook::unlockReadOrder(fix42::Side _side)
+void OrderBook::unlockReadOrderId(fix42::Side _side)
 {
     switch (_side) {
         case fix42::Side::Sell:
         case fix42::Side::SellPlus:
             Logger->log<logger::Level::Verbose>("Unlocking bid id map");
-            m_bid_id.Mutex.unlock_shared();
+            m_bid_side.idlist.mutex.unlock_shared();
             break;
         case fix42::Side::Buy:
         case fix42::Side::BuyMinus:
             Logger->log<logger::Level::Verbose>("Unlocking ask id map");
-            m_ask_id.Mutex.unlock_shared();
+            m_ask_side.idlist.mutex.unlock_shared();
             break;
         default:
             Logger->log<logger::Level::Fatal>("Unable to unlock side: ", static_cast<char>(_side));
-            throw std::runtime_error("Side not supported, for unlockReadOrder");
+            throw std::runtime_error("Side not supported, for unlockReadOrderId");
     }
 }
 
-const OrderBook::OrderIdInfo &OrderBook::getOrderIdInfo(const OrderId &_orderId, fix42::Side _side)
+bool OrderBook::has(IdList &_idlist, const OrderId &_orderId)
+{
+    std::shared_lock lock(_idlist.mutex);
+
+    if (_idlist.list.contains(_orderId))
+        return true;
+    return false;
+}
+
+std::optional<OrderBook::IdList::Info> OrderBook::getOrderIdInfo(const OrderId &_orderId, fix42::Side _side)
 {
     if (_side == fix42::Side::Buy || _side == fix42::Side::BuyMinus) {
-        std::shared_lock lock(m_bid_id.Mutex);
-
-        if (m_bid_id.IdList.contains(_orderId))
-            return m_bid_id.IdList.at(_orderId);
+        return getOrderIdInfo(m_bid_side.idlist, _orderId);
     } else if (_side == fix42::Side::Sell || _side == fix42::Side::SellPlus) {
-        std::shared_lock lock(m_ask_id.Mutex);
-
-        if (m_ask_id.IdList.contains(_orderId))
-            return m_ask_id.IdList.at(_orderId);
+        return getOrderIdInfo(m_ask_side.idlist, _orderId);
     } else {
         Logger->log<logger::Level::Fatal>("Side not supported: ", static_cast<char>(_side));
         throw std::runtime_error("Side not supported, for getOrderIdInfo");
     }
 }
 
-bool OrderBook::removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderid)
+std::optional<OrderBook::IdList::Info> OrderBook::getOrderIdInfo(IdList &_idlist, const OrderId &_orderId)
 {
-    std::unique_lock lock(_idmap.Mutex);
+    std::shared_lock lock(_idlist.mutex);
 
-    OrderIdMap::iterator it = _idmap.IdList.find(_orderid);
-    if (it == _idmap.IdList.end())
+    if (_idlist.list.contains(_orderId))
+        return _idlist.list.at(_orderId);
+    return std::nullopt;
+}
+
+bool OrderBook::removeFromIdMap(IdList &_idlist, const OrderId &_orderid)
+{
+    std::unique_lock lock(_idlist.mutex);
+    IdList::OrderIdMap::iterator it = _idlist.list.find(_orderid);
+
+    if (it == _idlist.list.end())
         return false;
-    _idmap.IdList.erase(it);
+    _idlist.list.erase(it);
     return true;
 }
 
@@ -257,14 +235,14 @@ void OrderBook::computeTick(Price _new)
 void OrderBook::computeTick()
 {
     if (m_lastprice > m_lastprice_diff) {
-        m_tick = TickDirection::PlusTick;
+        m_tick = fix42::TickDir::PlusTick;
     } else if (m_lastprice < m_lastprice_diff) {
-        m_tick = TickDirection::MinusTick;
+        m_tick = fix42::TickDir::MinusTick;
     } else {
-        if (m_tick == TickDirection::PlusTick || m_tick == TickDirection::ZeroPlusTick)
-            m_tick = TickDirection::ZeroPlusTick;
+        if (m_tick == fix42::TickDir::PlusTick || m_tick == fix42::TickDir::ZeroPlusTick)
+            m_tick = fix42::TickDir::ZeroPlusTick;
         else
-            m_tick = TickDirection::ZeroMinusTick;
+            m_tick = fix42::TickDir::ZeroMinusTick;
     }
     Logger->log<logger::Level::Info>("New tick side: ", m_tick);
 }

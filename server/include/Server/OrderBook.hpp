@@ -5,6 +5,7 @@
 #include <shared_mutex>
 #include <map>
 #include <unordered_map>
+#include <optional>
 
 #include "Server/meta.hpp"
 
@@ -12,9 +13,6 @@
 #include "Shared/Thread/Queue.hpp"
 #include "Shared/Log/ILogger.hpp"
 #include "Shared/Core/Enum.hpp"
-
-template<class T>
-concept IsBook = IsBookOf<T, OrderList>;
 
 class OrderBook
 {
@@ -26,12 +24,6 @@ class OrderBook
             Order order;
         };
 
-        struct OrderIdInfo
-        {
-            OrderList::iterator Order;
-            Price price;
-        };
-
         struct Event
         {
             fix42::ExecutionStatus execStatus;
@@ -40,17 +32,41 @@ class OrderBook
             Order order;
         };
 
-        enum TickDirection
+        struct IdList
         {
-            PlusTick,
-            ZeroPlusTick,
-            MinusTick,
-            ZeroMinusTick
+            struct Info
+            {
+                OrderList::iterator Order;
+                Price price;
+            };
+
+            using OrderIdMap = std::unordered_map<OrderId, Info>;
+
+            std::shared_mutex mutex;
+            OrderIdMap list;
         };
 
-        using AskBook = std::map<Price, OrderList, std::less<Price>>;
-        using BidBook = std::map<Price, OrderList, std::greater<Price>>;
-        using OrderIdMap = std::unordered_map<OrderId, OrderIdInfo>;
+        template<class T>
+        struct OrderBookSide
+        {
+            struct PriceOrderList
+            {
+                Quantity cumQty;
+
+                std::shared_mutex mutex;
+                OrderList list;
+            };
+
+            using BookType = std::map<Price, PriceOrderList, T>;
+
+            IdList idlist;
+
+            std::shared_mutex mutex;
+            BookType book;
+        };
+
+        // using AskBook = std::map<Price, OrderListBundle, std::less<Price>>;
+        // using BidBook = std::map<Price, OrderListBundle, std::greater<Price>>;
 
         OrderBook(const std::string &_name, ts::Queue<Event> &_event);
         virtual ~OrderBook() = default;
@@ -61,21 +77,15 @@ class OrderBook
         [[nodiscard]] bool has(const OrderId &_orderId);
         [[nodiscard]] bool has(const OrderId &_orderId, fix42::Side _side);
 
-        Order getOrder(const OrderId &_orderId);
+        std::optional<Order> getOrder(const OrderId &_orderId);
 
         void add(const OrderInfo &_order);
-        void cancel(const OrderId &_orderId, fix42::Side _side);
+        bool cancel(const OrderId &_orderId, fix42::Side _side);
 
-        void lockReadOrder(fix42::Side _side);
-        void unlockReadOrder(fix42::Side _side);
+        void lockReadOrderId(fix42::Side _side);
+        void unlockReadOrderId(fix42::Side _side);
 
-    protected:
-        struct OrderIdMapBundle
-        {
-            std::shared_mutex Mutex{};
-            OrderIdMap IdList{};
-        };
-
+    private:
         enum FillStatus
         {
             Filled,
@@ -83,22 +93,28 @@ class OrderBook
             Skipped
         };
 
-        const OrderIdInfo &getOrderIdInfo(const OrderId &_orderId, fix42::Side _side);
+        [[nodiscard]] bool has(IdList &_idlist, const OrderId &_order);
 
-        /// @return The remaining quantity of the order.
-        template<class Comparator, IsBook BookType>
-        std::pair<Quantity, Price> fillOnBook(BookType &_book, OrderIdMapBundle &_idmap, const OrderInfo &_order);
+        [[nodiscard]] std::optional<IdList::Info> getOrderIdInfo(const OrderId &_orderId, fix42::Side _side);
+        [[nodiscard]] std::optional<IdList::Info> getOrderIdInfo(IdList &, const OrderId &_orderId);
+
+        template<class FillSide, class OrderSide>
+        void add(FillSide &_fillside, OrderSide &_orderside, const OrderInfo &_order);
+
+
+        /// @return The remaining quantity of the order and it's average price.
+        template<class Cmp>
+        std::pair<Quantity, Price> fillOnBook(OrderBookSide<Cmp> &_book_side, const OrderInfo &_order);
         FillStatus fillOrder(Event &_main_event, Price _price, Order &_order);
 
-        template<IsBook BookType>
-        void addToBook(BookType &_book, OrderIdMapBundle &_idmap, Price _price, const Order &_order);
+        template<class Cmp>
+        void addToBook(OrderBookSide<Cmp> &_book, Price _price, const Order &_order);
 
-        template<IsBook BookType>
-        void cancelOrder(BookType &_book, const OrderIdInfo &_info);
+        template<class Cmp>
+        void cancelOrder(OrderBookSide<Cmp> &_book, const IdList::Info &_info);
 
-        bool removeFromIdMap(OrderIdMapBundle &_idmap, const OrderId &_orderid);
+        bool removeFromIdMap(IdList &_idlist, const OrderId &_orderid);
 
-    private:
         void computeTick(Price _new);
         void computeTick();
 
@@ -106,15 +122,12 @@ class OrderBook
 
         Price m_lastprice = 0.f;
         Price m_lastprice_diff = 0.f;
-        TickDirection m_tick = TickDirection::ZeroPlusTick;
+        fix42::TickDir m_tick = fix42::TickDir::ZeroPlusTick;
 
         ts::Queue<Event> &m_event_output;
 
-        OrderIdMapBundle m_bid_id;
-        OrderIdMapBundle m_ask_id;
-
-        AskBook m_ask_book;
-        BidBook m_bid_book;
+        OrderBookSide<std::less<Price>> m_ask_side;
+        OrderBookSide<std::greater<Price>> m_bid_side;
 
         std::unique_ptr<logger::ILogger> Logger = nullptr;
 };
