@@ -3,6 +3,28 @@
 #include <vector>
 
 #include "Server/OrderBook.hpp"
+#include "Server/Config.hpp"
+
+template<class Cmp>
+void OrderBook::getSnapshot(std::vector<std::pair<Price, Quantity>> &_snapshot, uint32_t _depth, OrderBookSide<Cmp> &_book)
+{
+    uint32_t rdepth = 0;
+    uint32_t count = 0;
+    std::shared_lock lock(_book.mutex);
+
+    if (_depth == 0) {
+        rdepth = static_cast<uint32_t>(_book.book.size());
+    } else if (_depth == 1) {
+        rdepth = std::min(Configuration<config::Global>::Get().Config.Fix.OrderBook.TopDepth, static_cast<uint32_t>(_book.book.size()));
+    } else {
+        rdepth = std::min(_depth, static_cast<uint32_t>(_book.book.size()));
+    }
+    for (auto it = _book.book.begin(); it != _book.book.end() && count < rdepth; it++, count++)
+    {
+        const auto &[price, list] = *it;
+        _snapshot.emplace_back(price, list.cumQty);
+    }
+}
 
 template<class FillSide, class OrderSide>
 void OrderBook::add(FillSide &_fillside, OrderSide &_orderside, const OrderInfo &_order)

@@ -55,6 +55,20 @@ std::optional<Order> OrderBook::getOrder(const OrderId &_orderId)
     return std::nullopt;
 }
 
+std::vector<std::pair<Price, Quantity>> OrderBook::getSnapshot(uint32_t _depth, fix42::Side _side)
+{
+    std::vector<std::pair<Price, Quantity>> snapshot{};
+
+    if (_side == fix42::Side::Buy) {
+        getSnapshot(snapshot, _depth, m_bid_side);
+    } else if (_side == fix42::Side::Sell) {
+        getSnapshot(snapshot, _depth, m_ask_side);
+    } else {
+        throw std::runtime_error("Not supported side for snapshot: " + static_cast<char>(_side));
+    }
+    return snapshot;
+}
+
 void OrderBook::add(const OrderInfo &_order)
 {
     std::pair<Quantity, Price> pair{};

@@ -13,6 +13,9 @@
             "EURO",
             "USD"
         ],
-        "provider-name": "MyMarket"
+        "provider-name": "MyMarket",
+        "orderbook": {
+            "top-depth": 10
+        }
     }
 }

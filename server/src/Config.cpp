@@ -24,6 +24,10 @@ namespace config
 
         fixconfig.at("market-list").get_to(_config.Fix.Market);
         fixconfig.at("provider-name").get_to(_config.Fix.ProviderName);
+
+        const nlohmann::json &obconfig = fixconfig.at("orderbook");
+
+        obconfig.at("top-depth").get_to(_config.Fix.OrderBook.TopDepth);
     }
 
     void to_json(nlohmann::json &_json, const config::Global &_config)
@@ -39,7 +43,10 @@ namespace config
             }},
             {"fix-config", {
                 {"market-list", _config.Fix.Market},
-                {"provider-name", _config.Fix.ProviderName}
+                {"provider-name", _config.Fix.ProviderName},
+                {"orderbook", {
+                    {"top-depth", _config.Fix.OrderBook.TopDepth}
+                }}
             }}
         };
     }

@@ -77,7 +77,9 @@ class OrderBook
         [[nodiscard]] bool has(const OrderId &_orderId);
         [[nodiscard]] bool has(const OrderId &_orderId, fix42::Side _side);
 
-        std::optional<Order> getOrder(const OrderId &_orderId);
+        [[nodiscard]] std::optional<Order> getOrder(const OrderId &_orderId);
+
+        [[nodiscard]] std::vector<std::pair<Price, Quantity>> getSnapshot(uint32_t _depth, fix42::Side _side);
 
         void add(const OrderInfo &_order);
         bool cancel(const OrderId &_orderId, fix42::Side _side);
@@ -97,6 +99,9 @@ class OrderBook
 
         [[nodiscard]] std::optional<IdList::Info> getOrderIdInfo(const OrderId &_orderId, fix42::Side _side);
         [[nodiscard]] std::optional<IdList::Info> getOrderIdInfo(IdList &, const OrderId &_orderId);
+
+        template<class Cmp>
+        void getSnapshot(std::vector<std::pair<Price, Quantity>> &_snapshot, uint32_t _depth, OrderBookSide<Cmp> &_book);
 
         template<class FillSide, class OrderSide>
         void add(FillSide &_fillside, OrderSide &_orderside, const OrderInfo &_order);

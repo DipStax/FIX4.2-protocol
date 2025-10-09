@@ -25,6 +25,19 @@ namespace fix42
         fix::Tag<tag::SendingTime, std::chrono::time_point<std::chrono::system_clock>>
     >;
 
+    namespace list
+    {
+        using MDEntriesSnapshot = fix::List<
+                fix::TagNo<tag::NoMDEntries, false>,
+                fix::Tag<tag::MDEntryType, MarketDataEntryType>,
+                fix::Tag<tag::MDEntryPx, Price>,
+                fix::Tag<tag::MDEntrySize, std::optional<Quantity>>,
+                // fix::Tag<tag::MDEntryDate, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                // fix::Tag<tag::MDEntryTime, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
+                fix::Tag<tag::TickDirection, std::optional<TickDir>>
+            >;
+    }
+
     namespace msg
     {
         using HeartBeat = fix::Message<'0',
@@ -127,18 +140,10 @@ namespace fix42
 
         using MarketDataSnapshotFullRefresh = fix::Message<'W',
             fix::TagList<
-                fix::List<
-                    fix::TagNo<tag::NoMDEntries, false>,
-                    fix::Tag<tag::MDEntryType, MarketDataEntryType>,
-                    fix::Tag<tag::MDEntryPx, Price>,
-                    fix::Tag<tag::MDEntrySize, std::optional<Quantity>>,
-                    // fix::Tag<tag::MDEntryDate, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
-                    // fix::Tag<tag::MDEntryTime, std::optional<std::chrono::time_point<std::chrono::system_clock>>>,
-                    fix::Tag<tag::TickDirection, std::optional<TickDir>>
-                >,
-                fix::Tag<tag::MDReqID, std::optional<std::string>>,
-                fix::Tag<tag::Symbol, std::string>
-            >
+                list::MDEntriesSnapshot
+            >,
+            fix::Tag<tag::MDReqID, std::optional<std::string>>,
+            fix::Tag<tag::Symbol, std::string>
         >;
 
         using MarketDataIncrementalRefresh = fix::Message<'X',

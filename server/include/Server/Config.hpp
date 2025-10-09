@@ -23,9 +23,16 @@ namespace config
 
         struct FixConfig
         {
-            std::vector<std::string> Market;
+            struct OrderBookConfig
+            {
+                uint32_t TopDepth = 0;
+            };
+
+            std::vector<std::string> Market{};
             std::string ProviderName{};
+            OrderBookConfig OrderBook{};
         };
+
 
         UserConfig User{};
         NetworkConfig Network{};

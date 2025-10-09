@@ -72,6 +72,9 @@ void to_FIX(std::string &_out, const uint16_t _value);
 std::optional<fix::RejectError> from_FIX(const std::string &_value, uint32_t &_out);
 void to_FIX(std::string &_out, const uint32_t _value);
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, size_t &_out);
+void to_FIX(std::string &_out, const size_t _value);
+
 std::optional<fix::RejectError> from_FIX(const std::string &_value, float &_out);
 void to_FIX(std::string &_out, const float _value);
 

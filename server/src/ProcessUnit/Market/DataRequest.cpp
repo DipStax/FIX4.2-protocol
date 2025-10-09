@@ -15,6 +15,26 @@ namespace pu::market
 
     void DataRequest::onInput(InputType _input)
     {
+        fix42::list::MDEntriesSnapshot::DataTuple mdentry{};
+        fix42::msg::MarketDataSnapshotFullRefresh mdsnapshot{};
+        std::vector<std::pair<Price, Quantity>> snapshot = m_ob.getSnapshot(_input.depth, fix42::Side::Sell);
+
+        for (const std::pair<Price, Quantity> &_pair : snapshot) {
+            fix::get<fix42::tag::MDEntryType>(mdentry).Value = fix42::MarketDataEntryType::Offer;
+            fix::get<fix42::tag::MDEntryPx>(mdentry).Value = _pair.first;
+            fix::get<fix42::tag::MDEntrySize>(mdentry).Value = _pair.second;
+            mdsnapshot.getList<fix42::tag::NoMDEntries>().add(mdentry);
+        }
+        snapshot = m_ob.getSnapshot(_input.depth, fix42::Side::Buy);
+        for (const std::pair<Price, Quantity> &_pair : snapshot) {
+            fix::get<fix42::tag::MDEntryType>(mdentry).Value = fix42::MarketDataEntryType::Bid;
+            fix::get<fix42::tag::MDEntryPx>(mdentry).Value = _pair.first;
+            fix::get<fix42::tag::MDEntrySize>(mdentry).Value = _pair.second;
+            mdsnapshot.getList<fix42::tag::NoMDEntries>().add(mdentry);
+        }
+        mdsnapshot.get<fix42::tag::MDReqID>().Value = _input.id;
+        mdsnapshot.get<fix42::tag::Symbol>().Value = m_ob.getSymbol();
+        m_tcp_output.append(_input.Client, _input.ReceiveTime, fix42::msg::MarketDataSnapshotFullRefresh::Type, std::move(mdsnapshot.to_string()));
     }
 
     void DataRequest::onStop()

@@ -511,6 +511,27 @@ void to_FIX(std::string &_out, const uint32_t _value)
     _out.append(buffer, ptr);
 }
 
+std::optional<fix::RejectError> from_FIX(const std::string &_value, size_t &_out)
+{
+    auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
+
+    if (ec == std::errc() && ptr == _value.data() + _value.size())
+        return std::nullopt;
+    if (ec == std::errc::invalid_argument)
+        return fix::RejectError{ fix::RejectError::IncorrectFormat, "Expected an uint64_t" };
+    else if (ec == std::errc::result_out_of_range)
+        return fix::RejectError{ fix::RejectError::ValueOORange, "Value out of range of uint64_t" };
+    return fix::RejectError{ fix::RejectError::IncorrectFormat, "Unknow error will parsing uint64_t" };
+}
+
+void to_FIX(std::string &_out, const size_t _value)
+{
+    char buffer[fix::meta::NumericLimit::MaxAlloc<size_t>()];
+    auto [ptr, _] = std::to_chars(buffer, buffer + sizeof(buffer), _value);
+
+    _out.append(buffer, ptr);
+}
+
 std::optional<fix::RejectError> from_FIX(const std::string &_value, float &_out)
 {
     auto [ptr, ec] = std::from_chars(_value.data(), _value.data() + _value.size(), _out);
