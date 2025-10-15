@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Net.Mail;
 
 namespace FixGuardian.Messages
 {
@@ -89,38 +90,104 @@ namespace FixGuardian.Messages
             return result;
         }
 
+        public enum OutReason
+        {
+            AlreadyParsed,
+            NotFound,
+            Success
+        }
+
         static public T FromString<T>(List<KeyValuePair<ushort, string>> mapmsg)
-             where T : AMessage, new()
+            where T : AMessage, new()
         {
             T msgobj = new T();
-            IEnumerable<KeyValuePair<PropertyInfo, Tag>> props = typeof(T)
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(prop => prop.GetCustomAttribute<Tag>() != null)
-                .Select(prop => new KeyValuePair<PropertyInfo, Tag>(prop, prop.GetCustomAttribute<Tag>()!));
+            int index = 0;
 
-            foreach (KeyValuePair<ushort, string> pair in mapmsg)
-            {
-                KeyValuePair<PropertyInfo, Tag>? prop = props
-                    .Where(prop => prop.Value.TagId == pair.Key)
-                    .Cast<KeyValuePair<PropertyInfo, Tag>?>()
-                    .FirstOrDefault();
-
-                if (prop == null)
-                    throw new FixDecodeException($"Undefined tag in message {typeof(T).Name}: '{pair.Key}'");
-
-                object? value = ConvertValue(pair.Value, Nullable.GetUnderlyingType(prop.Value.Key.PropertyType) ?? prop.Value.Key.PropertyType);
-
-                if (value == null)
-                    throw new FixDecodeException("");
-                prop.Value.Key.SetValue(msgobj, value);
-            }
-
-            foreach (PropertyInfo prop in props.Select(prop => prop.Key))
-                if (prop.GetValue(msgobj) == null && prop.GetCustomAttribute<OptionalTag>() == null)
-                    throw new FixDecodeException($"Missing required tag: {prop.Name} ({prop.GetCustomAttribute<Tag>()!.TagId})");
-
+            if (FromString(mapmsg, msgobj, ref index) != OutReason.Success)
+                throw new FixDecodeException("w");
+            if (index != mapmsg.Count)
+                throw new FixDecodeException("");
             return msgobj;
         }
+
+        static private OutReason FromString(List<KeyValuePair<ushort, string>> mapmsg, object msgobj, ref int index)
+        {
+            Type msgtype = msgobj.GetType();
+            IEnumerable<PropertyInfo> props = msgtype.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<PropertyInfo> tagProps = props.Where(prop => prop.GetCustomAttribute<Tag>() != null);
+            IEnumerable<PropertyInfo> listProps = props.Where(prop => prop.GetCustomAttribute<ListTag>() != null);
+            SortedSet<ushort> setTag = new SortedSet<ushort>();
+            OutReason outReason = OutReason.Success;
+
+            while (index < mapmsg.Count)
+            {
+                KeyValuePair<ushort, string> pair = mapmsg[index];
+                PropertyInfo? tag = tagProps.FirstOrDefault(prop => prop.GetCustomAttribute<Tag>()!.TagId == pair.Key);
+
+                if (setTag.Contains(pair.Key))
+                {
+                    outReason = OutReason.AlreadyParsed;
+                    break;
+                }
+                setTag.Add(pair.Key);
+                if (tag != null)
+                {
+                    Type underlyingType = Nullable.GetUnderlyingType(tag.PropertyType) ?? tag.PropertyType;
+                    object? value = ConvertValue(pair.Value, underlyingType);
+
+                    if (value == null)
+                        throw new FixDecodeException($"Unable to convert the value of the tag: {tag.Name} ({pair.Key}) -> '{pair.Value}' to {underlyingType.Name}");
+                    tag.SetValue(msgobj, value);
+                    index++;
+                }
+                else
+                {
+                    PropertyInfo? list = listProps.FirstOrDefault(prop => prop.GetCustomAttribute<ListTag>()!.NoTag == pair.Key);
+
+                    if (list != null)
+                    {
+                        if (!uint.TryParse(pair.Value, out uint groupCount))
+                            throw new FixDecodeException($"Invalid repeating group count for tag {pair.Key}: '{pair.Value}'");
+
+                        Type elementType = list.PropertyType.GetGenericArguments().FirstOrDefault() ?? list.PropertyType.GetElementType() ?? throw new FixDecodeException($"Cannot determine element type of ListTag '{list .Name}'");
+                        object listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType))!;
+                        MethodInfo addMethod = listInstance.GetType().GetMethod("Add")!;
+
+                        for (uint group = 0; group < groupCount; group++)
+                        {
+                            try
+                            {
+                                object groupObj = Activator.CreateInstance(elementType)!;
+                                OutReason reason = FromString(mapmsg, groupObj, ref index);
+
+                                if (reason == OutReason.NotFound && group != groupCount - 1)
+                                    throw new FixDecodeException($"Unable to parse full group, tag not found: {mapmsg[index].Key} -> '{mapmsg[index].Value}'");
+                                addMethod.Invoke(listInstance, [groupObj]);
+                            }
+                            catch (FixDecodeException ex)
+                            {
+                                throw new FixDecodeException($"Exception when parsing group: '{elementType.Name}' at index: {group}", ex);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        outReason = OutReason.NotFound;
+                        break;
+                    }
+                }
+            }
+            foreach (PropertyInfo prop in tagProps)
+                if (prop.GetValue(msgobj) == null && prop.GetCustomAttribute<OptionalTag>() == null)
+                    throw new FixDecodeException($"Missing required tag in '{msgtype.Name}': {prop.Name} ({prop.GetCustomAttribute<Tag>()!.TagId})");
+            foreach (PropertyInfo prop in listProps)
+                if (prop.GetValue(msgobj) == null && prop.GetCustomAttribute<OptionalTag>() == null)
+                    throw new FixDecodeException($"Missing required list in '{msgtype.Name}': {prop.Name} ({prop.GetCustomAttribute<ListTag>()!.NoTag})");
+            return outReason;
+        }
+
+
+        #region CheckSum
 
         static public string AddCheckSum(string message)
         {
@@ -135,6 +202,8 @@ namespace FixGuardian.Messages
         {
              return $"{message}10={checksum}\u0001";
         }
+
+        #endregion
 
         #region Value Convertion
 

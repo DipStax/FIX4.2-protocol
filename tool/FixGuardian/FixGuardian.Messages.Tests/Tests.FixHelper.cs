@@ -184,7 +184,7 @@ namespace FixGuardian.Message.Tests
         public class Function_FromString
         {
             [Test]
-            public void Valid_InOrder_NoMissing()
+            public void ValidInOrderNoMissing()
             {
                 List<KeyValuePair<ushort, string>> mapmsg = new List<KeyValuePair<ushort, string>>()
                 {
@@ -194,6 +194,12 @@ namespace FixGuardian.Message.Tests
                     new KeyValuePair<ushort, string>(3, "Test2"),
                     new KeyValuePair<ushort, string>(4, "456"),
                     new KeyValuePair<ushort, string>(5, "0"),
+                    new KeyValuePair<ushort, string>(6, "1"),
+                    new KeyValuePair<ushort, string>(7, "10"),
+                    new KeyValuePair<ushort, string>(8, "Test3"),
+                    new KeyValuePair<ushort, string>(9, "1"),
+                    new KeyValuePair<ushort, string>(10, "B"),
+                    new KeyValuePair<ushort, string>(11, "C")
                 };
                 TestMessage expected = new TestMessage()
                 {
@@ -202,7 +208,21 @@ namespace FixGuardian.Message.Tests
                     EnumTag = TestMessage.TestEnum.Value2,
                     OptionalStringTag = "Test2",
                     OptionalUShortTag = 456,
-                    OptionalEnumTag = TestMessage.TestEnum.Value1
+                    OptionalEnumTag = TestMessage.TestEnum.Value1,
+                    OptionalListTag = new List<TestMessage.OptionalMessageList>()
+                    {
+                        new TestMessage.OptionalMessageList() {
+                            UintTag = 10,
+                            OptionalStringTag = "Test3"
+                        }
+                    },
+                    ListTag = new List<TestMessage.RequiredMessageList>()
+                    {
+                        new TestMessage.RequiredMessageList() {
+                            CharTag = 'B',
+                            OptionalEnumTag = TestMessage.RequiredMessageList.TestEnumList.Value2
+                        }
+                    }
                 };
 
                 TestMessage result = FixHelper.FromString<TestMessage>(mapmsg);
@@ -211,7 +231,7 @@ namespace FixGuardian.Message.Tests
             }
 
             [Test]
-            public void Valid_InOrder_RequireMissing()
+            public void ValidInOrderRequireTagMissing()
             {
                 List<KeyValuePair<ushort, string>> mapmsg = new List<KeyValuePair<ushort, string>>()
                 {
@@ -220,14 +240,17 @@ namespace FixGuardian.Message.Tests
                     new KeyValuePair<ushort, string>(3, "Test2"),
                     new KeyValuePair<ushort, string>(4, "456"),
                     new KeyValuePair<ushort, string>(5, "0"),
+                    new KeyValuePair<ushort, string>(6, "1"),
+                    new KeyValuePair<ushort, string>(7, "A"),
+                    new KeyValuePair<ushort, string>(8, "1")
                 };
-                
+
                 FixDecodeException? fixDecodeException = Assert.Throws<FixDecodeException>(() => FixHelper.FromString<TestMessage>(mapmsg));
                 Assert.That(fixDecodeException, Is.Not.Null);
             }
 
             [Test]
-            public void Valid_InOrder_Optional()
+            public void ValidInOrderOptionalTag()
             {
                 List<KeyValuePair<ushort, string>> mapmsg = new List<KeyValuePair<ushort, string>>()
                 {
@@ -236,6 +259,12 @@ namespace FixGuardian.Message.Tests
                     new KeyValuePair<ushort, string>(2, "A"),
                     new KeyValuePair<ushort, string>(3, "Test2"),
                     new KeyValuePair<ushort, string>(5, "0"),
+                    new KeyValuePair<ushort, string>(6, "1"),
+                    new KeyValuePair<ushort, string>(7, "10"),
+                    new KeyValuePair<ushort, string>(8, "Test3"),
+                    new KeyValuePair<ushort, string>(9, "1"),
+                    new KeyValuePair<ushort, string>(10, "B"),
+                    new KeyValuePair<ushort, string>(11, "C")
                 };
                 TestMessage expected = new TestMessage()
                 {
@@ -244,7 +273,57 @@ namespace FixGuardian.Message.Tests
                     EnumTag = TestMessage.TestEnum.Value2,
                     OptionalStringTag = "Test2",
                     OptionalUShortTag = null,
-                    OptionalEnumTag = TestMessage.TestEnum.Value1
+                    OptionalEnumTag = TestMessage.TestEnum.Value1,
+                    OptionalListTag = new List<TestMessage.OptionalMessageList>()
+                    {
+                        new TestMessage.OptionalMessageList() {
+                            UintTag = 10,
+                            OptionalStringTag = "Test3"
+                        }
+                    },
+                    ListTag = new List<TestMessage.RequiredMessageList>()
+                    {
+                        new TestMessage.RequiredMessageList() {
+                            CharTag = 'B',
+                            OptionalEnumTag = TestMessage.RequiredMessageList.TestEnumList.Value2
+                        }
+                    }
+                };
+
+                TestMessage result = FixHelper.FromString<TestMessage>(mapmsg);
+
+                Assert.That(result, Is.EqualTo(expected));
+            }
+
+            [Test]
+            public void ValidInOrderOptionalListTag()
+            {
+                List<KeyValuePair<ushort, string>> mapmsg = new List<KeyValuePair<ushort, string>>()
+                {
+                    new KeyValuePair<ushort, string>(0, "Test1"),
+                    new KeyValuePair<ushort, string>(1, "123"),
+                    new KeyValuePair<ushort, string>(2, "A"),
+                    new KeyValuePair<ushort, string>(3, "Test2"),
+                    new KeyValuePair<ushort, string>(5, "0"),
+                    new KeyValuePair<ushort, string>(9, "1"),
+                    new KeyValuePair<ushort, string>(10, "B"),
+                    new KeyValuePair<ushort, string>(11, "C")
+                };
+                TestMessage expected = new TestMessage()
+                {
+                    StringTag = "Test1",
+                    UshortTag = 123,
+                    EnumTag = TestMessage.TestEnum.Value2,
+                    OptionalStringTag = "Test2",
+                    OptionalUShortTag = null,
+                    OptionalEnumTag = TestMessage.TestEnum.Value1,
+                    ListTag = new List<TestMessage.RequiredMessageList>()
+                    {
+                        new TestMessage.RequiredMessageList() {
+                            CharTag = 'B',
+                            OptionalEnumTag = TestMessage.RequiredMessageList.TestEnumList.Value2
+                        }
+                    }
                 };
 
                 TestMessage result = FixHelper.FromString<TestMessage>(mapmsg);
