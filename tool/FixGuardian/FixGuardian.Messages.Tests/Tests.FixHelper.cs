@@ -90,14 +90,28 @@ namespace FixGuardian.Message.Tests
                     EnumTag = TestMessage.TestEnum.Value2,
                     OptionalStringTag = "Test2",
                     OptionalUShortTag = 456,
-                    OptionalEnumTag = TestMessage.TestEnum.Value1
+                    OptionalEnumTag = TestMessage.TestEnum.Value1,
+                    OptionalListTag = new List<TestMessage.OptionalMessageList>()
+                    {
+                        new TestMessage.OptionalMessageList() {
+                            UintTag = 10,
+                            OptionalStringTag = "Test3"
+                        }
+                    },
+                    ListTag = new List<TestMessage.RequiredMessageList>()
+                    {
+                        new TestMessage.RequiredMessageList() {
+                            CharTag = 'B',
+                            OptionalEnumTag = TestMessage.RequiredMessageList.TestEnumList.Value2
+                        }
+                    }
                 };
             }
 
             [Test]
             public void AllowNull_NonOptional()
             {
-                const string expected = "0=Test^1=123^3=Test2^4=456^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^1=123^3=Test2^4=456^5=0^";
 
                 MessageTest.EnumTag = null;
 
@@ -110,9 +124,35 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void AllowNull_Optional()
             {
-                const string expected = "0=Test^1=123^2=A^3=Test2^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^1=123^2=A^3=Test2^5=0^";
 
                 MessageTest.OptionalUShortTag = null;
+
+                Assert.That(
+                    FixHelper.ToString(MessageTest, FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
+                    Is.EqualTo(expected)
+                );
+            }
+
+            [Test]
+            public void AllowNull_ListOptional()
+            {
+                const string expected = "9=1^10=B^11=C^0=Test^1=123^2=A^3=Test2^4=456^5=0^";
+
+                MessageTest.OptionalListTag = null;
+
+                Assert.That(
+                    FixHelper.ToString(MessageTest, FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
+                    Is.EqualTo(expected)
+                );
+            }
+
+            [Test]
+            public void AllowNull_List()
+            {
+                const string expected = "6=1^7=10^8=Test3^0=Test^1=123^2=A^3=Test2^4=456^5=0^";
+
+                MessageTest.ListTag = null;
 
                 Assert.That(
                     FixHelper.ToString(MessageTest, FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
@@ -132,7 +172,7 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void Default_Optional()
             {
-                const string expected = "0=Test^1=123^2=A^3=Test2^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^1=123^2=A^3=Test2^5=0^";
 
                 MessageTest.OptionalUShortTag = null;
 
@@ -145,7 +185,7 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void Default_Valid()
             {
-                const string expected = "0=Test^1=123^2=A^3=Test2^4=456^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^1=123^2=A^3=Test2^4=456^5=0^";
 
                 Assert.That(
                     FixHelper.ToString(MessageTest, FixHelper.NullHandlingStrategy.AllowNull).Replace('\u0001', '^'),
@@ -156,7 +196,7 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void NullAsFulyEmpty_NonOptional()
             {
-                const string expected = "0=Test^2=A^3=Test2^4=456^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^2=A^3=Test2^4=456^5=0^";
 
                 MessageTest.UshortTag = null;
 
@@ -169,7 +209,7 @@ namespace FixGuardian.Message.Tests
             [Test]
             public void NullAsFulyEmpty_Optional()
             {
-                const string expected = "0=Test^1=123^2=A^4=456^5=0^";
+                const string expected = "6=1^7=10^8=Test3^9=1^10=B^11=C^0=Test^1=123^2=A^4=456^5=0^";
 
                 MessageTest.OptionalStringTag = null;
 
@@ -240,13 +280,15 @@ namespace FixGuardian.Message.Tests
                     new KeyValuePair<ushort, string>(3, "Test2"),
                     new KeyValuePair<ushort, string>(4, "456"),
                     new KeyValuePair<ushort, string>(5, "0"),
-                    new KeyValuePair<ushort, string>(6, "1"),
-                    new KeyValuePair<ushort, string>(7, "A"),
-                    new KeyValuePair<ushort, string>(8, "1")
+                    new KeyValuePair<ushort, string>(9, "1"),
+                    new KeyValuePair<ushort, string>(10, "B"),
+                    new KeyValuePair<ushort, string>(11, "C") 
                 };
 
                 FixDecodeException? fixDecodeException = Assert.Throws<FixDecodeException>(() => FixHelper.FromString<TestMessage>(mapmsg));
                 Assert.That(fixDecodeException, Is.Not.Null);
+                Assert.That(fixDecodeException.InnerException, Is.Null);
+                Assert.That(fixDecodeException.Message, Is.EqualTo("Missing required tag in 'TestMessage': UshortTag (1)"));
             }
 
             [Test]

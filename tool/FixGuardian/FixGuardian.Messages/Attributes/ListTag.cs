@@ -2,9 +2,9 @@ namespace FixGuardian.Messages.Attributes
 {
     public class ListTag : Attribute
     {
-        public uint NoTag { get; }
+        public ushort NoTag { get; }
 
-        public ListTag(uint noTag)
+        public ListTag(ushort noTag)
         {
             NoTag = noTag;
         }

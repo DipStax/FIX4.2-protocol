@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Net.Mail;
+using System.Collections;
 
 namespace FixGuardian.Messages
 {
@@ -20,19 +20,60 @@ namespace FixGuardian.Messages
             NullAsFullyEmpty
         };
 
-        static public string ToString<T>(T msg, NullHandlingStrategy nullStrat = NullHandlingStrategy.None)
+        static public string ToString(object msgobj, NullHandlingStrategy nullStrat = NullHandlingStrategy.None)
         {
-            IEnumerable<KeyValuePair<PropertyInfo, Tag>> props = typeof(T)
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(prop => prop.GetCustomAttribute<Tag>() != null)
-                .Select(prop => new KeyValuePair<PropertyInfo, Tag>(prop, prop.GetCustomAttribute<Tag>()!));
+            IEnumerable<PropertyInfo> props = msgobj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            IEnumerable<PropertyInfo> tagProps = props.Where(prop => prop.GetCustomAttribute<Tag>() != null);
+            IEnumerable<PropertyInfo> listProps = props.Where(prop => prop.GetCustomAttribute<ListTag>() != null);
             string result = string.Empty;
 
-            foreach (KeyValuePair<PropertyInfo, Tag> pair in props)
+            foreach (PropertyInfo prop in listProps)
             {
-                object? value = pair.Key.GetValue(msg);
+                object? propObj = prop.GetValue(msgobj);
+                ushort noTag = prop.GetCustomAttribute<ListTag>()!.NoTag;
 
-                if (value == null && pair.Key.GetCustomAttribute<OptionalTag>() != null)
+                if (propObj == null && prop.GetCustomAttribute<OptionalTag>() != null)
+                {
+                    continue;
+                }
+                else if (propObj == null)
+                {
+                    switch (nullStrat)
+                    {
+                        case NullHandlingStrategy.None:
+                            throw new FixEncodeException($"Null value for property", noTag);
+                        case NullHandlingStrategy.NullAsEmpty:
+                            result += $"{noTag}=\u0001";
+                            break;
+                        case NullHandlingStrategy.NullAsFullyEmpty:
+                            result += "\u0001";
+                            break;
+                        case NullHandlingStrategy.AllowNull:
+                            break;
+                        default:
+                            throw new UnreachableException();
+                    }
+                }
+                else
+                {
+                    if (propObj is IEnumerable listObj)
+                    {
+                        result += $"{noTag}={listObj.Cast<object>().Count()}\u0001";
+                        foreach (object obj in listObj)
+                            result += ToString(obj, nullStrat);
+                    }
+                    else
+                    {
+                        throw new FixEncodeException("", noTag);
+                    }
+                }
+            }
+            foreach (PropertyInfo prop in tagProps)
+            {
+                object? value = prop.GetValue(msgobj);
+                ushort tag = prop.GetCustomAttribute<Tag>()!.TagId;
+
+                if (value == null && prop.GetCustomAttribute<OptionalTag>() != null)
                 {
                     continue;
                 }
@@ -41,30 +82,32 @@ namespace FixGuardian.Messages
                     switch (nullStrat)
                     {
                         case NullHandlingStrategy.None:
-                            throw new FixEncodeException($"Null value for property", pair.Value.TagId);
+                            throw new FixEncodeException($"Null value for non-optional property", tag);
                         case NullHandlingStrategy.NullAsEmpty:
-                            result += $"{pair.Value.TagId}=\u0001";
-                            continue;
+                            result += $"{tag}=\u0001";
+                            break;
                         case NullHandlingStrategy.NullAsFullyEmpty:
                             result += "\u0001";
-                            continue;
+                            break;
                         case NullHandlingStrategy.AllowNull:
-                            continue;
+                            break;
                         default:
                             throw new UnreachableException();
                     }
                 }
-                string strValue = string.Empty;
-                Type underlying = Nullable.GetUnderlyingType(pair.Key.PropertyType) ?? pair.Key.PropertyType;
-
-
-                if (underlying.IsEnum)
-                    strValue = GetEnumValue((Enum)value);
-                else if (value is DateTime)
-                    strValue = Convert.ToDateTime(value).ToString("yyyyMMdd-HH:mm:ss");
                 else
-                    strValue = value.ToString()!;
-                result += $"{pair.Value.TagId}={strValue}\u0001";
+                {
+                    string strValue = string.Empty;
+                    Type underlying = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+                    if (underlying.IsEnum)
+                        strValue = GetEnumValue((Enum)value);
+                    else if (value is DateTime)
+                        strValue = Convert.ToDateTime(value).ToString("yyyyMMdd-HH:mm:ss");
+                    else
+                        strValue = value.ToString()!;
+                    result += $"{tag}={strValue}\u0001";
+                }
             }
             return result;
         }
@@ -105,8 +148,6 @@ namespace FixGuardian.Messages
 
             if (FromString(mapmsg, msgobj, ref index) != OutReason.Success)
                 throw new FixDecodeException("w");
-            if (index != mapmsg.Count)
-                throw new FixDecodeException("");
             return msgobj;
         }
 
@@ -153,6 +194,7 @@ namespace FixGuardian.Messages
                         object listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType))!;
                         MethodInfo addMethod = listInstance.GetType().GetMethod("Add")!;
 
+                        index++;
                         for (uint group = 0; group < groupCount; group++)
                         {
                             try
